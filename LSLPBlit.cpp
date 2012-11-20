@@ -22,7 +22,7 @@ void *LSLPBlit::getConfig() {
 }
 
 uint8_t LSLPBlit::getFrameRate() {
-	return 10;
+	return 60;
 }
 
 void LSLPBlit::update() {
