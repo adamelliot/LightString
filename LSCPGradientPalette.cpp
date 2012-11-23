@@ -130,7 +130,7 @@ gradient_palette_t yellowGradient() {
 
 gradient_palette_t whiteGradient() {
 	return (gradient_palette_t){
-		{(color_t){255, 255, 255}, (color_t){64, 64, 64}},
+		{(color_t){255, 255, 255}, (color_t){0, 0, 0}},
 		1,
 		true
 	};
