@@ -208,10 +208,26 @@ gradient_palette_t blueYellowBlackGradient() {
 	};
 }
 
+gradient_palette_t blueYellowBlackHardGradient() {
+	return (gradient_palette_t){
+		{(color_t){0, 95, 255}, (color_t){255, 255, 0}, (color_t){0, 0, 0}, (color_t){0, 0, 0}},
+		3,
+		false
+	};
+}
+
 gradient_palette_t blueYellowGradient() {
 	return (gradient_palette_t){
 		{(color_t){0, 95, 255}, (color_t){255, 255, 0}, (color_t){0, 31, 255}},
 		2,
+		false
+	};
+}
+
+gradient_palette_t whiteSolidGradient() {
+	return (gradient_palette_t){
+		{(color_t){64, 64, 64}, (color_t){64, 64, 64}},
+		1,
 		false
 	};
 }

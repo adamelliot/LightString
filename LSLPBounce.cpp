@@ -24,9 +24,9 @@ void LSLPBounce::update() {
 	if (fade) pixelBuffer->fade(fadeRate);
 
 	if (mirrored) {
-		pixelBuffer->setMirroredPixel(bounceIndex, colorPalette->getColor(colorIndex));
+		(pixelBuffer->*pixelBuffer->setMirroredIndexedPixel)(bounceIndex, colorIndex);
 	} else {
-		pixelBuffer->setPixel(bounceIndex, colorPalette->getColor(colorIndex));
+		(pixelBuffer->*pixelBuffer->setIndexedPixel)(bounceIndex, colorIndex);
 	}
 	
 	bounceIndex += bounceStep;

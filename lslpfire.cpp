@@ -18,7 +18,7 @@ void LSLPFire::update() {
 	pixelBuffer->shiftUp();
 
 	for (int i = 0; i < 5; i++) {
-		pixelBuffer->setPixel(random(pixelBuffer->getWidth()), pixelBuffer->getHeight() - 1, colorPalette->getColor(random(0x100)));
+		(pixelBuffer->*pixelBuffer->setIndexedPixelAt)(random(pixelBuffer->getWidth()), pixelBuffer->getHeight() - 1, random(0x100));
 	}
 
 	colorIndex += changeRate;

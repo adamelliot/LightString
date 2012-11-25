@@ -162,19 +162,13 @@ void LSLightProgramManager::selectNewProgram(uint8_t id) {
 	uint8_t newFrameRate = 0;
 	void *config = NULL;
 
-	for (int i = 0; lightStrips[i] && (i < lightSectionsCount); i++) {
-		if (lightStrips[i]->useIndexedPixelBuffer()) {
-			activeColorPalette->generatePaletteTable();
-			lightStrips[i]->setColorPalette(activeColorPalette);
-		}
-	}
-
 	for (int i = 0; i < lightSectionsCount; i++) {
 		if (lightSections[i]->supportedPrograms[id]) {
 			if (lightSections[i]->activeProgram) {
 				delete lightSections[i]->activeProgram;
 			}
 			lightSections[i]->activeProgram = lightSections[i]->supportedPrograms[id]->factory(lightSections[i]->pixelBuffer, activeColorPalette, lightSections[i]->colorFunc);
+			lightSections[i]->pixelBuffer->setColorPalette(activeColorPalette);
 
 			if (!config)
 				config = lightSections[i]->activeProgram->getConfig();
@@ -187,6 +181,15 @@ void LSLightProgramManager::selectNewProgram(uint8_t id) {
 				lightSections[i]->activeProgram->setConfig(cfg);
 
 			newFrameRate += lightSections[i]->activeProgram->getFrameRate();
+		}
+	}
+
+	for (int i = 0; lightStrips[i] && (i < lightSectionsCount); i++) {
+		if (lightStrips[i]->useIndexedPixelBuffer()) {
+			// TODO: This is going to be glitchy with divided 
+			activeColorPalette->setColorFunc(lightSections[i]->activeProgram->getColorFunc());
+			activeColorPalette->generatePaletteTable();
+			lightStrips[i]->setColorPalette(activeColorPalette);
 		}
 	}
 

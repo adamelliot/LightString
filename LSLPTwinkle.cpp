@@ -37,10 +37,11 @@ void LSLPTwinkle::update() {
 
 	if (config.colorCycle) {
 		for (int i = 0; i < newPoints; i++)
-			pixelBuffer->setPixel(random(pixelBuffer->getLength()), colorPalette->getColor(colorIndex += indexStep));
+			(pixelBuffer->*pixelBuffer->setIndexedPixel)(random(pixelBuffer->getLength()), colorIndex += indexStep);
 	} else {
+		// TODO: Fix this for index buffers
 		for (int i = 0; i < newPoints; i++)
-			pixelBuffer->setPixel(random(pixelBuffer->getLength()), colorFunc(config.col.channels[0], config.col.channels[1], config.col.channels[2]));
+			(pixelBuffer->*pixelBuffer->setIndexedPixel)(random(pixelBuffer->getLength()), 128/*colorFunc(config.col.channels[0], config.col.channels[1], config.col.channels[2])*/);
 	}
 
 	LSLightProgram::update();

@@ -28,6 +28,8 @@ gradient_palette_t blueWhiteGradient();
 gradient_palette_t blueWhiteBlackGradient();
 gradient_palette_t blueYellowGradient();
 gradient_palette_t blueYellowBlackGradient();
+gradient_palette_t blueYellowBlackHardGradient();
+gradient_palette_t whiteSolidGradient();
 
 struct gradient_palette_s {
 	color_t colors[MAX_GRADIENT_COLORS];

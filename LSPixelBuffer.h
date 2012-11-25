@@ -37,6 +37,9 @@ public:
 	void setSize(uint16_t width, uint16_t height);
 	uint16_t getWidth();
 	uint16_t getHeight();
+	
+	LSColorPalette *getColorPalette(void);
+	void setColorPalette(LSColorPalette *colorPalette);
 
 	void setPixel(uint16_t index, color_t col);
 	void setMirroredPixel(uint16_t index, color_t col);
@@ -59,19 +62,23 @@ public:
 	void *getPixel(uint16_t index);
 	void *getPixelAt(uint8_t x, uint8_t y);
 
-	void drawColumn(uint8_t x, uint8_t y, uint8_t y1, color_t col);
-	void drawRow(uint8_t x, uint8_t x1, uint8_t y, color_t col);
-	void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, color_t col);
-
 	void fade(uint8_t shift = 1);
 	void fade(float ratio);
 	void clear();
 	void clear(color_t col);
-	
+
+	void shiftLeft();
 	void shiftUp(uint16_t by = 1);
 	void shiftDown(uint16_t by = 1);
 	
 	void blur();
+	
+	void drawText(uint8_t x, uint8_t y, uint8_t textX, uint8_t textY, uint8_t width, uint8_t height, const char *str);
+
+	void drawColumn(uint8_t x, uint8_t y, uint8_t height, uint8_t *pixels);
+	void drawColumn(uint8_t x, uint8_t y, uint8_t y1, color_t col);
+	void drawRow(uint8_t x, uint8_t x1, uint8_t y, color_t col);
+	void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, color_t col);
 
 };
 

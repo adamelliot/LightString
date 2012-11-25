@@ -29,11 +29,11 @@ void LSLPPulse::update() {
 	if (pulseTotal % 2 == 0) offset = 1;
 
 	if (mirrored) {
-		pixelBuffer->setMirroredPixel(center + pulseIndex, colorPalette->getColor(colorIndex));
-		pixelBuffer->setMirroredPixel(center - pulseIndex - offset, colorPalette->getColor(colorIndex));
+		(pixelBuffer->*pixelBuffer->setMirroredIndexedPixel)(center + pulseIndex, colorIndex);
+		(pixelBuffer->*pixelBuffer->setMirroredIndexedPixel)(center - pulseIndex - offset, colorIndex);
 	} else {
-		pixelBuffer->setPixel(center + pulseIndex, colorPalette->getColor(colorIndex));
-		pixelBuffer->setPixel(center - pulseIndex - offset, colorPalette->getColor(colorIndex));
+		(pixelBuffer->*pixelBuffer->setIndexedPixel)(center + pulseIndex, colorIndex);
+		(pixelBuffer->*pixelBuffer->setIndexedPixel)(center - pulseIndex - offset, colorIndex);
 	}
 	
 	pulseIndex += pulseStep;

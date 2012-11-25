@@ -22,15 +22,13 @@ void LSLPRainbowCycle::setConfig(void *_config) {
 void LSLPRainbowCycle::drawMirrored() {
 	uint8_t fact = (0xff / pixelBuffer->getLength()) * sections;
 	for (int i = 0; i < pixelBuffer->getLength() >> 1; i++)
-//		pixelBuffer->setMirroredPixel(i, colorPalette->getColor(i * fact + colorIndex));
-		pixelBuffer->setMirroredPixel(i, i * fact + colorIndex);
+		(pixelBuffer->*pixelBuffer->setMirroredIndexedPixel)(i, i * fact + colorIndex);
 }
 
 void LSLPRainbowCycle::drawNormal() {
 	uint8_t fact = (0xff / pixelBuffer->getLength()) * sections;
 	for (int i = 0; i < pixelBuffer->getLength(); i++)
-//		pixelBuffer->setPixel(i, colorPalette->getColor(i * fact + colorIndex));
-		pixelBuffer->setPixel(i, i * fact + colorIndex);
+		(pixelBuffer->*pixelBuffer->setIndexedPixel)(i, i * fact + colorIndex);
 }
 
 void LSLPRainbowCycle::update() {

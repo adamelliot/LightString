@@ -15,7 +15,7 @@ void LSLPSolidCycle::update() {
 	colorIndex += changeRate;
 	
 	for (int i = 0; i < pixelBuffer->getLength(); i++)
-		pixelBuffer->setPixel(i, colorPalette->getColor(colorIndex));
+		(pixelBuffer->*pixelBuffer->setIndexedPixel)(i, colorIndex);
 
 	LSLightProgram::update();
 }

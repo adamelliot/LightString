@@ -1,4 +1,5 @@
 #include "LSPixelBuffer.h"
+#include "LSFont14.h"
 
 LSPixelBuffer::LSPixelBuffer(void *pixels, uint16_t length, uint8_t flags)
 	: pixels(pixels), length(length), flags(flags)
@@ -7,13 +8,13 @@ LSPixelBuffer::LSPixelBuffer(void *pixels, uint16_t length, uint8_t flags)
 	bytes = length * pixelBytes;
 	
 	if ((flags | INDEXED_PIXEL_BUFFER) == flags) {
-		setIndexedPixel = setPixelWithColorIndex;
-		setMirroredIndexedPixel = setMirroredPixelWithColorIndex;
-		setIndexedPixelAt = setPixelWithColorIndexAt;
+		setIndexedPixel = &LSPixelBuffer::setPixelWithColorIndex;
+		setMirroredIndexedPixel = &LSPixelBuffer::setMirroredPixelWithColorIndex;
+		setIndexedPixelAt = &LSPixelBuffer::setPixelWithColorIndexAt;
 	} else {
-		setIndexedPixel = setPixelWithPaletteIndex;
-		setMirroredIndexedPixel = setMirroredPixelWithPaletteIndex;
-		setIndexedPixelAt = setPixelWithPaletteIndexAt;
+		setIndexedPixel = &LSPixelBuffer::setPixelWithPaletteIndex;
+		setMirroredIndexedPixel = &LSPixelBuffer::setMirroredPixelWithPaletteIndex;
+		setIndexedPixelAt = &LSPixelBuffer::setPixelWithPaletteIndexAt;
 	}
 }
 
@@ -40,6 +41,14 @@ uint16_t LSPixelBuffer::getWidth() {
 
 uint16_t LSPixelBuffer::getHeight() {
 	return this->height;
+}
+
+LSColorPalette *LSPixelBuffer::getColorPalette(void) {
+	return colorPalette;
+}
+
+void LSPixelBuffer::setColorPalette(LSColorPalette *colorPalette) {
+	this->colorPalette = colorPalette;
 }
 
 // TODO: Make this adjustable based on orientation
@@ -69,7 +78,7 @@ void LSPixelBuffer::setPixelWithColorIndex(uint16_t index, uint8_t colIndex) {
 }
 
 void LSPixelBuffer::setPixelWithPaletteIndex(uint16_t index, uint8_t colIndex) {
-	((pcolor_t *)pixels)[index] = colorPalette->getColor(colIndex);
+	((pcolor_t)pixels)[index] = colorPalette->getColor(colIndex);
 }
 
 void LSPixelBuffer::setMirroredPixelWithColorIndex(uint16_t index, uint8_t colIndex) {
@@ -80,8 +89,8 @@ void LSPixelBuffer::setMirroredPixelWithColorIndex(uint16_t index, uint8_t colIn
 void LSPixelBuffer::setMirroredPixelWithPaletteIndex(uint16_t index, uint8_t colIndex) {
 	color_t col = colorPalette->getColor(colIndex);
 
-	((pcolor_t *)pixels)[index] = col;
-	((pcolor_t *)pixels)[length - index - 1] = col;
+	((pcolor_t)pixels)[index] = col;
+	((pcolor_t)pixels)[length - index - 1] = col;
 }
 
 void LSPixelBuffer::setPixelWithColorIndexAt(uint8_t x, uint8_t y, uint8_t colIndex) {
@@ -89,13 +98,13 @@ void LSPixelBuffer::setPixelWithColorIndexAt(uint8_t x, uint8_t y, uint8_t colIn
 }
 
 void LSPixelBuffer::setPixelWithPaletteIndexAt(uint8_t x, uint8_t y, uint8_t colIndex) {
-	((pcolor_t *)pixels)[getIndex(x, y)] = colorPalette->getColor(colIndex);
+	((pcolor_t)pixels)[getIndex(x, y)] = colorPalette->getColor(colIndex);
 }
 
 // ============== Pixel Retrival Functions ==============
 
 void *LSPixelBuffer::getPixel(uint16_t index) {
-	return pixels + (index * pixelBytes);
+	return (void *)((uint8_t *)pixels + (index * pixelBytes));
 }
 
 // TODO: Fix this method
@@ -130,6 +139,15 @@ void LSPixelBuffer::clear(color_t col) {
 		((pcolor_t)pixels)[i] = col;
 }
 
+// Only shifts by 1 column
+void LSPixelBuffer::shiftLeft() {
+	for (int x = width - 1; x > 0; x--) {
+		for (int y = 0; y < height; y++) {
+			((uint8_t *)pixels)[x * height + y] = ((uint8_t *)pixels)[((x - 1) * height) + (height - 1 - y)];
+		}
+	}
+}
+
 void LSPixelBuffer::shiftUp(uint16_t by) {
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height - 1; y++) {
@@ -143,7 +161,60 @@ void LSPixelBuffer::shiftDown(uint16_t by) {
 	
 }
 
-// ============== Line Drawing Functions ==============
+// ============== Drawing Functions ==============
+
+void LSPixelBuffer::drawText(uint8_t x, uint8_t y, uint8_t textX, uint8_t textY, uint8_t width, uint8_t height, const char *str) {
+	const int letterHeight = 14;
+
+	uint32_t tmp;
+	uint16_t offset, letterWidth, totalWidth = 0;
+	uint8_t buffer[letterHeight];
+	int letterIndex = 0;
+
+	// TODO: Issue with letterIndex double moving after break
+	for (letterIndex = 0; str[letterIndex] && textX; letterIndex++) {
+		letterWidth = pgm_read_word(letters14Offsets + ((str[letterIndex] - 'A') << 1) + 1);
+
+		if (textX > letterWidth)
+			textX -= letterWidth;
+		else break;
+	}
+
+	for (; str[letterIndex] && (totalWidth < width); letterIndex++) {
+		//Serial.println(str[letterIndex] - 'A');
+
+		tmp = pgm_read_dword(letters14Offsets + ((str[letterIndex] - 'A') << 1));
+
+		letterWidth = (uint16_t)(tmp >> 16);
+		offset = (uint16_t)(tmp & 0xffff);
+
+//		Serial.println(offset);
+//		Serial.println(letterWidth);
+//		Serial.println("--");
+
+		for (; (textX < letterWidth) && (totalWidth < width); textX++) {
+			memcpy_P(buffer, letters14 + offset + (letterHeight * textX), letterHeight);
+			drawColumn(x + totalWidth, y, letterHeight, buffer);
+//			drawColumn(x + totalWidth + 1, y, letterHeight, buffer);
+			totalWidth++;
+		}
+		textX = 0;
+	}
+	
+//	Serial.println("= = =\n");
+}
+
+void LSPixelBuffer::drawColumn(uint8_t x, uint8_t y, uint8_t height, uint8_t *buffer) {
+	uint16_t index = getIndex(x, y);
+	int8_t factor = ((x % 2) == 1 ? 1 : -1);
+
+	if (!height) return;
+	if (y + height > this->height)
+		height = this->height - y;
+
+	for (int i = 0; i <= height; i++)
+		((uint8_t *)pixels)[index + i * factor] = buffer[i];
+}
 
 void LSPixelBuffer::drawColumn(uint8_t x, uint8_t y0, uint8_t y1, color_t col) {
 	uint16_t index = getIndex(x, y0);
@@ -246,7 +317,7 @@ void LSPixelBuffer::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, col
 		e = ((int)dy << 1) - dx;	
 
 		for (j = 0; j <= dx; j++) {
-			setPixel(x, y, col);
+			setPixelAt(x, y, col);
 
 			if (e >= 0) {
 				if (xchange == 1) x = x + s1;
