@@ -210,7 +210,7 @@ gradient_palette_t blueYellowBlackGradient() {
 
 gradient_palette_t blueYellowBlackHardGradient() {
 	return (gradient_palette_t){
-		{(color_t){0, 95, 255}, (color_t){255, 255, 0}, (color_t){0, 0, 0}, (color_t){0, 0, 0}},
+		{(color_t){0, 0, 0}, (color_t){16, 16, 0}, (color_t){255, 255, 0}, (color_t){0, 95, 255}},
 		3,
 		false
 	};

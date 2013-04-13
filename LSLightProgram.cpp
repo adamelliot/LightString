@@ -16,6 +16,10 @@ pcolor_func LSLightProgram::getColorFunc() {
 	return colorFunc;
 }
 
+void LSLightProgram::setZXSound(LSZXSound *zxSound) {
+	this->zxSound = zxSound;
+}
+
 uint8_t LSLightProgram::getFrameRate() {
 	return 30;
 }

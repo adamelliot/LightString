@@ -29,6 +29,13 @@
 #include "LSLP2DLines.h"
 #include "LSLPFire.h"
 #include "LSLPPlasma.h"
-#include "LSLPBlit.h"
+
+#include "LSLPSoundStrip.h"
+
+// Poi Programs
+
+#include "LSLPPoiText.h"
+#include "LSLPPoiCheckers.h"
+#include "LSLPPoiGears.h"
 
 #endif

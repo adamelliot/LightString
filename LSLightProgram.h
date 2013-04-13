@@ -2,6 +2,7 @@
 #define _LSLIGHTPROGRAM_H_
 
 #include "LSPixelBuffer.h"
+#include "LSZXSound.h"
 
 typedef LSColorPalette *(*pcolor_palette_factory_func)();
 
@@ -10,6 +11,7 @@ protected:
 	pcolor_func colorFunc;
 	LSColorPalette *colorPalette;
 	LSPixelBuffer *pixelBuffer;
+	LSZXSound *zxSound;
 
 public:
 	LSLightProgram(LSPixelBuffer *pixelBuffer, LSColorPalette *colorPalette, pcolor_func colorFunc);
@@ -18,6 +20,8 @@ public:
 
 	void setColorFunc(pcolor_func colorFunc);
 	pcolor_func getColorFunc();
+	
+	void setZXSound(LSZXSound *zxSound);
 
 	virtual uint8_t getFrameRate();
 

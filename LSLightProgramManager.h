@@ -3,6 +3,7 @@
 
 #include "LSLightProgram.h"
 #include "LSLEDStrip.h"
+#include "LSZXSound.h"
 
 #define ALL_STRIPS 0xff
 #define ANY_LIGHT_PROGRAM 0xff
@@ -42,6 +43,8 @@ struct light_section_s {
 
 class LSLightProgramManager {
 private:
+	LSZXSound *zxSound;
+	
 	uint8_t maxLightPrograms;
 	uint8_t maxColorPalettes;
 	uint8_t maxLightSections;
@@ -86,6 +89,8 @@ public:
 	void addColorPalette(pcolor_palette_factory_func factory, void *config = NULL);
 
 	void selectNewProgram(uint8_t id = ANY_LIGHT_PROGRAM);
+	
+	void setZXSoundPin(int pin);
 	
 	void loop();
 };

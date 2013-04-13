@@ -76,7 +76,9 @@ public:
 	void drawText(uint8_t x, uint8_t y, uint8_t textX, uint8_t textY, uint8_t width, uint8_t height, const char *str);
 
 	void drawColumn(uint8_t x, uint8_t y, uint8_t height, uint8_t *pixels);
-	void drawColumn(uint8_t x, uint8_t y, uint8_t y1, color_t col);
+	void drawColumn(uint8_t x, uint8_t y, uint8_t height, uint8_t colIndex);
+	void drawColumn(uint8_t x, uint8_t y0, uint8_t y1, color_t col);
+	
 	void drawRow(uint8_t x, uint8_t x1, uint8_t y, color_t col);
 	void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, color_t col);
 

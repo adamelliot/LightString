@@ -1,5 +1,5 @@
 #include "LSPixelBuffer.h"
-#include "LSFont14.h"
+#include "LSFont15.h"
 
 LSPixelBuffer::LSPixelBuffer(void *pixels, uint16_t length, uint8_t flags)
 	: pixels(pixels), length(length), flags(flags)
@@ -164,7 +164,7 @@ void LSPixelBuffer::shiftDown(uint16_t by) {
 // ============== Drawing Functions ==============
 
 void LSPixelBuffer::drawText(uint8_t x, uint8_t y, uint8_t textX, uint8_t textY, uint8_t width, uint8_t height, const char *str) {
-	const int letterHeight = 14;
+	const int letterHeight = 15;
 
 	uint32_t tmp;
 	uint16_t offset, letterWidth, totalWidth = 0;
@@ -173,7 +173,7 @@ void LSPixelBuffer::drawText(uint8_t x, uint8_t y, uint8_t textX, uint8_t textY,
 
 	// TODO: Issue with letterIndex double moving after break
 	for (letterIndex = 0; str[letterIndex] && textX; letterIndex++) {
-		letterWidth = pgm_read_word(letters14Offsets + ((str[letterIndex] - 'A') << 1) + 1);
+		letterWidth = pgm_read_word(letters15Offsets + ((str[letterIndex] - ' ') << 1) + 1) + 1;
 
 		if (textX > letterWidth)
 			textX -= letterWidth;
@@ -181,9 +181,9 @@ void LSPixelBuffer::drawText(uint8_t x, uint8_t y, uint8_t textX, uint8_t textY,
 	}
 
 	for (; str[letterIndex] && (totalWidth < width); letterIndex++) {
-		//Serial.println(str[letterIndex] - 'A');
+		//Serial.println(str[letterIndex] - ' ');
 
-		tmp = pgm_read_dword(letters14Offsets + ((str[letterIndex] - 'A') << 1));
+		tmp = pgm_read_dword(letters15Offsets + ((str[letterIndex] - ' ') << 1));
 
 		letterWidth = (uint16_t)(tmp >> 16);
 		offset = (uint16_t)(tmp & 0xffff);
@@ -192,11 +192,19 @@ void LSPixelBuffer::drawText(uint8_t x, uint8_t y, uint8_t textX, uint8_t textY,
 //		Serial.println(letterWidth);
 //		Serial.println("--");
 
-		for (; (textX < letterWidth) && (totalWidth < width); textX++) {
-			memcpy_P(buffer, letters14 + offset + (letterHeight * textX), letterHeight);
-			drawColumn(x + totalWidth, y, letterHeight, buffer);
-//			drawColumn(x + totalWidth + 1, y, letterHeight, buffer);
+		if (textX == (letterWidth - 1)) {
+			drawColumn(x + totalWidth, y, letterHeight + 2, 0xff);
 			totalWidth++;
+		} else {
+			for (; (textX < letterWidth) && (totalWidth < width); textX++) {
+				memcpy_P(buffer, letters15 + offset + (letterHeight * textX), letterHeight);
+			
+				setPixelWithColorIndexAt(x + totalWidth, 0, 0xff);
+				drawColumn(x + totalWidth, y + 1, letterHeight, buffer);
+				setPixelWithColorIndexAt(x + totalWidth, 14, 0xff);
+	//			drawColumn(x + totalWidth + 1, y, letterHeight, buffer);
+				totalWidth++;
+			}
 		}
 		textX = 0;
 	}
@@ -214,6 +222,18 @@ void LSPixelBuffer::drawColumn(uint8_t x, uint8_t y, uint8_t height, uint8_t *bu
 
 	for (int i = 0; i <= height; i++)
 		((uint8_t *)pixels)[index + i * factor] = buffer[i];
+}
+
+void LSPixelBuffer::drawColumn(uint8_t x, uint8_t y, uint8_t height, uint8_t colIndex) {
+	uint16_t index = getIndex(x, y);
+	int8_t factor = ((x % 2) == 1 ? 1 : -1);
+
+	if (!height) return;
+	if (y + height > this->height)
+		height = this->height - y;
+
+	for (int i = 0; i < height; i++)
+		((uint8_t *)pixels)[index + i * factor] = colIndex;
 }
 
 void LSPixelBuffer::drawColumn(uint8_t x, uint8_t y0, uint8_t y1, color_t col) {

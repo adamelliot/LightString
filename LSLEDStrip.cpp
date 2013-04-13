@@ -2,33 +2,47 @@
 #include "SPI.h"
 
 // Constructor for use with arbitrary clock/data pins:
-LSLEDStrip::LSLEDStrip(uint16_t n, uint8_t dpin, uint8_t cpin, uint8_t flags) 
+LSLEDStrip::LSLEDStrip(uint16_t n, uint8_t pin, CFastSPI_LED::EChipSet chipset, uint8_t flags) 
 	: flags(flags)
 {
-	updatePins(dpin, cpin);
-	alloc(n);
+	//updatePins(dpin, cpin);
+	alloc(n, chipset, pin);
 }
 
-LSLEDStrip::LSLEDStrip(uint16_t n, uint8_t flags) 
+LSLEDStrip::LSLEDStrip(uint16_t n, CFastSPI_LED::EChipSet chipset, uint8_t flags) 
 	: flags(flags) 
 {
-	updatePins();
-	alloc(n);
+	//updatePins();
+	alloc(n, chipset);
 }
 
 // Allocate 3 bytes per pixel, init to RGB 'off' state:
-void LSLEDStrip::alloc(uint16_t n) {
+void LSLEDStrip::alloc(uint16_t n, CFastSPI_LED::EChipSet chipset, byte pin) {
 	length = n;
 
 	if ((flags | INDEXED_PIXEL_BUFFER) == flags) {
 		pixels = calloc(n, 1);
-		updateFunc = useHardwareSPI ? &LSLEDStrip::updateIndexedPixelsWithSPI : &LSLEDStrip::updateIndexedPixels;
+		//updateFunc = useHardwareSPI ? &LSLEDStrip::updateIndexedPixelsWithSPI : &LSLEDStrip::updateIndexedPixels;
 	} else {
 		pixels = calloc(n, 3);
-		updateFunc = useHardwareSPI ? &LSLEDStrip::updatePixelsWithSPI : &LSLEDStrip::updatePixels;
+		//updateFunc = useHardwareSPI ? &LSLEDStrip::updatePixelsWithSPI : &LSLEDStrip::updatePixels;
 	}
-}
 
+	FastSPI_LED.setLeds(n, (byte *)pixels);
+	FastSPI_LED.setChipset(chipset);
+	
+	if (pin != NO_PIN)
+		FastSPI_LED.setPin(pin);
+
+	if (chipset == CFastSPI_LED::SPI_WS2801) {
+		FastSPI_LED.setDataRate(3);
+		FastSPI_LED.setCPUPercentage(20);
+	}
+
+	FastSPI_LED.init();
+	FastSPI_LED.start();
+}
+/*
 // Change pin assignments post-constructor, using arbitrary pins:
 void LSLEDStrip::updatePins(uint8_t dpin, uint8_t cpin) {
 	pinMode(dpin, OUTPUT);
@@ -62,7 +76,7 @@ void LSLEDStrip::updatePins(void) {
 	// SPI clock line only.  Your mileage may vary.  Experiment!
 	// SPI.setClockDivider(SPI_CLOCK_DIV4);  // 4 MHz
 }
-
+*/
 LSPixelBuffer *LSLEDStrip::getPixelBuffer(uint16_t length, uint16_t offset) {
 	if (length == 0) length = this->length;
 
@@ -89,6 +103,10 @@ LSColorPalette *LSLEDStrip::getColorPalette(void) {
 }
 
 void LSLEDStrip::setColorPalette(LSColorPalette *colorPalette) {
+	if (flags | INDEXED_PIXEL_BUFFER) {
+		FastSPI_LED.setPaletteTable((byte *)colorPalette->getPaletteTable());
+	}
+
 	this->colorPalette = colorPalette;
 }
 
@@ -96,6 +114,11 @@ bool LSLEDStrip::useIndexedPixelBuffer() {
 	return (flags | INDEXED_PIXEL_BUFFER) == flags;
 }
 
+void LSLEDStrip::update() {
+	FastSPI_LED.show();
+}
+
+/*
 void LSLEDStrip::updatePixels() {
 	uint16_t i, nl3 = length * 3;
 	uint8_t bit;
@@ -163,3 +186,4 @@ void LSLEDStrip::updateIndexedPixelsWithSPI() {
 
 	delay(1);
 }
+*/
