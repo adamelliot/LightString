@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#define SOUND_VALUES 4
+#define SOUND_VALUES 8
 #define SOUND_RESET_VAL 8
 #define SOUND_RESET_CYCLES 30
 
@@ -19,6 +19,7 @@ public:
 	LSZXSound(int pin);
 
 	float getAdjustedLevel();
+	int getMagnitude();
 	uint16_t getLevel();
 	uint16_t getRawLevel();
 

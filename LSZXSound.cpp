@@ -17,8 +17,30 @@ uint16_t LSZXSound::getLevel() {
 		raw += rawValues[i];
 	}
 
-	raw >>= 2;
+	raw >>= 3;
+
 	return raw;
+}
+
+int16_t LSZXSound::getMagnitude() {
+	uint16_t level = this->getLevel();
+/*	Serial.print("> AVG: ");
+	Serial.println(level);
+	
+	Serial.print("> RAW: ");
+	Serial.println(rawValues[rawIndex]);
+	
+	Serial.println(rawValues[rawIndex] - level);
+	Serial.println("---");
+*/
+	if (rawValues[rawIndex] < level) {
+//		Serial.println("A: 0");
+		return 0;
+	} else {
+		Serial.print("B: ");
+		Serial.println(rawValues[rawIndex] - level);
+		return rawValues[rawIndex] - level;//(uint8_t)(rawValues[rawIndex] - level);
+	}
 }
 
 float LSZXSound::getAdjustedLevel() {
@@ -36,13 +58,22 @@ void LSZXSound::update() {
 	uint16_t rawLevel = analogRead(pin);
 
 	if (rawLevel == 0) return;
+	
+	//this->getMagnitude();
+	
 	/*
 	Serial.print("RAW: ");
-	Serial.print(this->getLevel());
-
+	Serial.println(this->getRawLevel());
+	
+	Serial.print(" AVG: ");
+	Serial.println(this->getLevel());
+	
 	Serial.print(" ADJUSTED: ");
 	Serial.println(this->getAdjustedLevel());
-*/
+	*/
+//	Serial.println(" MAG: ");
+//	Serial.println(this->getMagnitude());
+
 	rawValues[rawIndex++] = rawLevel;
 	rawIndex %= SOUND_VALUES;
 

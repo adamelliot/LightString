@@ -59,7 +59,7 @@ void LSLightProgramManager::saveState() {
 void LSLightProgramManager::loadState() {
 	
 }
-
+/*
 void LSLightProgramManager::pulse() {
 	uint8_t pulseDepth = 6;
 
@@ -87,7 +87,7 @@ void LSLightProgramManager::pulse() {
 		delay(20);
 	}
 }
-
+*/
 void LSLightProgramManager::fadeDown() {
 	bool fadeColorPalette = false;
 	uint8_t steps = FADE_STEPS;
@@ -254,7 +254,7 @@ void LSLightProgramManager::addLightProgram(uint8_t strips, uint8_t id, plight_p
 void LSLightProgramManager::randomizePaletteOrder() {
 	for (int i = 0; i < palettesCount; i++)
 		paletteOrder[i] = maxColorPalettes;
-	
+
 	uint8_t paletteIndex;
 	for (int i = 0; i < palettesCount; i++) {
 		while (paletteOrder[paletteIndex = random(palettesCount)] != maxColorPalettes);
@@ -265,7 +265,7 @@ void LSLightProgramManager::randomizePaletteOrder() {
 		Serial.print(paletteOrder[i], DEC);
 		Serial.print(", ");
 	}
-	
+
 	Serial.println();*/
 }
 

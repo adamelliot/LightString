@@ -11,7 +11,10 @@
 #define FADE_STEPS 30
 #define FADE_TIME 1000
 
-#define PROGRAM_LENGTH 10000 //
+#define DEFAULT_PROGRAM_LENGTH 10000
+#define DEFAULT_MAX_PROGRAMS 8
+#define DEFAULT_MAX_PALETTES 16
+#define DEFAULT_MAX_LIGHT_SECTIONS 2
 
 typedef LSLightProgram *(*plight_program_factory_func)(LSPixelBuffer *, LSColorPalette *, pcolor_func);
 
@@ -76,13 +79,13 @@ private:
 
 	void saveState();
 	void loadState();
-
-	void pulse();
+	/*
+	void pulse();*/
 	void fadeDown();
 
 public:
 	
-	LSLightProgramManager(uint32_t programLength = PROGRAM_LENGTH, uint8_t maxLightPrograms = 8, uint8_t maxColorPalettes = 16, uint8_t maxLightSections = 2);
+	LSLightProgramManager(uint32_t programLength = DEFAULT_PROGRAM_LENGTH, uint8_t maxLightPrograms = 8, uint8_t maxColorPalettes = 16, uint8_t maxLightSections = 2);
 
 	uint8_t addLightSection(pcolor_func colorFunc, LSLEDStrip *lightStrip, uint16_t length = 0, uint16_t offset = 0);
 	void addLightProgram(uint8_t strips, uint8_t id, plight_program_factory_func factory, void *config = NULL);

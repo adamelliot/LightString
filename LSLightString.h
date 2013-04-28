@@ -32,6 +32,10 @@
 
 #include "LSLPSoundStrip.h"
 
+// Hippo Programs
+
+#include "LSLPHippoTest.h"
+
 // Poi Programs
 
 #include "LSLPPoiText.h"

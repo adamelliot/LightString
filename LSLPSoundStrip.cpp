@@ -1,5 +1,5 @@
 #include "LSLPSoundStrip.h"
-
+/*
 typedef struct RgbColor
 {
     unsigned char r;
@@ -92,7 +92,7 @@ HsvColor RgbToHsv(RgbColor rgb)
     return hsv;
 }
 
-
+*/
 LSLightProgram *factorySoundStrip(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc) {
 	return new LSLPSoundStrip(pixelBuffer, colorPalette, colorFunc);
 }
@@ -106,12 +106,18 @@ void LSLPSoundStrip::setConfig(void *_config) {
 }
 
 void LSLPSoundStrip::update() {
-	uint8_t colorIndex = (uint8_t)(zxSound->getAdjustedLevel() * 255.0);
+	uint16_t mag = zxSound->getMagnitude();
+	//uint8_t colorIndex = (uint8_t)(zxSound->getAdjustedLevel() * 255.0);
 	
-	Serial.println(colorIndex);
+	Serial.println(mag);
+	if (mag > 18) mag = 18;
+	int count = (int)((float)mag * 12.0f / 18.0f);
 	
-	for (int i = 0; i < pixelBuffer->getLength(); i++) {
-		pixelBuffer->setPixel(i, colorFunc(colorIndex, 0, 0));
+	
+	//Serial.println(colorIndex);
+	
+	for (int i = 0; i < count; i++) {
+		pixelBuffer->setPixel(i, colorFunc(255, 0, 127));
 	}
 // (pixelBuffer->*pixelBuffer->setIndexedPixel)(i, colorIndex);
 
