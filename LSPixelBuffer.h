@@ -3,7 +3,11 @@
 
 #include "LSColorPalette.h"
 
-#define INDEXED_PIXEL_BUFFER 0x01
+enum LSPixelFormat {
+	RGB_PIXEL_BUFFER = 0x01,
+	RGBA_PIXEL_BUFFER = 0x02,
+	INDEXED_PIXEL_BUFFER = 0x04
+};
 
 /**
  * Class managing pixels. General managing a LSLEDStrand
