@@ -39,7 +39,7 @@ LSLightProgramManager::LSLightProgramManager(uint32_t programLength, uint8_t max
 	activeProgramID(0), programsCount(0), lightSectionsCount(0),
 	activeColorPalette(NULL), zxSound(NULL)
 {
-	Serial.print(F("\n\n   -=-   Light String Booting   -=-\n\n"));
+	//Serial.print(F("\n\n   -=-   Light String Booting   -=-\n\n"));
 
 	programs = (uint8_t *)calloc(maxLightPrograms, sizeof(uint8_t));
 	colorPalettes = (pcolor_palette_t *)calloc(maxColorPalettes, sizeof(pcolor_palette_t));
@@ -59,35 +59,7 @@ void LSLightProgramManager::saveState() {
 void LSLightProgramManager::loadState() {
 	
 }
-/*
-void LSLightProgramManager::pulse() {
-	uint8_t pulseDepth = 6;
 
-	for (int k = 0; k < 2; k++) {
-		for (int j = 0; j < pulseDepth; j++) {
-			for (int i = 0; i < lightSectionsCount; i++) {
-				LSPixelBuffer *pixelBuffer = lightSections[i]->activeProgram->getPixelBuffer();
-				pixelBuffer->fade(0.88f);
-			}
-
-			for (int i = 0; lightStrips[i] && (i < lightSectionsCount); i++)
-				lightStrips[i]->update();
-			
-			delay(20);
-		}
-
-		for (int i = 0; i < lightSectionsCount; i++) {
-			LSPixelBuffer *pixelBuffer = lightSections[i]->activeProgram->getPixelBuffer();
-			pixelBuffer->fade(2.6f);
-		}
-
-		for (int i = 0; lightStrips[i] && (i < lightSectionsCount); i++)
-			lightStrips[i]->update();
-
-		delay(20);
-	}
-}
-*/
 void LSLightProgramManager::fadeDown() {
 	bool fadeColorPalette = false;
 	uint8_t steps = FADE_STEPS;
@@ -186,7 +158,7 @@ void LSLightProgramManager::selectNewProgram(uint8_t id) {
 			newFrameRate += lightSections[i]->activeProgram->getFrameRate();
 		}
 	}
-
+	/*
 	for (int i = 0; lightStrips[i] && (i < lightSectionsCount); i++) {
 		if (lightStrips[i]->useIndexedPixelBuffer()) {
 			// TODO: This is going to be glitchy with divided 
@@ -195,7 +167,7 @@ void LSLightProgramManager::selectNewProgram(uint8_t id) {
 			lightStrips[i]->setColorPalette(activeColorPalette);
 		}
 	}
-
+*/
 	newFrameRate /= lightSectionsCount;
 	msPerFrame = 1000 / newFrameRate;
 	lastTime = millis();

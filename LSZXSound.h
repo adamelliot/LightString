@@ -19,7 +19,7 @@ public:
 	LSZXSound(int pin);
 
 	float getAdjustedLevel();
-	int getMagnitude();
+	int16_t getMagnitude();
 	uint16_t getLevel();
 	uint16_t getRawLevel();
 

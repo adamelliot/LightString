@@ -34,7 +34,7 @@
 
 // Hippo Programs
 
-#include "LSLPHippoTest.h"
+//#include "LSLPHippoTest.h"
 
 // Poi Programs
 

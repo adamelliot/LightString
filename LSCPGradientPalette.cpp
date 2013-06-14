@@ -154,7 +154,7 @@ gradient_palette_t greenBlueGradient() {
 
 gradient_palette_t redOrgangeGradient() {
 	return (gradient_palette_t){
-		{(color_t){255, 255, 255}, (color_t){255, 31, 0}, (color_t){255, 191, 0}},
+		{(color_t){128, 128, 128}, (color_t){128, 31, 0}, (color_t){128, 95, 0}},
 		2,
 		true
 	};
