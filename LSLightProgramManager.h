@@ -5,14 +5,7 @@
 #include "LSLEDStrip.h"
 #include "LSZXSound.h"
 
-#define ALL_STRIPS 0xff
-#define ANY_LIGHT_PROGRAM 0xff
-
-#define DEFAULT_PROGRAM_LENGTH 10000
-#define DEFAULT_MAX_PROGRAMS 8
-#define DEFAULT_MAX_QUEUE_SIZE 20
-#define DEFAULT_MAX_PALETTES 16
-#define DEFAULT_MAX_LIGHT_SECTIONS 2
+#define ALL_SECTIONS 0xffff
 
 typedef LSLightProgram *(*plight_program_factory_func)(LSPixelBuffer *, LSColorPalette *, pcolor_func);
 
@@ -32,6 +25,7 @@ struct color_palette_s {
 
 struct light_program_s {
 	plight_program_factory_func factory;
+	uint8_t programModes;
 	uint8_t programID;
 };
 
@@ -44,74 +38,77 @@ struct light_program_group_s {
 struct light_section_s {
 	pcolor_func colorFunc;
 	uint8_t *supportedPrograms;
-	uint8_t programIndex;
+	uint8_t programCount;
+
+	uint16_t programIndexOffset;
+	uint16_t paletteIndexOffset;
+	
 	LSPixelBuffer *pixelBuffer;
 	LSColorPalette *colorPalette;
 	LSLightProgram *activeProgram;
-
-	bool loadNext;
+	
+	uint32_t programStartedAt;
 };
 
 class LSLightProgramManager {
 private:
 	LSZXSound *zxSound;
 	
-	uint8_t maxLightPrograms;
 	uint8_t maxColorPalettes;
-	uint8_t maxLightSections;
-	
 	pcolor_palette_t *colorPalettes;
-	plight_section_t *lightSections;
-	plight_program_t *lightPrograms;
-	uint16_t *programQueue;
-
-	LSLEDStrip **lightStrips;
-	
-	uint32_t programLength;
-	
 	uint8_t paletteCount;
-	uint8_t sectionCount;
-	uint8_t programCount;
-	uint8_t programQueueLength;
-	
 	uint8_t *paletteOrder;
-	uint16_t paletteIndex;
+	uint8_t paletteIndex;
 	
-	uint8_t *programOrder;
-	uint16_t programIndex;
+	uint8_t maxLightSections;
+	LSLEDStrip **lightStrips;
+	plight_section_t *lightSections;
+	uint8_t sectionCount;
 
-	LSColorPalette *activeColorPalette;
-	
+	uint8_t maxLightPrograms;
+	plight_program_t *lightPrograms;
+	uint16_t *programList;
+	uint8_t programListLength;
+	uint8_t programCount;
+	uint8_t *programOrder; // Order of the program list
+	uint8_t programIndex; // Index in the program order
+
+	// Program Manager Timing
+	int32_t maxProgramLength;
 	uint32_t lastTime;
-	uint32_t programSwitchAfter;
 	uint16_t msPerFrame;
 	
 	void saveState();
 	void loadState();
 
+	void selectPaletteForSection(uint8_t index, plight_section_t section);
 	void selectPalette(uint8_t index);
-	void selectProgram(uint16_t programCode);
+	void normalizePaletteIndices();
 
 	plight_program_t getProgram(uint8_t programID);
-	void activateProgramForSection(plight_section_t section, uint8_t programID, uint8_t programMode);
+	plight_program_t getProgramForSection(uint8_t programID, plight_section_t section);
+	void selectProgramForSection(plight_section_t section, uint8_t programID, uint8_t programMode);
+	void selectProgramGroup(uint8_t programID);
+	void nextProgramForSection(plight_section_t section);
+	void normalizeProgramIndices();
 
 public:
 	
-	LSLightProgramManager(uint32_t programLength = DEFAULT_PROGRAM_LENGTH, uint8_t maxLightPrograms = 8, uint8_t maxColorPalettes = 16, uint8_t maxLightSections = 2);
+	LSLightProgramManager(uint8_t maxLightPrograms = 8, uint8_t maxColorPalettes = 16, uint8_t maxLightSections = 2);
 
-	uint8_t addLightSection(pcolor_func colorFunc, LSLEDStrip *lightStrip, uint16_t length = 0, uint16_t offset = 0);
-	void addLightProgram(plight_program_factory_func factory);
+	void nextPalette();
+	void prevPalette();
+	void randomizePaletteOrder();
 	void addColorPalette(pcolor_palette_factory_func factory, void *config = NULL);
 
-	void randomizePaletteOrder();
+	void selectProgramCode(uint16_t programCode);
+	void selectProgram(uint8_t programID);
+	void nextProgram();
+	void prevProgram();
 	void randomizeProgramOrder();
+	void addLightProgram(plight_program_factory_func factory, uint16_t sections = ALL_SECTIONS);
 
-	void nextPalette();
-	void prevPalette();
-	
-	void selectProgram(uint16_t programCode);
-	void nextPalette();
-	void prevPalette();
+	uint16_t addLightSection(pcolor_func colorFunc, LSLEDStrip *lightStrip, uint16_t length = 0, uint16_t offset = 0);
 	
 	void setZXSoundPin(int pin);
 	

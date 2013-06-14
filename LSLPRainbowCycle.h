@@ -3,11 +3,7 @@
 
 #include "LSLightString.h"
 
-typedef struct rainbow_cycle_config_s rainbow_cycle_config_t, *prainbow_cycle_config_t;
-
-struct rainbow_cycle_config_s {
-	bool mirrored;
-};
+#define GRADIENT_CYCLE 0x02
 
 class LSLPRainbowCycle : public LSLightProgram {
 protected:
@@ -21,7 +17,10 @@ protected:
 
 public:
 	LSLPRainbowCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
-	void setConfig(void *_config);
+
+	uint8_t getProgramID();
+	void setupMode(uint8_t mode);
+
 	void update();
 
 };

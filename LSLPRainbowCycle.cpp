@@ -6,34 +6,40 @@ LSLightProgram *factoryRainbowCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* 
 
 LSLPRainbowCycle::LSLPRainbowCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
 	: LSLightProgram(pixelBuffer, colorPalette, colorFunc)
-{
+{}
+
+uint8_t LSLPRainbowCycle::getProgramID() {
+	return GRADIENT_CYCLE;
+}
+
+void LSLPRainbowCycle::setupMode(uint8_t mode) {
 	colorIndex = random(0xff);
 	sections = (random(2) + 1) * ((pixelBuffer->getLength() / 160) + 1);
 	changeRate = random(8) + 3;
+	
+	Serial.print("Pixels: ");
+	Serial.println((uint32_t)colorPalette);
 
 	mirrored = !colorPalette->isMirrored();
 }
 
-void LSLPRainbowCycle::setConfig(void *_config) {
-	prainbow_cycle_config_t config = (prainbow_cycle_config_t)_config;
-	if (config->mirrored) mirrored = true;
-}
-
 void LSLPRainbowCycle::drawMirrored() {
 	uint8_t fact = (0xff / pixelBuffer->getLength()) * sections;
+	if (fact < 1) fact = 1;
+
 	for (int i = 0; i < pixelBuffer->getLength() >> 1; i++)
-		(pixelBuffer->*pixelBuffer->setMirroredIndexedPixel)(i, i * fact + colorIndex);
+		pixelBuffer->setMirroredPixelWithPaletteIndex(i, i * fact + colorIndex);
 }
 
 void LSLPRainbowCycle::drawNormal() {
-	uint8_t fact = (0xff / pixelBuffer->getLength()) * sections;
+	uint16_t fact = (0xff / pixelBuffer->getLength()) * sections;
 	for (int i = 0; i < pixelBuffer->getLength(); i++)
-		(pixelBuffer->*pixelBuffer->setIndexedPixel)(i, i * fact + colorIndex);
+		pixelBuffer->setPixelWithPaletteIndex(i, i * fact + colorIndex);
 }
 
 void LSLPRainbowCycle::update() {
 	colorIndex += changeRate;
-	mirrored ? drawMirrored() : drawNormal();
+	//mirrored ? drawMirrored() : drawNormal();
 
 	LSLightProgram::update();
 }

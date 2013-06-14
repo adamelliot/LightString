@@ -16,39 +16,55 @@ pcolor_func LSLightProgram::getColorFunc() {
 	return colorFunc;
 }
 
+void LSLightProgram::setColorPalette(LSColorPalette *colorPalette) {
+	this->colorPalette = colorPalette;
+}
+
+LSColorPalette *LSLightProgram::getColorPalette() {
+	return this->colorPalette;
+}
+
 void LSLightProgram::setZXSound(LSZXSound *zxSound) {
 	this->zxSound = zxSound;
 }
 
-virtual uint8_t LSLightProgram::getPixelFormats() {
+uint8_t LSLightProgram::getPixelFormats() {
 	return RGB_PIXEL_BUFFER; // Should support simple RGB pixels
 }
 
-virtual uint8_t LSLightProgram::getModeCount() {
+uint8_t LSLightProgram::getModeCount() {
 	return 1;
 }
 
-virtual void LSLightProgram::setupMode(uint8_t mode) {
+uint8_t LSLightProgram::getMode() {
+	return this->mode;
+}
+
+void LSLightProgram::setupMode(uint8_t mode) {
 	this->mode = mode;
 }
 
-virtual int8_t LSLightProgram::getProgramID() {
-	return 0xff;
+uint8_t LSLightProgram::getProgramID() {
+	return 0;
 }
 
-virtual uint16_t LSLightProgram::getNextProgramCode() {
-	return RANDOM_PROGRAM;
+uint16_t LSLightProgram::getNextProgramCode() {
+	return 0x100; // FADE_DOWN
 }
 
-virtual bool hideFromProgramQueue() {
+bool LSLightProgram::usePreviousPalette() {
 	return false;
 }
 
-virtual bool isProgramFinished() {
+bool LSLightProgram::hideFromProgramList() {
 	return false;
 }
 
-virtual int32_t getProgramLength() {
+bool LSLightProgram::isProgramFinished() {
+	return false;
+}
+
+int32_t LSLightProgram::getProgramLength() {
 	return -1;
 }
 

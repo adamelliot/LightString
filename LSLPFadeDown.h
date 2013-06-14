@@ -3,7 +3,7 @@
 
 #include "LSLightString.h"
 
-#define FADE_DOWN_ID 0x00
+#define FADE_DOWN 0x01
 
 class LSLPFadeDown : public LSLightProgram {
 protected:
@@ -13,8 +13,16 @@ protected:
 
 public:
 	LSLPFadeDown(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
+
+	uint8_t getProgramID();
+	void setupMode(uint8_t mode);
 	
+	bool usePreviousPalette();
+	bool hideFromProgramList();
+
 	uint8_t getFrameRate();
+	bool isProgramFinished();
+		
 	void update();
 };
 

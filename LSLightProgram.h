@@ -4,14 +4,6 @@
 #include "LSPixelBuffer.h"
 #include "LSZXSound.h"
 
-enum LSProgramCodes {
-	// Named programs have no mode code
-	RANDOM_PROGRAM = 0xff01,
-	PREV_PROGRAM   = 0xff02,
-	NEXT_PROGRAM   = 0xff03,
-	NO_PROGRAM     = 0xffff
-};
-
 typedef LSColorPalette *(*pcolor_palette_factory_func)();
 
 class LSLightProgram {
@@ -30,23 +22,25 @@ public:
 	void setColorFunc(pcolor_func colorFunc);
 	pcolor_func getColorFunc();
 	
-	void setColorPalette();
+	void setColorPalette(LSColorPalette *colorPalette);
 	LSColorPalette *getColorPalette();
-	
+
 	void setZXSound(LSZXSound *zxSound);
 	
 	virtual uint8_t getPixelFormats();
 	
-	uint8_t uint8_t getMode();
+	virtual uint8_t getMode();
 	virtual uint8_t getModeCount();
 	virtual void setupMode(uint8_t mode);
 
-	// 128 program modes, -1 indicates no program ID
+	// 0 indicates no program ID
 	virtual uint8_t getProgramID();
 	virtual uint16_t getNextProgramCode();
 
-	// If false the program can only be activated by 
-	virtual bool hideFromProgramQueue();
+	// Indicates that the program wants to use the palette of the last program
+	virtual bool usePreviousPalette();
+	// If false the program can only be activated by getNextProgramCode()
+	virtual bool hideFromProgramList();
 	// Flags that the next program should be loaded
 	virtual bool isProgramFinished();
 	// Returns how long this program should run in ms

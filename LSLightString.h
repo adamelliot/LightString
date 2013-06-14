@@ -20,7 +20,10 @@
 #include "LSCPGradientPalette.h"
 
 // Programs
+#include "LSLPFadeDown.h"
 #include "LSLPRainbowCycle.h"
+
+/*
 #include "LSLPTwinkle.h"
 #include "LSLPSolidCycle.h"
 #include "LSLPBounce.h"
@@ -32,14 +35,11 @@
 
 #include "LSLPSoundStrip.h"
 
-// Hippo Programs
-
-#include "LSLPHippoTest.h"
-
 // Poi Programs
 
 #include "LSLPPoiText.h"
 #include "LSLPPoiCheckers.h"
 #include "LSLPPoiGears.h"
+*/
 
 #endif

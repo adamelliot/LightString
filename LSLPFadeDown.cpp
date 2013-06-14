@@ -9,7 +9,7 @@ LSLPFadeDown::LSLPFadeDown(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPale
 {}
 
 uint8_t LSLPFadeDown::getProgramID() {
-	return FADE_DOWN_ID;
+	return FADE_DOWN;
 }
 
 void LSLPFadeDown::setupMode(uint8_t mode) {
@@ -19,8 +19,12 @@ void LSLPFadeDown::setupMode(uint8_t mode) {
 	faded = false;
 }
 
-bool LSLPFadeDown::canBeRandomlySelected() {
-	return false;
+bool LSLPFadeDown::usePreviousPalette() {
+	return true;
+}
+
+bool LSLPFadeDown::hideFromProgramList() {
+	return true;
 }
 
 uint8_t LSLPFadeDown::getFrameRate() {

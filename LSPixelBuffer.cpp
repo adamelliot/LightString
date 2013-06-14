@@ -113,6 +113,7 @@ void *LSPixelBuffer::getPixelAt(uint8_t x, uint8_t y) {
 }
 
 // ============== Full Buffer Modifiers ==============
+// NOTE: These are not all finished...
 
 /**
  * Fast fade doesn't use FP, just shift, only allows 8 steps.
@@ -163,6 +164,7 @@ void LSPixelBuffer::shiftDown(uint16_t by) {
 
 // ============== Drawing Functions ==============
 
+// NOTE: Work in progress
 void LSPixelBuffer::drawText(uint8_t x, uint8_t y, uint8_t textX, uint8_t textY, uint8_t width, uint8_t height, const char *str) {
 	const int letterHeight = 15;
 
