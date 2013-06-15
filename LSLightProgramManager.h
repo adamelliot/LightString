@@ -95,6 +95,8 @@ private:
 public:
 	
 	LSLightProgramManager(uint8_t maxLightPrograms = 8, uint8_t maxColorPalettes = 16, uint8_t maxLightSections = 2);
+	
+	void setMaxProgramLength(uint32_t maxProgramLength);
 
 	void nextPalette();
 	void prevPalette();

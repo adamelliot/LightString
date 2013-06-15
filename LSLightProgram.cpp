@@ -49,7 +49,7 @@ uint8_t LSLightProgram::getProgramID() {
 }
 
 uint16_t LSLightProgram::getNextProgramCode() {
-	return 0x100; // FADE_DOWN
+	return 0; // FADE_DOWN
 }
 
 bool LSLightProgram::usePreviousPalette() {
