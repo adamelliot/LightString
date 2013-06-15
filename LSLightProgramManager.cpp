@@ -82,13 +82,6 @@ void LSLightProgramManager::selectPaletteForSection(uint8_t index, plight_sectio
 	if (colorPalettes[index]->config)
 		section->colorPalette->setConfig(colorPalettes[index]->config);
 
-	Serial.println("Setting up palette.");
-	
-	Serial.println(section->colorPalette == 0);
-	Serial.println(section->activeProgram == 0);
-	
-	delay(400);
-
 	section->colorPalette->setColorFunc(section->activeProgram->getColorFunc());
 	section->pixelBuffer->setColorPalette(section->colorPalette);
 	section->activeProgram->setColorPalette(section->colorPalette);
@@ -158,7 +151,8 @@ void LSLightProgramManager::addColorPalette(pcolor_palette_factory_func factory,
 		return;
 	}
 
-	colorPalettes[paletteCount++] = create_color_palette(factory, config);
+	colorPalettes[paletteCount] = create_color_palette(factory, config);
+	paletteOrder[paletteCount] = paletteCount++;
 }
 
 // ------------------------ Program Management ------------------------
@@ -201,12 +195,7 @@ void LSLightProgramManager::selectProgramForSection(plight_section_t section, ui
 	Serial.println(programID, HEX);
 
 	if (section->activeProgram) {
-		if (section->activeProgram->getMode() == programMode) {
-			// Programs themselves will get the setMode call and handle if they should reset or not
-			createProgram = false;
-		} else {
-			delete section->activeProgram;
-		}
+		delete section->activeProgram;
 	}
 
 	Serial.print("Going to create a program: ");
@@ -230,10 +219,9 @@ void LSLightProgramManager::selectProgramForSection(plight_section_t section, ui
 	section->programStartedAt = millis();
 
 	Serial.println("Mode was setup.");
-	delay(400);
-	/*
+
 	if (zxSound)
-		section->activeProgram->setZXSound(zxSound);*/
+		section->activeProgram->setZXSound(zxSound);
 }
 
 void LSLightProgramManager::selectProgramGroup(uint8_t programID) {
@@ -281,6 +269,8 @@ void LSLightProgramManager::nextProgramForSection(plight_section_t section) {
 	uint8_t mode;
 
 	if (section->activeProgram->getNextProgramCode() == 0) {
+		Serial.println("Using next program in list.");
+		
 		section->programIndexOffset++;
 		uint8_t index = programOrder[(programIndex + section->programIndexOffset) % programListLength];
 
@@ -289,14 +279,18 @@ void LSLightProgramManager::nextProgramForSection(plight_section_t section) {
 		programID = (uint8_t)(programCode >> 8);
 		mode = ((uint8_t)programCode & 0xff);
 	} else {
+		Serial.println("Using next program specified by program.");
+
 		uint16_t programCode = section->activeProgram->getNextProgramCode();
 
 		programID = (uint8_t)(programCode >> 8);
 		mode = ((uint8_t)programCode & 0xff);
 	}
 
-	Serial.println("Select from nextProgramForSection");
-	delay(400);
+	Serial.print("Selecting: ");
+	Serial.print(programID, HEX);
+	Serial.print(" - ");
+	Serial.println(mode, HEX);
 	this->selectProgramForSection(section, programID, mode);
 }
 
@@ -358,7 +352,8 @@ void LSLightProgramManager::addLightProgram(plight_program_factory_func factory,
 		}
 	}
 
-	lightPrograms[programCount++] = program;
+	lightPrograms[programCount] = program;
+	programOrder[programCount] = programCount++;
 	LSLightProgram *tempProgram = program->factory(NULL, NULL, NULL);
 
 	if (!tempProgram->hideFromProgramList()) {
