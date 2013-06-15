@@ -26,6 +26,6 @@ public:
 	void update();
 };
 
-LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
+LSLightProgram *factoryFadeDown(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
 
 #endif

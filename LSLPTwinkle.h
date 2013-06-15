@@ -3,17 +3,13 @@
 
 #include "LSLightString.h"
 
-typedef struct twinkle_config_s twinkle_config_t, *ptwinkle_config_t;
-
-struct twinkle_config_s {
-	color_t col;
-	bool colorCycle;
-};
+#define TWINKLE 0x03
 
 class LSLPTwinkle : public LSLightProgram {
 protected:
-	twinkle_config_t config;
-	
+	color_t col;
+	bool colorCycle;
+
 	uint8_t colorIndex;
 	uint8_t indexStep;
 	
@@ -21,10 +17,10 @@ protected:
 
 public:
 	LSLPTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
-	
-	void setConfig(void *_config);
-	void *getConfig();
-	
+
+	uint8_t getProgramID();
+	void setupMode(uint8_t mode);
+
 	uint8_t getFrameRate();
 	void update();
 };

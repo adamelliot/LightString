@@ -25,7 +25,6 @@ struct color_palette_s {
 
 struct light_program_s {
 	plight_program_factory_func factory;
-	uint8_t programModes;
 	uint8_t programID;
 };
 
@@ -94,7 +93,7 @@ private:
 
 public:
 	
-	LSLightProgramManager(uint8_t maxLightPrograms = 8, uint8_t maxColorPalettes = 16, uint8_t maxLightSections = 2);
+	LSLightProgramManager(uint8_t maxLightPrograms = 8, uint8_t maxColorPalettes = 16, uint8_t maxLightSections = 1);
 	
 	void setMaxProgramLength(uint32_t maxProgramLength);
 

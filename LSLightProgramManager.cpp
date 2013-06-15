@@ -1,7 +1,8 @@
 #include "LSLightProgramManager.h"
+#include "LSLPFadeDown.h"
 
 pcolor_palette_t create_color_palette(pcolor_palette_factory_func factory, void *config) {
-	pcolor_palette_t ret = (pcolor_palette_t)calloc(1, sizeof(light_program_t));
+	pcolor_palette_t ret = (pcolor_palette_t)calloc(1, sizeof(color_palette_t));
 
 	ret->factory = factory;
 	ret->config = config;
@@ -16,7 +17,6 @@ plight_program_t create_light_program(plight_program_factory_func factory) {
 
 	LSLightProgram *tempProgram = factory(NULL, NULL, NULL);
 	ret->programID = tempProgram->getProgramID();
-	ret->programModes = tempProgram->getModeCount();
 	delete tempProgram;
 
 	return ret;
@@ -54,7 +54,7 @@ LSLightProgramManager::LSLightProgramManager(uint8_t maxLightPrograms, uint8_t m
 
 	paletteOrder = (uint8_t *)calloc(maxColorPalettes, sizeof(uint8_t));
 	programOrder = (uint8_t *)calloc(maxLightPrograms, sizeof(uint8_t));
-
+	
 	loadState();
 }
 
@@ -90,6 +90,7 @@ void LSLightProgramManager::selectPaletteForSection(uint8_t index, plight_sectio
 	delay(400);
 
 	section->colorPalette->setColorFunc(section->activeProgram->getColorFunc());
+	section->pixelBuffer->setColorPalette(section->colorPalette);
 	section->activeProgram->setColorPalette(section->colorPalette);
 }
 
@@ -358,10 +359,18 @@ void LSLightProgramManager::addLightProgram(plight_program_factory_func factory,
 	}
 
 	lightPrograms[programCount++] = program;
-	
-	for (uint8_t i = 0; i < program->programModes; i++) {
-		programList[programListLength++] = (program->programID << 8) | i;
+	LSLightProgram *tempProgram = program->factory(NULL, NULL, NULL);
+
+	if (!tempProgram->hideFromProgramList()) {
+		for (uint8_t i = 0; i < tempProgram->getModeCount(); i++) {
+			Serial.print("Adding program code to list: ");
+			Serial.println((program->programID << 8) | i, HEX);
+
+			programList[programListLength++] = (program->programID << 8) | i;
+		}
 	}
+
+	delete tempProgram;
 }
 
 // -------------------- Adding Sections & Sound -------------------
@@ -419,7 +428,7 @@ void LSLightProgramManager::loop() {
 		{
 			Serial.print("Loading next for section: ");
 			Serial.println(i);
-			//nextProgramForSection(lightSections[i]);
+			nextProgramForSection(lightSections[i]);
 		} else {
 			program->update();
 		}

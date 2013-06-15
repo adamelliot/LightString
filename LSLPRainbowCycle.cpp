@@ -17,10 +17,10 @@ void LSLPRainbowCycle::setupMode(uint8_t mode) {
 	sections = (random(2) + 1) * ((pixelBuffer->getLength() / 160) + 1);
 	changeRate = random(8) + 3;
 	
-	Serial.print("Pixels: ");
-	Serial.println((uint32_t)colorPalette);
+	Serial.print("Palette: ");
+	Serial.println((uint16_t)colorPalette);
 
-//	mirrored = !colorPalette->isMirrored();
+	mirrored = !colorPalette->isMirrored();
 }
 
 void LSLPRainbowCycle::drawMirrored() {
@@ -39,7 +39,7 @@ void LSLPRainbowCycle::drawNormal() {
 
 void LSLPRainbowCycle::update() {
 	colorIndex += changeRate;
-	/*mirrored ? drawMirrored() : */drawNormal();
+	mirrored ? drawMirrored() : drawNormal();
 
 	LSLightProgram::update();
 }

@@ -6,24 +6,20 @@ LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* color
 
 LSLPTwinkle::LSLPTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
 	: LSLightProgram(pixelBuffer, colorPalette, colorFunc)
-{
+{}
+
+uint8_t LSLPTwinkle::getProgramID() {
+	return TWINKLE;
+}
+
+void LSLPTwinkle::setupMode(uint8_t mode) {
 	colorIndex = 0;
 	indexStep = random(3) + 1;
 
-	config.colorCycle = random(5) < 2;
-	config.col = (color_t){0xff, 0xff, 0xff};
+	colorCycle = random(5) < 2;
+	col = (color_t){0xff, 0xff, 0xff};
 	if (random(5) < 3)
-		config.col = colorPalette->getColor(random(0x100));
-}
-
-void LSLPTwinkle::setConfig(void *_config) {
-	ptwinkle_config_t config = (ptwinkle_config_t)_config;
-	this->config.col = config->col;
-	this->config.colorCycle = config->colorCycle;
-}
-
-void *LSLPTwinkle::getConfig() {
-	return &config;
+		col = colorPalette->getColor(random(0x100));
 }
 
 uint8_t LSLPTwinkle::getFrameRate() {
@@ -35,13 +31,12 @@ void LSLPTwinkle::update() {
 
 	uint8_t newPoints = random(pixelBuffer->getLength() >> 3) + 1;
 
-	if (config.colorCycle) {
+	if (colorCycle) {
 		for (int i = 0; i < newPoints; i++)
 			(pixelBuffer->*pixelBuffer->setIndexedPixel)(random(pixelBuffer->getLength()), colorIndex += indexStep);
 	} else {
-		// TODO: Fix this for index buffers
 		for (int i = 0; i < newPoints; i++)
-			(pixelBuffer->*pixelBuffer->setIndexedPixel)(random(pixelBuffer->getLength()), 128/*colorFunc(config.col.channels[0], config.col.channels[1], config.col.channels[2])*/);
+			(pixelBuffer->*pixelBuffer->setIndexedPixel)(random(pixelBuffer->getLength()), 128/*colorFunc(col.channels[0], col.channels[1], col.channels[2])*/);
 	}
 
 	LSLightProgram::update();
