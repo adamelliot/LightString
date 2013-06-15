@@ -17,6 +17,7 @@ public:
 	uint8_t getProgramID();
 	void setupMode(uint8_t mode);
 	
+	uint16_t getNextProgramCode();
 	bool usePreviousPalette();
 	bool hideFromProgramList();
 

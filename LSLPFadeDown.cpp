@@ -19,6 +19,10 @@ void LSLPFadeDown::setupMode(uint8_t mode) {
 	faded = false;
 }
 
+uint16_t LSLPFadeDown::getNextProgramCode() {
+	return 0;
+}
+
 bool LSLPFadeDown::usePreviousPalette() {
 	return true;
 }
