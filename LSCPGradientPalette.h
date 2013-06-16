@@ -49,9 +49,18 @@ private:
 public:
 	LSCPGradientPalette();
 	void setConfig(void *_config);
-	color_t getColor(uint8_t index);
+	virtual color_t getColor(uint8_t index);
 };
 
 LSColorPalette *factoryGradientPalette();
+
+class LSCPTabledGradientPalette : public LSCPGradientPalette {
+public:
+	bool usePaletteTable();
+	color_t getColor(uint8_t index);
+	color_t getTableColor(uint8_t index);
+};
+
+LSColorPalette *factoryTabledGradientPalette();
 
 #endif

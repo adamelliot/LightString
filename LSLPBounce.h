@@ -3,6 +3,8 @@
 
 #include "LSLightString.h"
 
+#define BOUNCE 0x05
+
 class LSLPBounce : public LSLightProgram {
 protected:
 	bool fade;
@@ -18,8 +20,10 @@ protected:
 
 public:
 	LSLPBounce(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
-	void update();
+	uint8_t getProgramID();
+	void setupMode(uint8_t mode);
 
+	void update();
 };
 
 LSLightProgram *factoryBounce(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);

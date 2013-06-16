@@ -63,10 +63,13 @@ public:
 	void fade(uint8_t shift = 1);
 	void fade(float ratio);
 
+	virtual bool usePaletteTable();
+
 	virtual void setConfig(void *config);
 	virtual void *getConfig();
 	
 	virtual color_t getColor(uint8_t index);
+	virtual color_t getTableColor(uint8_t index);
 };
 
 #endif

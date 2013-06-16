@@ -51,9 +51,10 @@ bool LSColorPalette::isMirrored() {
 pcolor_t LSColorPalette::generatePaletteTable() {
 	if (!paletteTable)
 		paletteTable = (pcolor_t)calloc(PALETTE_SIZE, 3);
-
+	
+	Serial.println("Generating palette");
 	for (int i = 0; i < PALETTE_SIZE; i++) {
-		paletteTable[i] = this->getColor(i);
+		paletteTable[i] = this->getTableColor(i);
 	}
 
 	return paletteTable;
@@ -63,7 +64,7 @@ void LSColorPalette::freePaletteTable() {
 	if (paletteTable) free(paletteTable);
 	paletteTable = NULL;
 }
-	
+
 pcolor_t LSColorPalette::getPaletteTable() { return paletteTable; }
 
 /**
@@ -85,9 +86,17 @@ void LSColorPalette::fade(float ratio) {
 	}
 }
 
+bool LSColorPalette::usePaletteTable() {
+	return false;
+}
+
 void LSColorPalette::setConfig(void *config) {}
 void *LSColorPalette::getConfig() { return NULL; }
 
 color_t LSColorPalette::getColor(uint8_t index) {
 	return (color_t){index, index, index};
+}
+
+color_t LSColorPalette::getTableColor(uint8_t index) {
+	return getColor(index);
 }

@@ -83,6 +83,12 @@ void LSLightProgramManager::selectPaletteForSection(uint8_t index, plight_sectio
 		section->colorPalette->setConfig(colorPalettes[index]->config);
 
 	section->colorPalette->setColorFunc(section->activeProgram->getColorFunc());
+	
+	if (section->colorPalette->usePaletteTable()) {
+		Serial.println("Generating palette table");
+		section->colorPalette->generatePaletteTable();
+	}
+	
 	section->pixelBuffer->setColorPalette(section->colorPalette);
 	section->activeProgram->setColorPalette(section->colorPalette);
 }
@@ -409,9 +415,15 @@ void LSLightProgramManager::loop() {
 
 	if (zxSound)
 		zxSound->update();
-
-	if (timeDelta < msPerFrame)
+	
+	// TODO: Frame rate limiting isn't working quite right
+	/*
+	if (timeDelta < msPerFrame) {
+		Serial.print("Delay: ");
+		Serial.println(msPerFrame - timeDelta);
 		delay(msPerFrame - timeDelta);
+	}
+		*/
 
 	for (int i = 0; i < sectionCount; i++) {
 		LSLightProgram *program = lightSections[i]->activeProgram;

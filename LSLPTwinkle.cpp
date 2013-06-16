@@ -4,14 +4,6 @@ LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* color
 	return new LSLPTwinkle(pixelBuffer, colorPalette, colorFunc);
 }
 
-LSLPTwinkle::LSLPTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-	: LSLightProgram(pixelBuffer, colorPalette, colorFunc)
-{}
-
-uint8_t LSLPTwinkle::getProgramID() {
-	return TWINKLE;
-}
-
 void LSLPTwinkle::setupMode(uint8_t mode) {
 	colorIndex = 0;
 	indexStep = random(3) + 1;
@@ -27,16 +19,16 @@ uint8_t LSLPTwinkle::getFrameRate() {
 }
 
 void LSLPTwinkle::update() {
-	pixelBuffer->fade(0.8f);
+	pixelBuffer->fade((uint8_t)1);
 
-	uint8_t newPoints = random(pixelBuffer->getLength() >> 3) + 1;
+	uint8_t newPoints = random(pixelBuffer->getLength() >> 2) + 1;
 
 	if (colorCycle) {
 		for (int i = 0; i < newPoints; i++)
-			(pixelBuffer->*pixelBuffer->setIndexedPixel)(random(pixelBuffer->getLength()), colorIndex += indexStep);
+			pixelBuffer->setPixelWithPaletteIndex(random(pixelBuffer->getLength()), colorIndex += indexStep);
 	} else {
 		for (int i = 0; i < newPoints; i++)
-			(pixelBuffer->*pixelBuffer->setIndexedPixel)(random(pixelBuffer->getLength()), 128/*colorFunc(col.channels[0], col.channels[1], col.channels[2])*/);
+			pixelBuffer->setPixelWithPaletteIndex(random(pixelBuffer->getLength()), 128/*colorFunc(col.channels[0], col.channels[1], col.channels[2])*/);
 	}
 
 	LSLightProgram::update();

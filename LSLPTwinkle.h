@@ -16,9 +16,11 @@ protected:
 	void setRainbowPixel();
 
 public:
-	LSLPTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
+	LSLPTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
+		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {}
 
-	uint8_t getProgramID();
+	uint8_t getProgramID() { return TWINKLE; }
+
 	void setupMode(uint8_t mode);
 
 	uint8_t getFrameRate();

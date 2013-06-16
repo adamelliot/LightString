@@ -17,6 +17,7 @@
 #include "LSLightProgramManager.h"
 
 // Palettes
+#include "LSCPSolidPalette.h"
 #include "LSCPGradientPalette.h"
 
 // Programs
@@ -24,9 +25,10 @@
 #include "LSLPRainbowCycle.h"
 #include "LSLPTwinkle.h"
 #include "LSLPSolidCycle.h"
+#include "LSLPBounce.h"
+#include "LSLPBreathe.h"
 
 /*
-#include "LSLPBounce.h"
 #include "LSLPPulse.h"
 
 #include "LSLP2DLines.h"

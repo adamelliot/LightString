@@ -6,7 +6,13 @@ LSLightProgram *factoryBounce(LSPixelBuffer *pixelBuffer, LSColorPalette* colorP
 
 LSLPBounce::LSLPBounce(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
 	: LSLightProgram(pixelBuffer, colorPalette, colorFunc)
-{
+{}
+
+uint8_t LSLPBounce::getProgramID() {
+	return BOUNCE;
+}
+
+void LSLPBounce::setupMode(uint8_t mode) {
 	mirrored = random(2) == 1;
 	fade = mirrored ? random(3) != 2 : false;
 

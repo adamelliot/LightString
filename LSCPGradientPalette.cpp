@@ -28,7 +28,7 @@ void LSCPGradientPalette::setConfig(void *_config) {
 
 color_t LSCPGradientPalette::interpolate(color_t col1, color_t col2, float weight) {
 	color_t ret;
-	
+
 	ret.channels[0] = (col1.channels[0] * (1.0 - weight)) + (col2.channels[0] * weight);
 	ret.channels[1] = (col1.channels[1] * (1.0 - weight)) + (col2.channels[1] * weight);
 	ret.channels[2] = (col1.channels[2] * (1.0 - weight)) + (col2.channels[2] * weight);
@@ -54,7 +54,23 @@ color_t LSCPGradientPalette::getColor(uint8_t index) {
 	return colorFunc(col.channels[0], col.channels[1], col.channels[2]);
 }
 
-// === Palettes ===
+LSColorPalette *factoryTabledGradientPalette() {
+	return new LSCPTabledGradientPalette();
+}
+
+bool LSCPTabledGradientPalette::usePaletteTable() {
+	return true;
+}
+
+color_t LSCPTabledGradientPalette::getColor(uint8_t index) {
+	return paletteTable[index];
+}
+
+color_t LSCPTabledGradientPalette::getTableColor(uint8_t index) {
+	return LSCPGradientPalette::getColor(index);
+}
+
+// ------------------------ Palettes ------------------------
 
 gradient_palette_t rainbowGradient() {
 	return (gradient_palette_t){
