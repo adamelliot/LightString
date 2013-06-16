@@ -88,6 +88,14 @@ gradient_palette_t pinkPurpleGradient() {
 	};
 }
 
+gradient_palette_t solidRedGradient() {
+	return (gradient_palette_t){
+		{(color_t){255, 192, 0}, (color_t){255, 192, 0}},
+		1,
+		true
+	};
+}
+
 gradient_palette_t pinkPurpleBlackGradient() {
 	return (gradient_palette_t){
 		{(color_t){255, 0, 128}, (color_t){96, 0, 192}, (color_t){0, 0, 0}, (color_t){0, 0, 0}, (color_t){255, 0, 128}},

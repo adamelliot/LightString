@@ -12,6 +12,7 @@ gradient_palette_t rainbowGradient();
 gradient_palette_t rainbowBlackGradient();
 //gradient_palette_t rainbowBlackBlackGradient();
 gradient_palette_t pinkPurpleGradient();
+gradient_palette_t solidRedGradient();
 gradient_palette_t pinkPurpleBlackGradient();
 gradient_palette_t cyanPinkGradient();
 gradient_palette_t cyanPinkBlackGradient();

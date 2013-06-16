@@ -16,9 +16,6 @@ void LSLPRainbowCycle::setupMode(uint8_t mode) {
 	colorIndex = random(0xff);
 	sections = (random(2) + 1) * ((pixelBuffer->getLength() / 160) + 1);
 	changeRate = random(8) + 3;
-	
-	Serial.print("Palette: ");
-	Serial.println((uint16_t)colorPalette);
 
 	mirrored = !colorPalette->isMirrored();
 }
