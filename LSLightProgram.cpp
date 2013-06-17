@@ -68,10 +68,9 @@ int32_t LSLightProgram::getProgramLength() {
 	return -1;
 }
 
-uint8_t LSLightProgram::getFrameRate() {
-	return 30;
-}
-
 void LSLightProgram::setConfig(void *config) {}
 void *LSLightProgram::getConfig() { return NULL; }
+
+void LSLightProgram::nudge(int32_t) {}
+
 void LSLightProgram::update() {}

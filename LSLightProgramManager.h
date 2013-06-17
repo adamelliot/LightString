@@ -6,6 +6,10 @@
 #include "LSZXSound.h"
 
 #define ALL_SECTIONS 0xffff
+#define MAX_MODES 8
+
+#define FADE_STEPS 30
+#define FADE_TIME 1000
 
 typedef LSLightProgram *(*plight_program_factory_func)(LSPixelBuffer *, LSColorPalette *, pcolor_func);
 
@@ -39,8 +43,8 @@ struct light_section_s {
 	uint8_t *supportedPrograms;
 	uint8_t programCount;
 
-	uint16_t programIndexOffset;
-	uint16_t paletteIndexOffset;
+	int16_t programIndexOffset;
+	int16_t paletteIndexOffset;
 	
 	LSPixelBuffer *pixelBuffer;
 	LSColorPalette *colorPalette;
@@ -76,6 +80,9 @@ private:
 	int32_t maxProgramLength;
 	uint32_t lastTime;
 	uint16_t msPerFrame;
+
+	bool paused;
+	uint32_t pauseStartedAt;
 	
 	void saveState();
 	void loadState();
@@ -90,13 +97,22 @@ private:
 	void selectProgramGroup(uint8_t programID);
 	void nextProgramForSection(plight_section_t section);
 	void normalizeProgramIndices();
+	
+	void fadeDown();
 
 public:
 	
 	LSLightProgramManager(uint8_t maxLightPrograms = 8, uint8_t maxColorPalettes = 16, uint8_t maxLightSections = 1);
 	
 	void setMaxProgramLength(uint32_t maxProgramLength);
-
+	void setMaxFPS(uint16_t targetFPS);
+	void setZXSoundPin(int pin);
+	void pause(bool blackout = true, bool fade = true);
+	void unpause();
+	void togglePause();
+	
+	void nudge(int32_t);
+	
 	void nextPalette();
 	void prevPalette();
 	void randomizePaletteOrder();
@@ -107,11 +123,13 @@ public:
 	void nextProgram();
 	void prevProgram();
 	void randomizeProgramOrder();
-	void addLightProgram(plight_program_factory_func factory, uint16_t sections = ALL_SECTIONS);
+
+	void addLightProgram(plight_program_factory_func factory, uint16_t sections, uint8_t modes[], uint8_t modeCount);
+	void addLightProgram(plight_program_factory_func factory, uint8_t modes[], uint8_t modeCount);
+	void addLightProgram(plight_program_factory_func factory, uint16_t sections);
+	void addLightProgram(plight_program_factory_func factory);
 
 	uint16_t addLightSection(pcolor_func colorFunc, LSLEDStrip *lightStrip, uint16_t length = 0, uint16_t offset = 0);
-	
-	void setZXSoundPin(int pin);
 	
 	void loop();
 };

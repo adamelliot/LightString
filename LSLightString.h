@@ -27,9 +27,11 @@
 #include "LSLPSolidCycle.h"
 #include "LSLPBounce.h"
 #include "LSLPBreathe.h"
+#include "LSLPPulse.h"
+#include "LSLPStrobe.h"
+#include "LSLPSolidColor.h"
 
 /*
-#include "LSLPPulse.h"
 
 #include "LSLP2DLines.h"
 #include "LSLPFire.h"

@@ -11,10 +11,12 @@ protected:
 	uint8_t changeRate;
 
 public:
-	LSLPSolidCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
-	uint8_t getProgramID();
-	void setupMode(uint8_t mode);
+	LSLPSolidCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
+		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {}
 
+	uint8_t getProgramID() { return SOLID_CYCLE; }
+
+	void setupMode(uint8_t mode);
 	void update();
 
 };

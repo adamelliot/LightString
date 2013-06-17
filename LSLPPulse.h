@@ -3,6 +3,8 @@
 
 #include "LSLightString.h"
 
+#define PULSE 0x08
+
 class LSLPPulse : public LSLightProgram {
 private:
 	bool bounce;
@@ -19,9 +21,13 @@ private:
 	uint16_t center;
 
 public:
-	LSLPPulse(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
-	void update();
+	LSLPPulse(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
+		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {}
 
+	uint8_t getProgramID() { return PULSE; }
+
+	void setupMode(uint8_t mode);
+	void update();
 };
 
 LSLightProgram *factoryPulse(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);

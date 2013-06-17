@@ -14,12 +14,8 @@ void LSLPTwinkle::setupMode(uint8_t mode) {
 		col = colorPalette->getColor(random(0x100));
 }
 
-uint8_t LSLPTwinkle::getFrameRate() {
-	return 20;
-}
-
 void LSLPTwinkle::update() {
-	pixelBuffer->fade((uint8_t)1);
+	pixelBuffer->fade(0.8f);
 
 	uint8_t newPoints = random(pixelBuffer->getLength() >> 2) + 1;
 

@@ -4,14 +4,6 @@ LSLightProgram *factorySolidCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* co
 	return new LSLPSolidCycle(pixelBuffer, colorPalette, colorFunc);
 }
 
-LSLPSolidCycle::LSLPSolidCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-	: LSLightProgram(pixelBuffer, colorPalette, colorFunc)
-{}
-
-uint8_t LSLPSolidCycle::getProgramID() {
-	return SOLID_CYCLE;
-}
-
 void LSLPSolidCycle::setupMode(uint8_t mode) {
 	colorIndex = random(0xff);
 	changeRate = random(4) + 3;

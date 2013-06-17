@@ -4,17 +4,23 @@ LSLightProgram *factoryBounce(LSPixelBuffer *pixelBuffer, LSColorPalette* colorP
 	return new LSLPBounce(pixelBuffer, colorPalette, colorFunc);
 }
 
-LSLPBounce::LSLPBounce(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-	: LSLightProgram(pixelBuffer, colorPalette, colorFunc)
-{}
-
-uint8_t LSLPBounce::getProgramID() {
-	return BOUNCE;
-}
-
 void LSLPBounce::setupMode(uint8_t mode) {
-	mirrored = random(2) == 1;
-	fade = mirrored ? random(3) != 2 : false;
+	switch (mode) {
+		case 0: // Normal
+		mirrored = false;
+		fade = false;
+		break;
+		
+		case 1: // Mirrored
+		mirrored = true;
+		fade = false;
+		break;
+		
+		case 2: // Fade
+		mirrored = false;
+		fade = true;
+		break;
+	}
 
 	fadeRate = 0.45 + ((float)random(201) / 1000);
 	
@@ -24,6 +30,10 @@ void LSLPBounce::setupMode(uint8_t mode) {
 	bounceStep = random(2) == 1 ? 1 : -1;
 	bounceTotal = mirrored ? pixelBuffer->getLength() >> 1 : pixelBuffer->getLength();
 	bounceIndex = bounceTotal >> 1;
+}
+
+uint8_t LSLPBounce::modeCount() {
+	return 3;
 }
 
 void LSLPBounce::update() {

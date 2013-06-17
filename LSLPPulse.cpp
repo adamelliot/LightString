@@ -4,9 +4,7 @@ LSLightProgram *factoryPulse(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPa
 	return new LSLPPulse(pixelBuffer, colorPalette, colorFunc);
 }
 
-LSLPPulse::LSLPPulse(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-	: LSLightProgram(pixelBuffer, colorPalette, colorFunc)
-{
+void LSLPPulse::setupMode(uint8_t mode) {
 	fade = random(3) != 2;
 	mirrored = 1;//random(2) == 0;
 	bounce = random(3) != 1;

@@ -45,10 +45,11 @@ public:
 	virtual bool isProgramFinished();
 	// Returns how long this program should run in ms
 	virtual int32_t getProgramLength(); // -1 = forever
-	virtual uint8_t getFrameRate();
 
 	virtual void setConfig(void *config);
 	virtual void *getConfig();
+
+	virtual void nudge(int32_t data);
 
 	virtual void update();
 };

@@ -12,6 +12,10 @@ color_t colorBGR(uint8_t r, uint8_t g, uint8_t b) {
 	return (color_t){b, g, r};
 }
 
+color_t colorGRB(uint8_t r, uint8_t g, uint8_t b) {
+	return (color_t){g, r, b};
+}
+
 color_t randomColor() {
 	return (color_t){random(255), random(255), random(255)};
 }
@@ -52,7 +56,6 @@ pcolor_t LSColorPalette::generatePaletteTable() {
 	if (!paletteTable)
 		paletteTable = (pcolor_t)calloc(PALETTE_SIZE, 3);
 	
-	Serial.println("Generating palette");
 	for (int i = 0; i < PALETTE_SIZE; i++) {
 		paletteTable[i] = this->getTableColor(i);
 	}

@@ -38,15 +38,15 @@ void free_light_section(plight_section_t section) {
 }
 
 LSLightProgramManager::LSLightProgramManager(uint8_t maxLightPrograms, uint8_t maxColorPalettes, uint8_t maxLightSections)
-	: maxProgramLength(-1), maxLightPrograms(maxLightPrograms), 
+	: maxProgramLength(-1), maxLightPrograms(maxLightPrograms), msPerFrame(20),
 	maxColorPalettes(maxColorPalettes), maxLightSections(maxLightSections),
 	paletteIndex(0), paletteCount(0), programIndex(0), programCount(0), programListLength(0),
-	sectionCount(0), zxSound(NULL)
+	sectionCount(0), zxSound(NULL), paused(false)
 {
 	//Serial.print(F("\n\n   -=-   Light String Booting   -=-\n\n"));
 
 	// TODO: This will not be enough for all the programs and their modes
-	programList = (uint16_t *)calloc(maxLightPrograms, sizeof(uint16_t));
+	programList = (uint16_t *)calloc(maxLightPrograms * MAX_MODES, sizeof(uint16_t));
 	colorPalettes = (pcolor_palette_t *)calloc(maxColorPalettes, sizeof(pcolor_palette_t));
 	lightSections = (plight_section_t *)calloc(maxLightSections, sizeof(plight_section_t));
 	lightStrips = (LSLEDStrip **)calloc(maxLightSections, sizeof(LSLEDStrip *));
@@ -54,12 +54,8 @@ LSLightProgramManager::LSLightProgramManager(uint8_t maxLightPrograms, uint8_t m
 
 	paletteOrder = (uint8_t *)calloc(maxColorPalettes, sizeof(uint8_t));
 	programOrder = (uint8_t *)calloc(maxLightPrograms, sizeof(uint8_t));
-	
-	loadState();
-}
 
-void LSLightProgramManager::setMaxProgramLength(uint32_t maxProgramLength) {
-	this->maxProgramLength = maxProgramLength;
+	loadState();
 }
 
 void LSLightProgramManager::saveState() {
@@ -70,13 +66,94 @@ void LSLightProgramManager::loadState() {
 	// TODO: Read the palette and program to EPROM
 }
 
+// ------------------------ Manager Control ------------------------
+
+void LSLightProgramManager::setMaxProgramLength(uint32_t maxProgramLength) {
+	this->maxProgramLength = maxProgramLength;
+}
+
+void LSLightProgramManager::setMaxFPS(uint16_t targetFPS) {
+	msPerFrame = 1000 / targetFPS;
+}
+
+void LSLightProgramManager::setZXSoundPin(int pin) {
+	if (zxSound)
+		delete zxSound;
+
+	zxSound = new LSZXSound(pin);
+}
+
+void LSLightProgramManager::fadeDown() {
+	uint8_t steps = FADE_STEPS;
+	uint16_t totalTime = FADE_TIME;
+	uint16_t delayStep = totalTime / steps;
+
+	for (int step = 0; step < steps; step++) {
+		float ratio = (float)(steps - (step + 1)) / (float)(steps - step);
+
+		for (int i = 0; i < sectionCount; i++) {
+			LSPixelBuffer *pixelBuffer = lightSections[i]->activeProgram->getPixelBuffer();
+			pixelBuffer->fade(ratio);
+		}
+
+		for (int i = 0; lightStrips[i] && (i < sectionCount); i++)
+			lightStrips[i]->update();
+
+		delay(delayStep);
+	}
+
+	delay(200);
+}
+
+void LSLightProgramManager::pause(bool blackout, bool fade) {
+	if (paused) return;
+	
+	paused = true;
+	pauseStartedAt = millis();
+	
+	if (blackout) {
+		if (fade) {
+			this->selectProgram(FADE_DOWN);
+		} else {
+			for (int i = 0; i < sectionCount; i++) {
+				LSPixelBuffer *pixelBuffer = lightSections[i]->activeProgram->getPixelBuffer();
+				pixelBuffer->clear();
+			}
+		}
+	}
+}
+
+void LSLightProgramManager::unpause() {
+	if (!paused) return;
+
+	paused = false;
+	uint32_t timeDelta = millis() - pauseStartedAt;
+	for (int i = 0; i < sectionCount; i++) {
+		lightSections[i]->programStartedAt += timeDelta;
+	}
+}
+
+void LSLightProgramManager::togglePause() {
+	paused ? unpause() : pause();
+}
+
+void LSLightProgramManager::nudge(int32_t data) {
+	for (int i = 0; i < sectionCount; i++) {
+		lightSections[i]->activeProgram->nudge(data);
+	}
+}
+
 // ------------------------ Palette Management ------------------------
 
 void LSLightProgramManager::selectPaletteForSection(uint8_t index, plight_section_t section) {
 	if (section->colorPalette)
 		delete section->colorPalette;
 
+	Serial.print("Palette Index: ");
+	Serial.print(index);
 	index = paletteOrder[index]; // Respect the reodered palette
+	Serial.print(" - ");
+	Serial.println(index);
 
 	section->colorPalette = colorPalettes[index]->factory();
 	if (colorPalettes[index]->config)
@@ -85,7 +162,6 @@ void LSLightProgramManager::selectPaletteForSection(uint8_t index, plight_sectio
 	section->colorPalette->setColorFunc(section->activeProgram->getColorFunc());
 	
 	if (section->colorPalette->usePaletteTable()) {
-		Serial.println("Generating palette table");
 		section->colorPalette->generatePaletteTable();
 	}
 	
@@ -198,22 +274,19 @@ void LSLightProgramManager::selectProgramForSection(plight_section_t section, ui
 	bool createProgram = true;
 
 	Serial.print("Selecting section program: ");
-	Serial.println(programID, HEX);
+	Serial.println((programID << 8) | programMode, HEX);
 
 	if (section->activeProgram) {
 		delete section->activeProgram;
 	}
-
-	Serial.print("Going to create a program: ");
-	Serial.println(createProgram);
 
 	if (createProgram) {
 		plight_program_t program = getProgramForSection(programID, section);
 		section->activeProgram = program->factory(section->pixelBuffer, section->colorPalette, section->colorFunc);
 	}
 
-	Serial.print("Active ProgramID: ");
-	Serial.println(section->activeProgram->getProgramID(), HEX);
+	Serial.print("Running: ");
+	Serial.println((section->activeProgram->getProgramID() << 8) | programMode, HEX);
 	
 	if (!section->activeProgram->usePreviousPalette()) {
 		section->paletteIndexOffset++;
@@ -223,8 +296,6 @@ void LSLightProgramManager::selectProgramForSection(plight_section_t section, ui
 
 	section->activeProgram->setupMode(programMode);
 	section->programStartedAt = millis();
-
-	Serial.println("Mode was setup.");
 
 	if (zxSound)
 		section->activeProgram->setZXSound(zxSound);
@@ -254,16 +325,6 @@ void LSLightProgramManager::selectProgramCode(uint16_t programCode) {
 			selectProgramForSection(lightSections[i], programID, mode);
 		}
 	}
-
-	// Compute frame rate and end times
-	uint8_t newFrameRate = 0;
-
-	for (int i = 0; i < sectionCount; i++) {
-		newFrameRate += lightSections[i]->activeProgram->getFrameRate();
-	}
-
-	newFrameRate /= sectionCount;
-	msPerFrame = 1000 / newFrameRate;
 }
 
 void LSLightProgramManager::selectProgram(uint8_t programID) {
@@ -276,7 +337,7 @@ void LSLightProgramManager::nextProgramForSection(plight_section_t section) {
 
 	if (section->activeProgram->getNextProgramCode() == 0) {
 		Serial.println("Using next program in list.");
-		
+
 		section->programIndexOffset++;
 		uint8_t index = programOrder[(programIndex + section->programIndexOffset) % programListLength];
 
@@ -313,14 +374,16 @@ void LSLightProgramManager::normalizeProgramIndices() {
 	}
 
 	programIndex += minIndex;
-	programIndex %= paletteCount;
+	programIndex %= programListLength;
 }
 
 void LSLightProgramManager::nextProgram() {
 	this->normalizeProgramIndices();
 	
-	uint8_t index = programOrder[programIndex++];
+	programIndex++;
 	programIndex %= programListLength;
+	
+	uint8_t index = programOrder[programIndex];
 
 	this->selectProgramCode(programList[index]);
 }
@@ -332,14 +395,14 @@ void LSLightProgramManager::prevProgram() {
 		programIndex = programListLength - 1;
 	else
 		programIndex--;
+	programIndex %= programListLength;
 
 	uint8_t index = programOrder[programIndex];
-	programIndex %= programListLength;
 
 	this->selectProgramCode(programList[index]);
 }
 
-void LSLightProgramManager::addLightProgram(plight_program_factory_func factory, uint16_t sections) {
+void LSLightProgramManager::addLightProgram(plight_program_factory_func factory, uint16_t sections, uint8_t modes[], uint8_t modeCount) {
 	plight_program_t program = create_light_program(factory);
 
 	for (int i = 0; i < programCount; i++)
@@ -352,9 +415,6 @@ void LSLightProgramManager::addLightProgram(plight_program_factory_func factory,
 		if (((1 << i) | sections) == sections) {
 			plight_section_t section = lightSections[i];
 			section->supportedPrograms[section->programCount++] = program->programID;
-			
-			Serial.print("Added program to: ");
-			Serial.println(i);
 		}
 	}
 
@@ -363,18 +423,39 @@ void LSLightProgramManager::addLightProgram(plight_program_factory_func factory,
 	LSLightProgram *tempProgram = program->factory(NULL, NULL, NULL);
 
 	if (!tempProgram->hideFromProgramList()) {
-		for (uint8_t i = 0; i < tempProgram->getModeCount(); i++) {
+		for (int i = 0; i < modeCount; i++) {
 			Serial.print("Adding program code to list: ");
-			Serial.println((program->programID << 8) | i, HEX);
+			Serial.println((program->programID << 8) | modes[i], HEX);
 
-			programList[programListLength++] = (program->programID << 8) | i;
+			programList[programListLength++] = (program->programID << 8) | modes[i];
 		}
 	}
 
 	delete tempProgram;
 }
 
-// -------------------- Adding Sections & Sound -------------------
+void LSLightProgramManager::addLightProgram(plight_program_factory_func factory, uint8_t modes[], uint8_t modeCount) {
+	addLightProgram(factory, ALL_SECTIONS, modes, modeCount);
+}
+
+void LSLightProgramManager::addLightProgram(plight_program_factory_func factory, uint16_t sections) {
+	LSLightProgram *tempProgram = factory(NULL, NULL, NULL);
+	uint16_t modeCount = tempProgram->getModeCount();
+	uint8_t *modes = (uint8_t *)calloc(modeCount, sizeof(uint8_t));
+	
+	for (int i = 0; i < modeCount; i++) modes[i] = i;
+	
+	delete tempProgram;
+
+	addLightProgram(factory, sections, modes, modeCount);
+	delete modes;
+}
+
+void LSLightProgramManager::addLightProgram(plight_program_factory_func factory) {
+	addLightProgram(factory, ALL_SECTIONS);
+}
+
+// -------------------- Adding Sections -------------------
 
 uint16_t LSLightProgramManager::addLightSection(pcolor_func colorFunc, LSLEDStrip *lightStrip, uint16_t length, uint16_t offset) {
 	if (sectionCount >= maxLightSections) {
@@ -400,13 +481,6 @@ uint16_t LSLightProgramManager::addLightSection(pcolor_func colorFunc, LSLEDStri
 	return 1 << (sectionCount - 1);
 }
 
-void LSLightProgramManager::setZXSoundPin(int pin) {
-	if (zxSound)
-		delete zxSound;
-
-	zxSound = new LSZXSound(pin);
-}
-
 // -------------------- Primary Manager Loop -------------------
 
 void LSLightProgramManager::loop() {
@@ -417,13 +491,9 @@ void LSLightProgramManager::loop() {
 		zxSound->update();
 	
 	// TODO: Frame rate limiting isn't working quite right
-	/*
 	if (timeDelta < msPerFrame) {
-		Serial.print("Delay: ");
-		Serial.println(msPerFrame - timeDelta);
 		delay(msPerFrame - timeDelta);
 	}
-		*/
 
 	for (int i = 0; i < sectionCount; i++) {
 		LSLightProgram *program = lightSections[i]->activeProgram;
@@ -433,9 +503,9 @@ void LSLightProgramManager::loop() {
 			(program->getProgramLength() > 0 && sectionTimeDelta > program->getProgramLength()) ||
 			(maxProgramLength > 0 && sectionTimeDelta > maxProgramLength))
 		{
-			Serial.print("Loading next for section: ");
-			Serial.println(i);
-			nextProgramForSection(lightSections[i]);
+			if (!paused)
+				nextProgramForSection(lightSections[i]);
+
 		} else {
 			program->update();
 		}
