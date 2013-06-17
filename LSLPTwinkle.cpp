@@ -5,26 +5,101 @@ LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* color
 }
 
 void LSLPTwinkle::setupMode(uint8_t mode) {
-	colorIndex = 0;
-	indexStep = random(3) + 1;
+	size = random(4) + 2;
+	variableSize = false;
+	fastFade = 0;
 
-	colorCycle = random(5) < 2;
+	switch (mode) {
+		case 0: // Same color
+		colorCycle = true;
+		size = 1;
+		break;
+		
+		case 1:
+		colorCycle = false;
+		size = 1;
+		break;
+		
+		case 2:
+		colorCycle = true;
+		break;
+		
+		case 3:
+		colorCycle = false;
+		break;
+		
+		case 4: // Looks like fire
+		colorCycle = false;
+		variableSize = true;
+		break;
+		
+		case 5: // Static mode
+		fastFade = 1;
+		size = 1;
+		break;
+		
+		case 6: // Custom size for lights
+		size = 16;
+		colorCycle = true;
+		break;
+		
+		case 7:
+		size = 16;
+		colorCycle = false;
+		break;
+	}
+	
+	colorIndex = 0;
+	indexStep = random(6) + 3;
+
 	col = (color_t){0xff, 0xff, 0xff};
-	if (random(5) < 3)
-		col = colorPalette->getColor(random(0x100));
+	white = false;//random(7) > 5;
+}
+
+void LSLPTwinkle::nudge(int32_t data) {
+	size++;
+	if (size > 12) size = 1;
 }
 
 void LSLPTwinkle::update() {
-	pixelBuffer->fade(0.8f);
+	if (fastFade) {
+		pixelBuffer->fade(fastFade);
+	} else {
+		pixelBuffer->fade(0.8f);
+	}
 
-	uint8_t newPoints = random(pixelBuffer->getLength() >> 2) + 1;
+	if (variableSize)
+		size = random(5) + 1;
+
+	uint16_t len = pixelBuffer->getLength() / size;
+	uint8_t newPoints = random(len >> (fastFade ? 1 : 2)) + 1;
 
 	if (colorCycle) {
-		for (int i = 0; i < newPoints; i++)
-			pixelBuffer->setPixelWithPaletteIndex(random(pixelBuffer->getLength()), colorIndex += indexStep);
+		for (int i = 0; i < newPoints; i++) {
+			uint16_t index = random(len) * size;
+			for (int j = 0; j < size; j++) {
+				color_t _col = colorPalette->getColor(colorIndex += indexStep);
+				pixelBuffer->setPixel(index + j, _col);
+			}
+		}
 	} else {
-		for (int i = 0; i < newPoints; i++)
-			pixelBuffer->setPixelWithPaletteIndex(random(pixelBuffer->getLength()), 128/*colorFunc(col.channels[0], col.channels[1], col.channels[2])*/);
+		color_t _col;
+		
+		if (white) {
+			_col = col;
+		} else {
+			_col = colorPalette->getColor(63);
+//			if (_col.channels[0] == _col.channels[1] == _col.channels[2] == 0)
+//				_col = col;
+		}
+		
+		for (int i = 0; i < newPoints; i++) {
+			uint16_t index = random(len) * size;
+			for (int j = 0; j < size; j++) {
+				/*colorFunc(col.channels[0], col.channels[1], col.channels[2])*/
+				pixelBuffer->setPixel(index + j, _col);
+			}
+		}
 	}
 
 	LSLightProgram::update();

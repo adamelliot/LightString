@@ -9,6 +9,7 @@ typedef LSColorPalette *(*pcolor_palette_factory_func)();
 class LSLightProgram {
 protected:
 	uint8_t mode;
+	uint8_t modeCount;
 	pcolor_func colorFunc;
 	LSColorPalette *colorPalette;
 	LSPixelBuffer *pixelBuffer;
@@ -29,8 +30,8 @@ public:
 	
 	virtual uint8_t getPixelFormats();
 	
-	virtual uint8_t getMode();
-	virtual uint8_t getModeCount();
+	uint8_t getMode();
+	uint8_t getModeCount();
 	virtual void setupMode(uint8_t mode);
 
 	// 0 indicates no program ID

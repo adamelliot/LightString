@@ -20,6 +20,11 @@ void LSLPBounce::setupMode(uint8_t mode) {
 		mirrored = false;
 		fade = true;
 		break;
+		
+		case 3:
+		mirrored = true;
+		fade = true;
+		break;
 	}
 
 	fadeRate = 0.45 + ((float)random(201) / 1000);
@@ -30,10 +35,6 @@ void LSLPBounce::setupMode(uint8_t mode) {
 	bounceStep = random(2) == 1 ? 1 : -1;
 	bounceTotal = mirrored ? pixelBuffer->getLength() >> 1 : pixelBuffer->getLength();
 	bounceIndex = bounceTotal >> 1;
-}
-
-uint8_t LSLPBounce::modeCount() {
-	return 3;
 }
 
 void LSLPBounce::update() {

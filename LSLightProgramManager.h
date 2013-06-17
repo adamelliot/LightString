@@ -93,12 +93,12 @@ private:
 
 	plight_program_t getProgram(uint8_t programID);
 	plight_program_t getProgramForSection(uint8_t programID, plight_section_t section);
-	void selectProgramForSection(plight_section_t section, uint8_t programID, uint8_t programMode);
+	void selectProgramForSection(plight_section_t section, uint8_t programID, uint8_t programMode, bool keepPalette = false);
 	void selectProgramGroup(uint8_t programID);
 	void nextProgramForSection(plight_section_t section);
 	void normalizeProgramIndices();
 	
-	void fadeDown();
+//	void fadeDown();
 
 public:
 	

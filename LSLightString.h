@@ -22,7 +22,7 @@
 
 // Programs
 #include "LSLPFadeDown.h"
-#include "LSLPRainbowCycle.h"
+#include "LSLPGradientCycle.h"
 #include "LSLPTwinkle.h"
 #include "LSLPSolidCycle.h"
 #include "LSLPBounce.h"

@@ -20,12 +20,12 @@ protected:
 
 public:
 	LSLPBounce(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {}
-
+		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {
+		modeCount = 4; 
+	}
 	uint8_t getProgramID() { return BOUNCE; }
 
 	void setupMode(uint8_t mode);
-	uint8_t modeCount();
 	void update();
 };
 

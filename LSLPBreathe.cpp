@@ -6,8 +6,8 @@ LSLightProgram *factoryBreathe(LSPixelBuffer *pixelBuffer, LSColorPalette* color
 
 void LSLPBreathe::setupMode(uint8_t mode) {
 	factor = 1.0f;
-	min = 0.6f;
-	step = 0.005f;
+	min = 0.4f;
+	step = 0.02f;
 	direction = 1.0f;
 }
 
@@ -28,9 +28,8 @@ void LSLPBreathe::update() {
 	col.channels[0] *= factor;
 	col.channels[1] *= factor;
 	col.channels[2] *= factor;
-
-	for (int i = 0; i < pixelBuffer->getLength(); i++)
-		pixelBuffer->setPixel(i, col);
+	
+	pixelBuffer->clear(col);
 
 	LSLightProgram::update();
 }

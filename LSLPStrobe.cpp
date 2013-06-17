@@ -11,7 +11,8 @@ void LSLPStrobe::setupMode(uint8_t mode) {
 }
 
 void LSLPStrobe::nudge(int32_t data) {
-	
+	frames++;
+	if (frames > 8) frames = 1;
 }
 
 void LSLPStrobe::update() {

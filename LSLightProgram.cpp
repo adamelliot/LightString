@@ -1,7 +1,7 @@
 #include "LSLightProgram.h"
 
 LSLightProgram::LSLightProgram(LSPixelBuffer *pixelBuffer, LSColorPalette *colorPalette, pcolor_func colorFunc)
-	: pixelBuffer(pixelBuffer), colorPalette(colorPalette), colorFunc(colorFunc)
+	: pixelBuffer(pixelBuffer), colorPalette(colorPalette), colorFunc(colorFunc), modeCount(1)
 {}
 
 LSPixelBuffer *LSLightProgram::getPixelBuffer() {
@@ -33,7 +33,7 @@ uint8_t LSLightProgram::getPixelFormats() {
 }
 
 uint8_t LSLightProgram::getModeCount() {
-	return 1;
+	return modeCount;
 }
 
 uint8_t LSLightProgram::getMode() {
