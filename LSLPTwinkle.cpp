@@ -8,6 +8,7 @@ void LSLPTwinkle::setupMode(uint8_t mode) {
 	size = random(4) + 2;
 	variableSize = false;
 	fastFade = 0;
+	fadeRate = 0.9f;
 
 	switch (mode) {
 		case 0: // Same color
@@ -41,11 +42,13 @@ void LSLPTwinkle::setupMode(uint8_t mode) {
 		case 6: // Custom size for lights
 		size = 16;
 		colorCycle = true;
+		fadeRate = 0.97f;
 		break;
 		
 		case 7:
 		size = 16;
 		colorCycle = false;
+		fadeRate = 0.97f;
 		break;
 	}
 	
@@ -65,14 +68,14 @@ void LSLPTwinkle::update() {
 	if (fastFade) {
 		pixelBuffer->fade(fastFade);
 	} else {
-		pixelBuffer->fade(0.8f);
+		pixelBuffer->fade(fadeRate);
 	}
 
 	if (variableSize)
 		size = random(5) + 1;
 
 	uint16_t len = pixelBuffer->getLength() / size;
-	uint8_t newPoints = random(len >> (fastFade ? 1 : 2)) + 1;
+	uint8_t newPoints = random(len >> (fastFade ? 1 : (fadeRate > 0.9f ? 3 : 2) )) + 1;
 
 	if (colorCycle) {
 		for (int i = 0; i < newPoints; i++) {

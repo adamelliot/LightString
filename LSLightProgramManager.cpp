@@ -431,6 +431,17 @@ void LSLightProgramManager::addLightProgram(plight_program_factory_func factory,
 	addLightProgram(factory, ALL_SECTIONS, modes, modeCount);
 }
 
+void LSLightProgramManager::randomizeProgramOrder() {
+	for (int i = 0; i < programListLength; i++)
+		programOrder[i] = 0xff;
+
+	uint8_t programIndex;
+	for (int i = 0; i < programListLength; i++) {
+		while (programOrder[programIndex = random(programListLength)] != 0xff);
+		programOrder[programIndex] = i;
+	}
+}
+
 void LSLightProgramManager::addLightProgram(plight_program_factory_func factory, uint16_t sections) {
 	LSLightProgram *tempProgram = factory(NULL, NULL, NULL);
 	uint8_t modeCount = tempProgram->getModeCount();

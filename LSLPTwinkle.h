@@ -16,6 +16,7 @@ protected:
 	uint8_t indexStep;
 	uint8_t size;
 	uint8_t fastFade;
+	float fadeRate;
 
 	void setRainbowPixel();
 

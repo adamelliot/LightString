@@ -208,6 +208,14 @@ gradient_palette_t redWhiteGradient() {
 	};
 }
 
+gradient_palette_t redWhitishGradient() {
+	return (gradient_palette_t){
+		{(color_t){255, 31, 0}, (color_t){255, 0, 0}, (color_t){191, 191, 191}, (color_t){255, 31, 0}},
+		3,
+		false
+	};
+}
+
 gradient_palette_t blueWhiteBlackGradient() {
 	return (gradient_palette_t){
 		{(color_t){0, 31, 255}, (color_t){255, 255, 255}, (color_t){0, 0, 0}, (color_t){0, 0, 0}, (color_t){0, 31, 255}},
@@ -219,6 +227,14 @@ gradient_palette_t blueWhiteBlackGradient() {
 gradient_palette_t blueWhiteGradient() {
 	return (gradient_palette_t){
 		{(color_t){0, 31, 255}, (color_t){255, 255, 255}, (color_t){0, 31, 255}},
+		2,
+		false
+	};
+}
+
+gradient_palette_t blueWhitishGradient() {
+	return (gradient_palette_t){
+		{(color_t){0, 31, 255}, (color_t){191, 191, 191}, (color_t){0, 31, 255}},
 		2,
 		false
 	};
