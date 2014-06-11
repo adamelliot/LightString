@@ -29,8 +29,8 @@ void LSLPBounce::setupMode(uint8_t mode) {
 
 	fadeRate = 0.75 + ((float)random(201) / 1000);
 	
-	colorIndex = 0; //random(0xff);
-	changeRate = 5; //random(8) + 3;
+	colorIndex = random(0xff);
+	changeRate = random(7) + 1;
 	
 	bounceStep = random(2) == 1 ? 1 : -1;
 	bounceTotal = mirrored ? pixelBuffer->getLength() >> 1 : pixelBuffer->getLength();

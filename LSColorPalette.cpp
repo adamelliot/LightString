@@ -28,6 +28,16 @@ color_t blackColor() {
 	return (color_t){0, 0, 0};
 }
 
+color_t fadeColor(color_t col, float by) {
+	color_t ret;
+
+	ret.channels[0] = (col.channels[0] * by);
+	ret.channels[1] = (col.channels[1] * by);
+	ret.channels[2] = (col.channels[2] * by);
+
+	return ret;
+}
+
 void printColor(color_t col) {
 	Serial.print("(");
 	Serial.print(col.channels[0]);

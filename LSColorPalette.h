@@ -43,6 +43,8 @@ color_t randomColor();
 color_t whiteColor();
 color_t blackColor();
 
+color_t fadeColor(color_t col, float by);
+
 #define PALETTE_MIRRORED 0x01
 #define PALETTE_SIZE 256 // 3 colors per pixel total bytes = 768
 

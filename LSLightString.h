@@ -30,6 +30,7 @@
 #include "LSLPPulse.h"
 #include "LSLPStrobe.h"
 #include "LSLPSolidColor.h"
+#include "LSLPBurst.h"
 
 /*
 
