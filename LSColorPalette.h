@@ -37,6 +37,8 @@ color_t colorRBG(uint8_t r, uint8_t g, uint8_t b);
 color_t colorBGR(uint8_t r, uint8_t g, uint8_t b);
 color_t colorGRB(uint8_t r, uint8_t g, uint8_t b);
 
+void printColor(color_t col);
+
 color_t randomColor();
 color_t whiteColor();
 color_t blackColor();

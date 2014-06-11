@@ -144,9 +144,17 @@ gradient_palette_t blueGreenGradient() {
 	};
 }
 
+gradient_palette_t greenGradient() {
+	return (gradient_palette_t){
+		{(color_t){0, 255, 0}, (color_t){0, 32, 0}},
+		1,
+		true
+	};
+}
+
 gradient_palette_t yellowGradient() {
 	return (gradient_palette_t){
-		{(color_t){255, 255, 0}, (color_t){64, 64, 0}},
+		{(color_t){255, 191, 63}, (color_t){63, 47, 15}},
 		1,
 		true
 	};
@@ -208,6 +216,14 @@ gradient_palette_t redWhiteGradient() {
 	};
 }
 
+gradient_palette_t greenWhiteGradient() {
+	return (gradient_palette_t){
+		{(color_t){0, 255, 31}, (color_t){0, 255, 0}, (color_t){255, 255, 255}, (color_t){0, 255, 31}},
+		3,
+		false
+	};
+}
+
 gradient_palette_t redWhitishGradient() {
 	return (gradient_palette_t){
 		{(color_t){255, 31, 0}, (color_t){255, 0, 0}, (color_t){191, 191, 191}, (color_t){255, 31, 0}},
@@ -259,6 +275,14 @@ gradient_palette_t blueYellowBlackHardGradient() {
 gradient_palette_t blueYellowGradient() {
 	return (gradient_palette_t){
 		{(color_t){0, 95, 255}, (color_t){255, 255, 0}, (color_t){0, 31, 255}},
+		2,
+		false
+	};
+}
+
+gradient_palette_t greenYellowGradient() {
+	return (gradient_palette_t){
+		{(color_t){31, 255, 31}, (color_t){255, 191, 63}, (color_t){31, 255, 31}},
 		2,
 		false
 	};

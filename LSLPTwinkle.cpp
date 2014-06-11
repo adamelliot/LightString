@@ -8,15 +8,15 @@ void LSLPTwinkle::setupMode(uint8_t mode) {
 	size = random(4) + 2;
 	variableSize = false;
 	fastFade = 0;
-	fadeRate = 0.9f;
+	fadeRate = 0.93f;
 
 	switch (mode) {
-		case 0: // Same color
+		case 0:
 		colorCycle = true;
 		size = 1;
 		break;
 		
-		case 1:
+		case 1: // Same color
 		colorCycle = false;
 		size = 1;
 		break;
@@ -75,13 +75,14 @@ void LSLPTwinkle::update() {
 		size = random(5) + 1;
 
 	uint16_t len = pixelBuffer->getLength() / size;
-	uint8_t newPoints = random(len >> (fastFade ? 1 : (fadeRate > 0.9f ? 3 : 2) )) + 1;
+	uint8_t newPoints = random(len >> (fastFade ? 1 : (fadeRate > 0.9f ? 3 : 2))) + 1;
 
 	if (colorCycle) {
 		for (int i = 0; i < newPoints; i++) {
 			uint16_t index = random(len) * size;
 			for (int j = 0; j < size; j++) {
 				color_t _col = colorPalette->getColor(colorIndex += indexStep);
+
 				pixelBuffer->setPixel(index + j, _col);
 			}
 		}
@@ -91,9 +92,12 @@ void LSLPTwinkle::update() {
 		if (white) {
 			_col = col;
 		} else {
-			_col = colorPalette->getColor(63);
-//			if (_col.channels[0] == _col.channels[1] == _col.channels[2] == 0)
-//				_col = col;
+			int s = random(0xff);
+			for (int i = s; i < s + 0xff; i++) {
+				_col = colorPalette->getColor(i % 0x100);
+				if (_col.channels[0] + _col.channels[1] + _col.channels[2] > 64)
+					break;
+			}
 		}
 		
 		for (int i = 0; i < newPoints; i++) {

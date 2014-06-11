@@ -32,6 +32,12 @@ void LSLEDStrip::setColorPalette(LSColorPalette *colorPalette) {
 	this->colorPalette = colorPalette;
 }
 
-void LSLEDStrip::update() {
-	controller->showRGB((byte *)pixels, length);
+void LSLEDStrip::update() {/*
+	for (int j = 0; j < length * 3; j += 6) {
+		((uint8_t *)pixels)[j] = 0;
+		((uint8_t *)pixels)[j + 1] = 0;
+		((uint8_t *)pixels)[j + 2] = 0;
+	}*/
+	
+	controller->show((CRGB *)pixels, length);
 }

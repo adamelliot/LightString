@@ -28,6 +28,16 @@ color_t blackColor() {
 	return (color_t){0, 0, 0};
 }
 
+void printColor(color_t col) {
+	Serial.print("(");
+	Serial.print(col.channels[0]);
+	Serial.print(", ");
+	Serial.print(col.channels[1]);
+	Serial.print(", ");
+	Serial.print(col.channels[2]);
+	Serial.print(")");
+}
+
 LSColorPalette::LSColorPalette() 
  : colorFunc(colorRGB), paletteTable(NULL)
 {}

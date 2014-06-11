@@ -18,7 +18,7 @@ void LSLPGradientCycle::setupMode(uint8_t mode) {
 	
 	colorIndex = random(0xff);
 	sections = (random(2) + 1) * ((pixelBuffer->getLength() / 160) + 1);
-	changeRate = random(8) + 3;
+	changeRate = random(7) + 1;
 }
 
 void LSLPGradientCycle::drawMirrored() {

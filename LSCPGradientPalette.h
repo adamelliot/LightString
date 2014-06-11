@@ -19,11 +19,13 @@ gradient_palette_t cyanPinkBlackGradient();
 gradient_palette_t blueGreenGradient();
 gradient_palette_t yellowGradient();
 gradient_palette_t whiteGradient();
+gradient_palette_t greenGradient();
 gradient_palette_t greenBlueGradient();
 gradient_palette_t greenBlueBlackGradient();
 gradient_palette_t redOrgangeGradient();
 gradient_palette_t redOrgangeBlackGradient();
 gradient_palette_t redWhiteGradient();
+gradient_palette_t greenWhiteGradient();
 gradient_palette_t redWhitishGradient();
 gradient_palette_t redWhiteBlackGradient();
 gradient_palette_t blueWhiteGradient();
@@ -32,6 +34,7 @@ gradient_palette_t blueWhiteBlackGradient();
 gradient_palette_t blueYellowGradient();
 gradient_palette_t blueYellowBlackGradient();
 gradient_palette_t blueYellowBlackHardGradient();
+gradient_palette_t greenYellowGradient();
 gradient_palette_t whiteSolidGradient();
 
 struct gradient_palette_s {
