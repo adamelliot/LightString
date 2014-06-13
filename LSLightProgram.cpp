@@ -24,10 +24,6 @@ LSColorPalette *LSLightProgram::getColorPalette() {
 	return this->colorPalette;
 }
 
-void LSLightProgram::setZXSound(LSZXSound *zxSound) {
-	this->zxSound = zxSound;
-}
-
 uint8_t LSLightProgram::getPixelFormats() {
 	return RGB_PIXEL_BUFFER; // Should support simple RGB pixels
 }

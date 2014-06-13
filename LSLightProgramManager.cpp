@@ -41,7 +41,7 @@ LSLightProgramManager::LSLightProgramManager(uint8_t maxLightPrograms, uint8_t m
 	: maxProgramLength(-1), maxLightPrograms(maxLightPrograms), msPerFrame(20),
 	maxColorPalettes(maxColorPalettes), maxLightSections(maxLightSections),
 	paletteIndex(0), paletteCount(0), programIndex(0), programCount(0), programListLength(0),
-	sectionCount(0), zxSound(NULL), paused(false)
+	sectionCount(0), paused(false)
 {
 	//Serial.print(F("\n\n   -=-   Light String Booting   -=-\n\n"));
 
@@ -76,12 +76,6 @@ void LSLightProgramManager::setMaxFPS(uint16_t targetFPS) {
 	msPerFrame = 1000 / targetFPS;
 }
 
-void LSLightProgramManager::setZXSoundPin(int pin) {
-	if (zxSound)
-		delete zxSound;
-
-	zxSound = new LSZXSound(pin);
-}
 /*
 void LSLightProgramManager::fadeDown() {
 	uint8_t steps = FADE_STEPS;
@@ -271,6 +265,9 @@ plight_program_t LSLightProgramManager::getProgramForSection(uint8_t programID, 
 void LSLightProgramManager::selectProgramForSection(plight_section_t section, uint8_t programID, uint8_t programMode, bool keepPalette) {
 	bool createProgram = true;
 
+	Serial.print("Selecting Program Code: ");
+	Serial.println((programID << 8) | programMode, HEX);
+
 	if (section->activeProgram) {
 		delete section->activeProgram;
 	}
@@ -288,9 +285,6 @@ void LSLightProgramManager::selectProgramForSection(plight_section_t section, ui
 
 	section->activeProgram->setupMode(programMode);
 	section->programStartedAt = millis();
-
-	if (zxSound)
-		section->activeProgram->setZXSound(zxSound);
 }
 
 void LSLightProgramManager::selectProgramGroup(uint8_t programID) {
@@ -305,9 +299,6 @@ void LSLightProgramManager::selectProgramCode(uint16_t programCode) {
 		lightSections[i]->programIndexOffset = 0;
 	}
 
-	Serial.print("Selecting Program Code: ");
-	Serial.println(programCode, HEX);
-	
 	for (int i = 0; i < programListLength; i++) {
 		if (programList[programOrder[i]] == programCode) {
 			programIndex = i;
@@ -491,9 +482,6 @@ void LSLightProgramManager::loop() {
 	uint32_t time = millis(), timeDelta = time - lastTime;
 	lastTime = time;
 
-	if (zxSound)
-		zxSound->update();
-	
 	// TODO: Frame rate limiting isn't working quite right
 	if (timeDelta < msPerFrame) {
 		delay(msPerFrame - timeDelta);
@@ -519,83 +507,3 @@ void LSLightProgramManager::loop() {
 		lightStrips[i]->update();
 	}
 }
-
-// --- Old Activate ---
-
-/*
-void LSLightProgramManager::activateProgram(uint8_t index) {
-	uint8_t lastMode;
-
-	//Serial.println("Selecting program");
-
-	// First time through we don't have a palette so don't fade down
-//	if (activeColorPalette)
-//		fadeDown();
-
-	if (id == ANY_LIGHT_PROGRAM) {
-		lastMode = activeProgramID;
-		if (programCount > 1) {
-			while(lastMode == activeProgramID) {
-				activeProgramID = programs[random(programCount)];
-			}
-		}
-		else
-			activeProgramID = programs[0];
-	} else
-		activeProgramID = id;
-
-	id = activeProgramID;
-
-	//Serial.print("activeProgramID: ");
-	//Serial.println(activeProgramID);
-
-	nextPalette();
-
-	//Serial.print("Color Palette Index: ");
-	//Serial.println(currentColorPalette);
-
-	uint8_t newFrameRate = 0;
-	void *config = NULL;
-
-	for (int i = 0; i < lightSectionsCount; i++) {
-		if (lightSections[i]->supportedPrograms[id]) {
-			if (lightSections[i]->activeProgram) {
-				delete lightSections[i]->activeProgram;
-			}
-			lightSections[i]->activeProgram = lightSections[i]->supportedPrograms[id]->factory(lightSections[i]->pixelBuffer, activeColorPalette, lightSections[i]->colorFunc);
-			lightSections[i]->pixelBuffer->setColorPalette(activeColorPalette);
-
-			if (zxSound)
-				lightSections[i]->activeProgram->setZXSound(zxSound);
-
-			if (!config)
-				config = lightSections[i]->activeProgram->getConfig();
-
-			void *cfg = lightSections[i]->supportedPrograms[id]->config;
-			if (!cfg)
-				cfg = config;
-
-			if (cfg)
-				lightSections[i]->activeProgram->setConfig(cfg);
-
-			newFrameRate += lightSections[i]->activeProgram->getFrameRate();
-		}
-	}
-
-	for (int i = 0; lightStrips[i] && (i < lightSectionsCount); i++) {
-		if (lightStrips[i]->useIndexedPixelBuffer()) {
-			// TODO: This is going to be glitchy with divided 
-			activeColorPalette->setColorFunc(lightSections[i]->activeProgram->getColorFunc());
-			activeColorPalette->generatePaletteTable();
-			lightStrips[i]->setColorPalette(activeColorPalette);
-		}
-	}
-
-	newFrameRate /= lightSectionsCount;
-	msPerFrame = 1000 / newFrameRate;
-	lastTime = millis();
-	//Serial.print("Program Length: ");
-	//Serial.println(programLength);
-	programSwitchAfter = lastTime + programLength;
-}
-*/

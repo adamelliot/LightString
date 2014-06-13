@@ -202,8 +202,8 @@ gradient_palette_t redOrgangeBlackGradient() {
 
 gradient_palette_t redWhiteBlackGradient() {
 	return (gradient_palette_t){
-		{(color_t){255, 31, 0}, (color_t){255, 0, 0}, (color_t){255, 255, 255}, (color_t){0, 0, 0}, /*(color_t){0, 0, 0}, */(color_t){255, 31, 0}},
-		6,
+		{(color_t){255, 0, 31}, (color_t){255, 0, 0}, (color_t){255, 255, 255}, (color_t){0, 0, 0}, (color_t){255, 0, 31}},
+		4,
 		false
 	};
 }

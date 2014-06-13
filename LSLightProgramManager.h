@@ -3,7 +3,6 @@
 
 #include "LSLightProgram.h"
 #include "LSLEDStrip.h"
-#include "LSZXSound.h"
 
 #define ALL_SECTIONS 0xffff
 #define MAX_MODES 8
@@ -55,8 +54,6 @@ struct light_section_s {
 
 class LSLightProgramManager {
 private:
-	LSZXSound *zxSound;
-	
 	uint8_t maxColorPalettes;
 	pcolor_palette_t *colorPalettes;
 	uint8_t paletteCount;
@@ -106,7 +103,6 @@ public:
 	
 	void setMaxProgramLength(uint32_t maxProgramLength);
 	void setMaxFPS(uint16_t targetFPS);
-	void setZXSoundPin(int pin);
 	void pause(bool blackout = true, bool fade = true);
 	void unpause();
 	void togglePause();

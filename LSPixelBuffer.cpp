@@ -1,5 +1,5 @@
 #include "LSPixelBuffer.h"
-#include "LSFont15.h"
+//#include "LSFont15.h"
 
 LSPixelBuffer::LSPixelBuffer(void *pixels, uint16_t length, uint8_t flags)
 	: pixels(pixels), length(length), flags(flags)
@@ -163,7 +163,7 @@ void LSPixelBuffer::shiftDown(uint16_t by) {
 }
 
 // ============== Drawing Functions ==============
-
+/*
 // NOTE: Work in progress
 void LSPixelBuffer::drawText(uint8_t x, uint8_t y, uint8_t textX, uint8_t textY, uint8_t width, uint8_t height, const char *str) {
 	const int letterHeight = 15;
@@ -213,7 +213,7 @@ void LSPixelBuffer::drawText(uint8_t x, uint8_t y, uint8_t textX, uint8_t textY,
 	
 //	Serial.println("= = =\n");
 }
-
+*/
 void LSPixelBuffer::drawColumn(uint8_t x, uint8_t y, uint8_t height, uint8_t *buffer) {
 	uint16_t index = getIndex(x, y);
 	int8_t factor = ((x % 2) == 1 ? 1 : -1);

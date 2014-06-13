@@ -4,17 +4,18 @@
 #include "LSLightString.h"
 
 #define BURST 0x0a
-#define MAX_BURSTS 8
+#define MAX_BURSTS 10
 
 typedef struct burst_s burst_t, *pburst_t;
 struct burst_s {
 	uint16_t index;
-	float step;
-	float stepRate;
-	uint8_t stepsLeft;
+	uint8_t step;
+//	float step;
+//	float stepRate;
+	uint8_t totalSteps;
 	uint8_t colorIndex;
-	bool left;
-	bool right;
+
+	uint8_t direction; // 0x1 left, 0x2 right, 0x3 both
 };
 
 class LSLPBurst : public LSLightProgram {
@@ -25,7 +26,6 @@ protected:
 	bool left, right;
 
 	float fadeRate;
-	float stepChangeRate;
 	uint8_t colorIndex;
 	uint8_t changeRate;
 	uint8_t changeJump;

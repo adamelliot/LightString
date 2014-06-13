@@ -1,4 +1,5 @@
 #include "LSLPBounce.h"
+#include <math.h>
 
 LSLightProgram *factoryBurst(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc) {
 	return new LSLPBurst(pixelBuffer, colorPalette, colorFunc);
@@ -14,21 +15,23 @@ void LSLPBurst::setupMode(uint8_t mode) {
 	switch (mode) {
 		case 0: // Normal
 		break;
-		
+
 		case 1: // Mirrored
 		mirrored = true;
 		break;
-		
+
 		case 2:
 		oneWay = true;
+		left = false;
+		right = false;
 		break;
-		
+
 		case 3:
 		oneWay = true;
 		left = true;
 		right = false;
 		break;
-		
+
 		case 4:
 		oneWay = true;
 		left = false;
@@ -37,40 +40,51 @@ void LSLPBurst::setupMode(uint8_t mode) {
 		
 	}
 
-	stepChangeRate = 0.80 + ((float)random(110) / 1000);
-	fadeRate = 0.70 + ((float)random(301) / 1000);
-	
-	colorIndex = 0; // random(0xff);
-	changeRate = random(7) + 1;
-	changeJump = random(16) + 20;
+	fadeRate = 0.84 + ((float)random(120) / 1000);
 
-	minBurstLength = random(7) + 7;
+	int s = random(0x100);
+	bool allowSameColor = false;
+	color_t col;
+	for (colorIndex = s; colorIndex < s + 0x100; colorIndex++) {
+		col = colorPalette->getColor(colorIndex % 0x100);
+		if (col.channels[0] + col.channels[1] + col.channels[2] > 192) {
+			allowSameColor = true;
+			break;
+		}
+	}
+
+	if ((random(6) == 0) && allowSameColor) {
+		changeRate = 0;
+		changeJump = 0;
+	} else {
+		changeRate = random(1, 9);
+		changeJump = random(20, 37);
+	}
+
+	minBurstLength = random(10, 22);
 	for (int i = 0; i < MAX_BURSTS; i++) {
 		bursts[i].step = 0;
-		bursts[i].stepsLeft = 0;
+		bursts[i].totalSteps = 0;
+		bursts[i].direction = 0x3;
 	}
 }
 
 void LSLPBurst::addBurst() {
 	for (int i = 0; i < MAX_BURSTS; i++) {
-		if (bursts[i].stepsLeft == 0) {
+		if (bursts[i].totalSteps <= bursts[i].step) {
 			bursts[i].colorIndex = (colorIndex += changeJump);
 			bursts[i].index = random(pixelBuffer->getLength());
 			bursts[i].step = 0;
-			bursts[i].stepRate = 1.0f;
-			bursts[i].stepsLeft = random(5) + minBurstLength;
-			
+			bursts[i].totalSteps = random(minBurstLength, minBurstLength + 5);
+
 			if (oneWay) {
 				if (!left && !right) {
-					bursts[i].left = random(1) == 0;
-					bursts[i].right = !bursts[i].left;
+					bursts[i].direction = random(1, 3);
 				} else {
-					bursts[i].left = left;
-					bursts[i].right = right;
+					bursts[i].direction = left | (right << 1);
 				}
 			} else {
-				bursts[i].left = true;
-				bursts[i].right = true;
+				bursts[i].direction = 0x3;
 			}
 
 			break;
@@ -78,67 +92,54 @@ void LSLPBurst::addBurst() {
 	}
 }
 
+// Should be defined in math.h
+#define M_PI_2 1.57079632679489661923 /* pi/2 */
+
 void LSLPBurst::update() {
 	if (fade) pixelBuffer->fade(fadeRate);
 
-	uint16_t lenOffset = (pixelBuffer->getLength() / 40) >> (mirrored ? 1 : 0);
+	uint16_t lenOffset = (pixelBuffer->getLength() / 20) >> (mirrored ? 1 : 0);
 
-	if (random((minBurstLength >> (oneWay ? 1 : 0)) - lenOffset) == 0) {
+	if (random(max(minBurstLength - lenOffset, 1)) == 0) {
 		this->addBurst();
 	}
 
-	if (mirrored) {
-		for (int i = 0; i < MAX_BURSTS; i++) {
-			if (bursts[i].stepsLeft == 0)
-				continue;
+	for (int i = 0; i < MAX_BURSTS; i++) {
+		if (bursts[i].totalSteps <= bursts[i].step)
+			continue;
 
-			float lastStep = bursts[i].step - (bursts[i].stepRate / stepChangeRate);
-			uint8_t step = (uint8_t)bursts[i].step;
+		//float lastStep = bursts[i].step - (bursts[i].stepRate / stepChangeRate);
+		//uint8_t step = (uint8_t)bursts[i].step;
+		float ratio = (float)bursts[i].step / (float)bursts[i].totalSteps;
+		float offset = sin(ratio * M_PI_2) * (bursts[i].totalSteps >> 1);
+		uint8_t step = (uint8_t)offset;
+		
+		if (true) {
+			uint16_t a = (bursts[i].index + step) % pixelBuffer->getLength();
+			uint16_t b = (pixelBuffer->getLength() + bursts[i].index - step) % pixelBuffer->getLength();
 
-			if ((uint8_t)lastStep != step) {
-				uint16_t a = (bursts[i].index + step) % pixelBuffer->getLength();
-				uint16_t b = (pixelBuffer->getLength() + bursts[i].index - step) % pixelBuffer->getLength();
+			color_t col = colorPalette->getColor(bursts[i].colorIndex);
+			col = fadeColor(col, 1.0 - (ratio * ratio));
 
-				color_t col = colorPalette->getColor(bursts[i].colorIndex);
-				float ratio = bursts[i].step / (float)(bursts[i].step + bursts[i].stepsLeft);
-				col = fadeColor(col, 1.0 - ratio);
-
-				if (bursts[i].left)  pixelBuffer->setMirroredPixel(a, col);
-				if (bursts[i].right) pixelBuffer->setMirroredPixel(b, col);
+			if ((bursts[i].direction | 0x1) == bursts[i].direction) {
+				if (mirrored) {
+					pixelBuffer->setMirroredPixel(a, col);
+				} else {
+					pixelBuffer->setPixel(a, col);
+				}
 			}
-
-			bursts[i].step += bursts[i].stepRate;
-			bursts[i].stepRate *= stepChangeRate;
-			bursts[i].stepsLeft--;
-			bursts[i].colorIndex += changeRate;
-			bursts[i].colorIndex %= 0x100;
-		}
-	} else {
-		for (int i = 0; i < MAX_BURSTS; i++) {
-			if (bursts[i].stepsLeft == 0)
-				continue;
-
-			float lastStep = bursts[i].step - (bursts[i].stepRate / stepChangeRate);
-			uint8_t step = (uint8_t)bursts[i].step;
-
-			if ((uint8_t)lastStep != step) {
-				uint16_t a = (bursts[i].index + step) % pixelBuffer->getLength();
-				uint16_t b = (pixelBuffer->getLength() + bursts[i].index - step) % pixelBuffer->getLength();
-
-				color_t col = colorPalette->getColor(bursts[i].colorIndex);
-				float ratio = bursts[i].step / (float)(bursts[i].step + bursts[i].stepsLeft);
-				col = fadeColor(col, 1.0 - ratio);
-
-				if (bursts[i].left)  pixelBuffer->setPixel(a, col);
-				if (bursts[i].right) pixelBuffer->setPixel(b, col);
+			if ((bursts[i].direction | 0x2) == bursts[i].direction) {
+				if (mirrored) {
+					pixelBuffer->setMirroredPixel(b, col);
+				} else {
+					pixelBuffer->setPixel(b, col);
+				}
 			}
-
-			bursts[i].step += bursts[i].stepRate;
-			bursts[i].stepRate *= stepChangeRate;
-			bursts[i].stepsLeft--;
-			bursts[i].colorIndex += changeRate;
-			bursts[i].colorIndex %= 0x100;
 		}
+
+		bursts[i].step++;
+		bursts[i].colorIndex += changeRate;
+		bursts[i].colorIndex %= 0x100;
 	}
 
 	colorIndex += changeRate;
