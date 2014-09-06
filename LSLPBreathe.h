@@ -18,7 +18,7 @@ public:
 	uint8_t getProgramID() { return BREATHE; }
 
 	void setupMode(uint8_t mode);
-	void update();
+	void update(uint32_t ms);
 };
 
 LSLightProgram *factoryBreathe(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);

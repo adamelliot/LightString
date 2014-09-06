@@ -31,6 +31,8 @@
 #include "LSLPStrobe.h"
 #include "LSLPSolidColor.h"
 #include "LSLPBurst.h"
+#include "LSLPHeartBeat.h"
+#include "LSLPCustomProgram.h"
 
 /*
 

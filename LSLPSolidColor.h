@@ -19,7 +19,7 @@ public:
 
 	void setupMode(uint8_t mode);
 	void nudge(int32_t data);
-	void update();
+	void update(uint32_t ms);
 
 };
 

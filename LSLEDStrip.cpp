@@ -39,5 +39,5 @@ void LSLEDStrip::update() {/*
 		((uint8_t *)pixels)[j + 2] = 0;
 	}*/
 	
-	controller->show((CRGB *)pixels, length);
+	controller->show((CRGB *)pixels, length, 255);
 }

@@ -20,7 +20,7 @@ void LSLPPulse::setupMode(uint8_t mode) {
 	center = pulseTotal >> 1;
 }
 
-void LSLPPulse::update() {
+void LSLPPulse::update(uint32_t ms) {
 	if (fade) pixelBuffer->fade(fadeRate);
 
 	uint8_t offset = 0;
@@ -50,5 +50,5 @@ void LSLPPulse::update() {
 	}
 
 	colorIndex += changeRate;
-	LSLightProgram::update();
+	LSLightProgram::update(ms);
 }

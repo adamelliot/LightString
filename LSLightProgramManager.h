@@ -31,6 +31,9 @@ struct light_program_s {
 	uint8_t programID;
 };
 
+
+// TODO: Implement program grouping
+// NOTE: Group Program IDs are >= 0x80
 struct light_program_group_s {
 	uint8_t programID;
 	// Pairs of codes and strip addreses
@@ -54,6 +57,8 @@ struct light_section_s {
 
 class LSLightProgramManager {
 private:
+	bool verbose;
+	
 	uint8_t maxColorPalettes;
 	pcolor_palette_t *colorPalettes;
 	uint8_t paletteCount;
@@ -99,7 +104,7 @@ private:
 
 public:
 	
-	LSLightProgramManager(uint8_t maxLightPrograms = 8, uint8_t maxColorPalettes = 16, uint8_t maxLightSections = 1);
+	LSLightProgramManager(uint8_t maxLightPrograms = 8, uint8_t maxColorPalettes = 16, uint8_t maxLightSections = 1, bool verbose = false);
 	
 	void setMaxProgramLength(uint32_t maxProgramLength);
 	void setMaxFPS(uint16_t targetFPS);
@@ -116,6 +121,7 @@ public:
 
 	void selectProgramCode(uint16_t programCode);
 	void selectProgram(uint8_t programID);
+	void selectRandomProgram();
 	void nextProgram();
 	void prevProgram();
 	void randomizeProgramOrder();
@@ -125,6 +131,7 @@ public:
 	void addLightProgram(plight_program_factory_func factory, uint16_t sections);
 	void addLightProgram(plight_program_factory_func factory);
 
+	plight_section_t getLightSection(uint8_t);
 	uint16_t addLightSection(pcolor_func colorFunc, LSLEDStrip *lightStrip, uint16_t length = 0, uint16_t offset = 0);
 	
 	void loop();

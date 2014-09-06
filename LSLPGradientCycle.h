@@ -23,7 +23,7 @@ public:
 
 	uint8_t getProgramID() { return GRADIENT_CYCLE; }
 	void setupMode(uint8_t mode);
-	void update();
+	void update(uint32_t ms);
 };
 
 LSLightProgram *factoryGradientCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);

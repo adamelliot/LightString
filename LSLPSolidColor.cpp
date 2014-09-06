@@ -24,9 +24,9 @@ void LSLPSolidColor::nudge(int32_t data) {
 	colorIndex %= MAX_COLORS;
 }
 
-void LSLPSolidColor::update() {
+void LSLPSolidColor::update(uint32_t ms) {
 	color_t col = colors[colorIndex];
 	pixelBuffer->clear(colorFunc(col.channels[0], col.channels[1], col.channels[2]));
 
-	LSLightProgram::update();
+	LSLightProgram::update(ms);
 }

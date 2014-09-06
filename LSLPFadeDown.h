@@ -26,7 +26,7 @@ public:
 	uint8_t getFrameRate();
 	bool isProgramFinished();
 		
-	void update();
+	void update(uint32_t ms);
 };
 
 LSLightProgram *factoryFadeDown(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);

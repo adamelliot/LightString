@@ -37,7 +37,7 @@ void LSLPBounce::setupMode(uint8_t mode) {
 	bounceIndex = bounceTotal >> 1;
 }
 
-void LSLPBounce::update() {
+void LSLPBounce::update(uint32_t ms) {
 	if (fade) pixelBuffer->fade(fadeRate);
 
 	if (mirrored) {
@@ -56,5 +56,5 @@ void LSLPBounce::update() {
 	}
 
 	colorIndex += changeRate;
-	LSLightProgram::update();
+	LSLightProgram::update(ms);
 }

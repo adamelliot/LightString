@@ -20,7 +20,7 @@ public:
 	uint8_t getProgramID() { return SOLID_CYCLE; }
 
 	void setupMode(uint8_t mode);
-	void update();
+	void update(uint32_t ms);
 
 };
 

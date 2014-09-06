@@ -64,7 +64,7 @@ void LSLPTwinkle::nudge(int32_t data) {
 	if (size > 12) size = 1;
 }
 
-void LSLPTwinkle::update() {
+void LSLPTwinkle::update(uint32_t ms) {
 	if (fastFade) {
 		pixelBuffer->fade(fastFade);
 	} else {
@@ -109,5 +109,5 @@ void LSLPTwinkle::update() {
 		}
 	}
 
-	LSLightProgram::update();
+	LSLightProgram::update(ms);
 }

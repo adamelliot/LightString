@@ -11,7 +11,7 @@ void LSLPBreathe::setupMode(uint8_t mode) {
 	direction = 1.0f;
 }
 
-void LSLPBreathe::update() {
+void LSLPBreathe::update(uint32_t ms) {
 	color_t col = colorPalette->getColor(0);
 	
 	if (factor >= 1.0f) {
@@ -31,5 +31,5 @@ void LSLPBreathe::update() {
 	
 	pixelBuffer->clear(col);
 
-	LSLightProgram::update();
+	LSLightProgram::update(ms);
 }

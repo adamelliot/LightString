@@ -31,12 +31,12 @@ bool LSLPFadeDown::isProgramFinished() {
 	return faded;
 }
 
-void LSLPFadeDown::update() {
+void LSLPFadeDown::update(uint32_t ms) {
 	float ratio = (float)(steps - (step + 1)) / (float)(steps - step);
 	pixelBuffer->fade(ratio);
 	step++;
 
 	if (step >= steps) faded = true;
 
-	LSLightProgram::update();
+	LSLightProgram::update(ms);
 }

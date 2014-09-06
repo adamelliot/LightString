@@ -4,7 +4,7 @@
 #include "LSLightString.h"
 
 #define BURST 0x0a
-#define MAX_BURSTS 10
+#define MAX_BURSTS 8
 
 typedef struct burst_s burst_t, *pburst_t;
 struct burst_s {
@@ -43,7 +43,7 @@ public:
 	uint8_t getProgramID() { return BURST; }
 
 	void setupMode(uint8_t mode);
-	void update();
+	void update(uint32_t ms);
 };
 
 LSLightProgram *factoryBurst(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);

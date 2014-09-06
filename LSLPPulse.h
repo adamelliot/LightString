@@ -27,7 +27,7 @@ public:
 	uint8_t getProgramID() { return PULSE; }
 
 	void setupMode(uint8_t mode);
-	void update();
+	void update(uint32_t ms);
 };
 
 LSLightProgram *factoryPulse(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);

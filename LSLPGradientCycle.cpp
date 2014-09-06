@@ -35,9 +35,9 @@ void LSLPGradientCycle::drawNormal() {
 		pixelBuffer->setPixelWithPaletteIndex(i, i * fact + colorIndex);
 }
 
-void LSLPGradientCycle::update() {
+void LSLPGradientCycle::update(uint32_t ms) {
 	colorIndex += changeRate;
 	mirrored ? drawMirrored() : drawNormal();
 
-	LSLightProgram::update();
+	LSLightProgram::update(ms);
 }

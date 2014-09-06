@@ -15,7 +15,7 @@ void LSLPStrobe::nudge(int32_t data) {
 	if (frames > 8) frames = 1;
 }
 
-void LSLPStrobe::update() {
+void LSLPStrobe::update(uint32_t ms) {
 	color_t col = colorPalette->getColor(colorIndex);
 
 	frameCount++;
@@ -27,5 +27,5 @@ void LSLPStrobe::update() {
 		pixelBuffer->clear();
 	}
 
-	LSLightProgram::update();
+	LSLightProgram::update(ms);
 }

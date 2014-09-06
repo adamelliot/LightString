@@ -43,6 +43,28 @@ struct gradient_palette_s {
 	bool mirrored;
 };
 
+#define COL(R, G, B) ((color_t){R, G, B})
+
+#define COL_BLACK 	COL(0, 0, 0)
+#define COL_WHITE 	COL(255, 255, 255)
+#define COL_RED 		COL(255, 0, 0)
+#define COL_GREEN 	COL(0, 255, 0)
+#define COL_BLUE 		COL(0, 0, 255)
+
+#define PALLETE_2(NAME, A, B) gradient_palette_t NAME() { \
+	return (gradient_palette_t){ {A, B}, 2, false }; }
+#define PALLETE_3(NAME, A, B, C) gradient_palette_t NAME() { \
+	return (gradient_palette_t){ {A, B, C}, 3, false }; }
+#define PALLETE_4(NAME, A, B, C, D) gradient_palette_t NAME() { \
+	return (gradient_palette_t){ {A, B, C, D}, 4, false }; }
+
+#define PALLETE_2_M(NAME, A, B) gradient_palette_t NAME() { \
+	return (gradient_palette_t){ {A, B}, 2, true }; }
+#define PALLETE_3_M(NAME, A, B, C) gradient_palette_t NAME() { \
+	return (gradient_palette_t){ {A, B, C}, 3, true }; }
+#define PALLETE_4_M(NAME, A, B, C, D) gradient_palette_t NAME() { \
+	return (gradient_palette_t){ {A, B, C, D}, 4, true }; }
+
 class LSCPGradientPalette : public LSColorPalette {
 private:
 	color_t colors[MAX_GRADIENT_COLORS];

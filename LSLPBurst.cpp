@@ -95,7 +95,7 @@ void LSLPBurst::addBurst() {
 // Should be defined in math.h
 #define M_PI_2 1.57079632679489661923 /* pi/2 */
 
-void LSLPBurst::update() {
+void LSLPBurst::update(uint32_t ms) {
 	if (fade) pixelBuffer->fade(fadeRate);
 
 	uint16_t lenOffset = (pixelBuffer->getLength() / 20) >> (mirrored ? 1 : 0);
@@ -143,5 +143,5 @@ void LSLPBurst::update() {
 	}
 
 	colorIndex += changeRate;
-	LSLightProgram::update();
+	LSLightProgram::update(ms);
 }

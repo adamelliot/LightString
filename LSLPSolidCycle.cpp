@@ -26,7 +26,7 @@ void LSLPSolidCycle::setupMode(uint8_t mode) {
 	changeRate = random(4) + 3;
 }
 
-void LSLPSolidCycle::update() {
+void LSLPSolidCycle::update(uint32_t ms) {
 	colorIndex += changeRate;
 	color_t col = colorPalette->getColor(colorIndex);
 	uint16_t len = pixelBuffer->getLength();
@@ -46,5 +46,5 @@ void LSLPSolidCycle::update() {
 			pixelBuffer->setPixel(i, col2);
 	}
 
-	LSLightProgram::update();
+	LSLightProgram::update(ms);
 }

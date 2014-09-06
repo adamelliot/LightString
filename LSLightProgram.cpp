@@ -69,4 +69,4 @@ void *LSLightProgram::getConfig() { return NULL; }
 
 void LSLightProgram::nudge(int32_t) {}
 
-void LSLightProgram::update() {}
+void LSLightProgram::update(uint32_t ms) {}

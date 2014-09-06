@@ -25,7 +25,7 @@ public:
 	LSColorPalette *getColorPalette();
 
 	virtual uint8_t getPixelFormats();
-	
+
 	uint8_t getMode();
 	uint8_t getModeCount();
 	virtual void setupMode(uint8_t mode);
@@ -48,7 +48,7 @@ public:
 
 	virtual void nudge(int32_t data);
 
-	virtual void update();
+	virtual void update(uint32_t ms);
 };
 
 #endif
