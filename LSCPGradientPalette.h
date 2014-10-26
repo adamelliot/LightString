@@ -57,6 +57,8 @@ struct gradient_palette_s {
 	return (gradient_palette_t){ {A, B, C}, 3, false }; }
 #define PALLETE_4(NAME, A, B, C, D) gradient_palette_t NAME() { \
 	return (gradient_palette_t){ {A, B, C, D}, 4, false }; }
+#define PALLETE_5(NAME, A, B, C, D, E) gradient_palette_t NAME() { \
+	return (gradient_palette_t){ {A, B, C, D, E}, 5, false }; }
 
 #define PALLETE_2_M(NAME, A, B) gradient_palette_t NAME() { \
 	return (gradient_palette_t){ {A, B}, 2, true }; }
@@ -64,6 +66,8 @@ struct gradient_palette_s {
 	return (gradient_palette_t){ {A, B, C}, 3, true }; }
 #define PALLETE_4_M(NAME, A, B, C, D) gradient_palette_t NAME() { \
 	return (gradient_palette_t){ {A, B, C, D}, 4, true }; }
+#define PALLETE_5_M(NAME, A, B, C, D, E) gradient_palette_t NAME() { \
+	return (gradient_palette_t){ {A, B, C, D, E}, 5, true }; }
 
 class LSCPGradientPalette : public LSColorPalette {
 private:

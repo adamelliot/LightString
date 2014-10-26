@@ -248,7 +248,7 @@ void LSLightProgramManager::selectProgramForSection(plight_section_t section, ui
 	bool createProgram = true;
 
 	if (verbose && programID != 0x1) {
-		Serial.print("Selecting Program Code: ");
+		Serial.print(F("Selecting Program Code: "));
 		Serial.println((programID << 8) | programMode, HEX);
 	}
 
@@ -415,7 +415,7 @@ void LSLightProgramManager::addLightProgram(plight_program_factory_func factory,
 	if (!tempProgram->hideFromProgramList()) {
 		for (int i = 0; i < modeCount; i++) {
 			if (verbose) {
-				Serial.print("Adding Program Code: ");
+				Serial.print(F("Adding Program Code: "));
 				Serial.println((program->programID << 8) | modes[i], HEX);
 			}
 

@@ -2,7 +2,7 @@
 #define _LSLEDSTRIP_H_
 
 #include "LSPixelBuffer.h"
-#include "FastSPI_LED2.h"
+#include "FastLED.h"
 
 /**
  * A wrapper for FastSPI2 CLEDController to bridge the frameworks
