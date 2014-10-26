@@ -1,6 +1,7 @@
 #ifndef _LSPIXELBUFFER_H_
 #define _LSPIXELBUFFER_H_
 
+#include "FastLED.h"
 #include "LSColorPalette.h"
 
 enum LSPixelFormat {
@@ -25,13 +26,13 @@ private:
 	uint16_t width, height;
 	uint16_t length, bytes;
 
-	void *pixels;
+	CRGB *pixels;
 
 	uint16_t getIndex(uint8_t x, uint8_t y);
 
 public:
 
-	LSPixelBuffer(void *pixels, uint16_t length, uint8_t flags = 0);
+	LSPixelBuffer(CRGB *pixels, uint16_t length, uint8_t flags = 0);
 
 	bool useIndexedPixelBuffer();
 
@@ -45,9 +46,9 @@ public:
 	LSColorPalette *getColorPalette(void);
 	void setColorPalette(LSColorPalette *colorPalette);
 
-	void setPixel(uint16_t index, color_t col);
-	void setMirroredPixel(uint16_t index, color_t col);
-	void setPixelAt(uint8_t x, uint8_t y, color_t col);
+	void setPixel(uint16_t index, CRGB col);
+	void setMirroredPixel(uint16_t index, CRGB col);
+	void setPixelAt(uint8_t x, uint8_t y, CRGB col);
 
 	psetIndexedPixel setIndexedPixel;
 	psetIndexedPixel setMirroredIndexedPixel;
@@ -69,7 +70,7 @@ public:
 	void fade(uint8_t shift = 1);
 	void fade(float ratio);
 	void clear();
-	void clear(color_t col);
+	void clear(CRGB col);
 
 	void shiftLeft();
 	void shiftUp(uint16_t by = 1);
@@ -81,10 +82,10 @@ public:
 
 	void drawColumn(uint8_t x, uint8_t y, uint8_t height, uint8_t *pixels);
 	void drawColumn(uint8_t x, uint8_t y, uint8_t height, uint8_t colIndex);
-	void drawColumn(uint8_t x, uint8_t y0, uint8_t y1, color_t col);
+	void drawColumn(uint8_t x, uint8_t y0, uint8_t y1, CRGB col);
 	
-	void drawRow(uint8_t x, uint8_t x1, uint8_t y, color_t col);
-	void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, color_t col);
+	void drawRow(uint8_t x, uint8_t x1, uint8_t y, CRGB col);
+	void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, CRGB col);
 
 };
 

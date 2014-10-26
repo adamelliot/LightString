@@ -16,8 +16,8 @@ protected:
 	void drawNormal();
 
 public:
-	LSLPGradientCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {
+	LSLPGradientCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
+		: LSLightProgram(pixelBuffer, colorPalette) {
 		modeCount = 2; 
 	}
 
@@ -26,6 +26,6 @@ public:
 	void update(uint32_t ms);
 };
 
-LSLightProgram *factoryGradientCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
+LSLightProgram *factoryGradientCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
 
 #endif

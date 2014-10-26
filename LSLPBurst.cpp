@@ -1,8 +1,8 @@
 #include "LSLPBounce.h"
 #include <math.h>
 
-LSLightProgram *factoryBurst(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc) {
-	return new LSLPBurst(pixelBuffer, colorPalette, colorFunc);
+LSLightProgram *factoryBurst(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
+	return new LSLPBurst(pixelBuffer, colorPalette);
 }
 
 void LSLPBurst::setupMode(uint8_t mode) {
@@ -44,10 +44,10 @@ void LSLPBurst::setupMode(uint8_t mode) {
 
 	int s = random(0x100);
 	bool allowSameColor = false;
-	color_t col;
+	CRGB col;
 	for (colorIndex = s; colorIndex < s + 0x100; colorIndex++) {
 		col = colorPalette->getColor(colorIndex % 0x100);
-		if (col.channels[0] + col.channels[1] + col.channels[2] > 192) {
+		if (col.r + col.g + col.b > 192) {
 			allowSameColor = true;
 			break;
 		}
@@ -118,8 +118,9 @@ void LSLPBurst::update(uint32_t ms) {
 			uint16_t a = (bursts[i].index + step) % pixelBuffer->getLength();
 			uint16_t b = (pixelBuffer->getLength() + bursts[i].index - step) % pixelBuffer->getLength();
 
-			color_t col = colorPalette->getColor(bursts[i].colorIndex);
-			col = fadeColor(col, 1.0 - (ratio * ratio));
+			CRGB col = colorPalette->getColor(bursts[i].colorIndex);
+			uint8_t scale = 255 * (1.0 - (ratio * ratio));
+			col = col.nscale8(scale);
 
 			if ((bursts[i].direction | 0x1) == bursts[i].direction) {
 				if (mirrored) {

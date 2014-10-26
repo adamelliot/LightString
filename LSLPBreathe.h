@@ -12,8 +12,8 @@ protected:
 	float min; // Max is always 1.0
 
 public:
-	LSLPBreathe(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {}
+	LSLPBreathe(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
+		: LSLightProgram(pixelBuffer, colorPalette) {}
 
 	uint8_t getProgramID() { return BREATHE; }
 
@@ -21,6 +21,6 @@ public:
 	void update(uint32_t ms);
 };
 
-LSLightProgram *factoryBreathe(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
+LSLightProgram *factoryBreathe(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
 
 #endif

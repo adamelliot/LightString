@@ -1,7 +1,7 @@
 #include "LSLPBounce.h"
 
-LSLightProgram *factoryBounce(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc) {
-	return new LSLPBounce(pixelBuffer, colorPalette, colorFunc);
+LSLightProgram *factoryBounce(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
+	return new LSLPBounce(pixelBuffer, colorPalette);
 }
 
 void LSLPBounce::setupMode(uint8_t mode) {

@@ -36,8 +36,8 @@ protected:
 	void addBurst();
 
 public:
-	LSLPBurst(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {
+	LSLPBurst(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
+		: LSLightProgram(pixelBuffer, colorPalette) {
 		modeCount = 5;
 	}
 	uint8_t getProgramID() { return BURST; }
@@ -46,6 +46,6 @@ public:
 	void update(uint32_t ms);
 };
 
-LSLightProgram *factoryBurst(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
+LSLightProgram *factoryBurst(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
 
 #endif

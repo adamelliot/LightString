@@ -9,17 +9,13 @@ class LSLightProgram {
 protected:
 	uint8_t mode;
 	uint8_t modeCount;
-	pcolor_func colorFunc;
 	LSColorPalette *colorPalette;
 	LSPixelBuffer *pixelBuffer;
 
 public:
-	LSLightProgram(LSPixelBuffer *pixelBuffer, LSColorPalette *colorPalette, pcolor_func colorFunc);
+	LSLightProgram(LSPixelBuffer *pixelBuffer, LSColorPalette *colorPalette);
 
 	LSPixelBuffer *getPixelBuffer();
-
-	void setColorFunc(pcolor_func colorFunc);
-	pcolor_func getColorFunc();
 	
 	void setColorPalette(LSColorPalette *colorPalette);
 	LSColorPalette *getColorPalette();

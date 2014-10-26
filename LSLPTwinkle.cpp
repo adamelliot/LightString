@@ -1,7 +1,7 @@
 #include "LSLPTwinkle.h"
 
-LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc) {
-	return new LSLPTwinkle(pixelBuffer, colorPalette, colorFunc);
+LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
+	return new LSLPTwinkle(pixelBuffer, colorPalette);
 }
 
 void LSLPTwinkle::setupMode(uint8_t mode) {
@@ -55,7 +55,7 @@ void LSLPTwinkle::setupMode(uint8_t mode) {
 	colorIndex = 0;
 	indexStep = random(6) + 3;
 
-	col = (color_t){0xff, 0xff, 0xff};
+	col = CRGB::White;
 	white = false;//random(7) > 5;
 }
 
@@ -81,13 +81,13 @@ void LSLPTwinkle::update(uint32_t ms) {
 		for (int i = 0; i < newPoints; i++) {
 			uint16_t index = random(len) * size;
 			for (int j = 0; j < size; j++) {
-				color_t _col = colorPalette->getColor(colorIndex += indexStep);
+				CRGB _col = colorPalette->getColor(colorIndex += indexStep);
 
 				pixelBuffer->setPixel(index + j, _col);
 			}
 		}
 	} else {
-		color_t _col;
+		CRGB _col;
 		
 		if (white) {
 			_col = col;
@@ -95,7 +95,7 @@ void LSLPTwinkle::update(uint32_t ms) {
 			int s = random(0xff);
 			for (int i = s; i < s + 0xff; i++) {
 				_col = colorPalette->getColor(i % 0x100);
-				if (_col.channels[0] + _col.channels[1] + _col.channels[2] > 64)
+				if (_col.r + _col.g + _col.b > 64)
 					break;
 			}
 		}
@@ -103,7 +103,6 @@ void LSLPTwinkle::update(uint32_t ms) {
 		for (int i = 0; i < newPoints; i++) {
 			uint16_t index = random(len) * size;
 			for (int j = 0; j < size; j++) {
-				/*colorFunc(col.channels[0], col.channels[1], col.channels[2])*/
 				pixelBuffer->setPixel(index + j, _col);
 			}
 		}

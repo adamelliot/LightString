@@ -15,17 +15,16 @@ plight_program_t create_light_program(plight_program_factory_func factory) {
 
 	ret->factory = factory;
 
-	LSLightProgram *tempProgram = factory(NULL, NULL, NULL);
+	LSLightProgram *tempProgram = factory(NULL, NULL);
 	ret->programID = tempProgram->getProgramID();
 	delete tempProgram;
 
 	return ret;
 }
 
-plight_section_t create_light_section(pcolor_func colorFunc, LSLEDStrip *lightStrip, uint16_t length, uint16_t offset, uint8_t maxLightPrograms) {
+plight_section_t create_light_section(LSLEDStrip *lightStrip, uint16_t length, uint16_t offset, uint8_t maxLightPrograms) {
 	plight_section_t ret = (plight_section_t)calloc(1, sizeof(light_section_t));
 
-	ret->colorFunc = colorFunc;
 	ret->supportedPrograms = (uint8_t *)calloc(maxLightPrograms, sizeof(uint8_t));
 	ret->pixelBuffer = lightStrip->getPixelBuffer(length, offset);
 
@@ -133,8 +132,6 @@ void LSLightProgramManager::selectPaletteForSection(uint8_t index, plight_sectio
 		section->colorPalette->setConfig(colorPalettes[index]->config);
 	}
 
-	section->colorPalette->setColorFunc(section->activeProgram->getColorFunc());
-	
 	if (section->colorPalette->usePaletteTable()) {
 		section->colorPalette->generatePaletteTable();
 	}
@@ -258,7 +255,7 @@ void LSLightProgramManager::selectProgramForSection(plight_section_t section, ui
 
 	if (createProgram) {
 		plight_program_t program = getProgramForSection(programID, section);
-		section->activeProgram = program->factory(section->pixelBuffer, section->colorPalette, section->colorFunc);
+		section->activeProgram = program->factory(section->pixelBuffer, section->colorPalette);
 	}
 
 	if ((!section->activeProgram->usePreviousPalette() && !keepPalette) || !section->colorPalette) {
@@ -410,7 +407,7 @@ void LSLightProgramManager::addLightProgram(plight_program_factory_func factory,
 	}
 
 	lightPrograms[programCount++] = program;
-	LSLightProgram *tempProgram = program->factory(NULL, NULL, NULL);
+	LSLightProgram *tempProgram = program->factory(NULL, NULL);
 
 	if (!tempProgram->hideFromProgramList()) {
 		for (int i = 0; i < modeCount; i++) {
@@ -452,7 +449,7 @@ void LSLightProgramManager::randomizeProgramOrder() {
 }
 
 void LSLightProgramManager::addLightProgram(plight_program_factory_func factory, uint16_t sections) {
-	LSLightProgram *tempProgram = factory(NULL, NULL, NULL);
+	LSLightProgram *tempProgram = factory(NULL, NULL);
 	uint8_t modeCount = tempProgram->getModeCount();
 	uint8_t *modes = (uint8_t *)calloc(modeCount, sizeof(uint8_t));
 	
@@ -476,14 +473,14 @@ plight_section_t LSLightProgramManager::getLightSection(uint8_t index) {
 	return lightSections[index];
 }
 
-uint16_t LSLightProgramManager::addLightSection(pcolor_func colorFunc, LSLEDStrip *lightStrip, uint16_t length, uint16_t offset) {
+uint16_t LSLightProgramManager::addLightSection(LSLEDStrip *lightStrip, uint16_t length, uint16_t offset) {
 	if (sectionCount >= maxLightSections) {
 		if (verbose) Serial.println(F("ERROR: Maximum amount of light sections already added."));
 		return 0xffff;
 	}
 
 	if (length == 0) length = lightStrip->getLength();
-	lightSections[sectionCount] = create_light_section(colorFunc, lightStrip, length, offset, maxLightPrograms);
+	lightSections[sectionCount] = create_light_section(lightStrip, length, offset, maxLightPrograms);
 
 	int i = 0;
 	do {

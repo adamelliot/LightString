@@ -17,8 +17,8 @@ protected:
 	pcustom_update_func updateFunc;
 
 public:
-	LSLPCustomProgram(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {
+	LSLPCustomProgram(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
+		: LSLightProgram(pixelBuffer, colorPalette) {
 		modeCount = 1;
 	}
 
@@ -32,6 +32,6 @@ public:
 	void update(uint32_t ms);
 };
 
-LSLightProgram *factoryGradientCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
+LSLightProgram *factoryGradientCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
 
 #endif

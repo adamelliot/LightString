@@ -13,8 +13,8 @@ protected:
 	uint8_t offset;
 
 public:
-	LSLPSolidCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {
+	LSLPSolidCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
+		: LSLightProgram(pixelBuffer, colorPalette) {
 		modeCount = 3;
 	}
 	uint8_t getProgramID() { return SOLID_CYCLE; }
@@ -24,6 +24,6 @@ public:
 
 };
 
-LSLightProgram *factorySolidCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
+LSLightProgram *factorySolidCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
 
 #endif

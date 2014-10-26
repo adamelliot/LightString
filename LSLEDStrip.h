@@ -14,7 +14,7 @@ private:
 	CLEDController *controller;
 	LSColorPalette *colorPalette;
 
-	void *pixels;
+	CRGB *pixels;
 	uint16_t length;
 
 public:

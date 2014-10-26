@@ -1,7 +1,7 @@
 #include "LSLPBreathe.h"
 
-LSLightProgram *factoryBreathe(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc) {
-	return new LSLPBreathe(pixelBuffer, colorPalette, colorFunc);
+LSLightProgram *factoryBreathe(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
+	return new LSLPBreathe(pixelBuffer, colorPalette);
 }
 
 void LSLPBreathe::setupMode(uint8_t mode) {
@@ -12,7 +12,7 @@ void LSLPBreathe::setupMode(uint8_t mode) {
 }
 
 void LSLPBreathe::update(uint32_t ms) {
-	color_t col = colorPalette->getColor(0);
+	CRGB col = colorPalette->getColor(0);
 	
 	if (factor >= 1.0f) {
 		direction = -1.0;
@@ -25,9 +25,9 @@ void LSLPBreathe::update(uint32_t ms) {
 	factor += (step * direction);
 	if (factor > 1.0f) factor = 1.0f;
 
-	col.channels[0] *= factor;
-	col.channels[1] *= factor;
-	col.channels[2] *= factor;
+	col.r *= factor;
+	col.g *= factor;
+	col.b *= factor;
 	
 	pixelBuffer->clear(col);
 

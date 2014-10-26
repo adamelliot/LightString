@@ -2,6 +2,7 @@
 #define _LSCPGRADIENT_PALETTE_H_
 
 #include "LSLightString.h"
+#include <FastLED.h>
 
 #define MAX_GRADIENT_COLORS 5
 
@@ -38,19 +39,17 @@ gradient_palette_t greenYellowGradient();
 gradient_palette_t whiteSolidGradient();
 
 struct gradient_palette_s {
-	color_t colors[MAX_GRADIENT_COLORS];
+	CRGB colors[MAX_GRADIENT_COLORS];
 	uint8_t sections;
 	bool mirrored;
 };
-
-#define COL(R, G, B) ((color_t){R, G, B})
-
+/*
 #define COL_BLACK 	COL(0, 0, 0)
 #define COL_WHITE 	COL(255, 255, 255)
 #define COL_RED 		COL(255, 0, 0)
 #define COL_GREEN 	COL(0, 255, 0)
 #define COL_BLUE 		COL(0, 0, 255)
-
+*/
 #define PALLETE_2(NAME, A, B) gradient_palette_t NAME() { \
 	return (gradient_palette_t){ {A, B}, 2, false }; }
 #define PALLETE_3(NAME, A, B, C) gradient_palette_t NAME() { \
@@ -71,16 +70,14 @@ struct gradient_palette_s {
 
 class LSCPGradientPalette : public LSColorPalette {
 private:
-	color_t colors[MAX_GRADIENT_COLORS];
+	CRGB colors[MAX_GRADIENT_COLORS];
 	uint8_t sections;
 	bool mirrored;
-
-	color_t interpolate(color_t col1, color_t col2, float weight);
 
 public:
 	LSCPGradientPalette();
 	void setConfig(void *_config);
-	virtual color_t getColor(uint8_t index);
+	virtual CRGB getColor(uint8_t index);
 };
 
 LSColorPalette *factoryGradientPalette();
@@ -88,8 +85,8 @@ LSColorPalette *factoryGradientPalette();
 class LSCPTabledGradientPalette : public LSCPGradientPalette {
 public:
 	bool usePaletteTable();
-	color_t getColor(uint8_t index);
-	color_t getTableColor(uint8_t index);
+	CRGB getColor(uint8_t index);
+	CRGB getTableColor(uint8_t index);
 };
 
 LSColorPalette *factoryTabledGradientPalette();

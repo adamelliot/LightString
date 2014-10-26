@@ -7,7 +7,7 @@
 
 class LSLPTwinkle : public LSLightProgram {
 protected:
-	color_t col;
+	CRGB col;
 	bool colorCycle;
 	bool variableSize;
 	bool white;
@@ -21,8 +21,8 @@ protected:
 	void setRainbowPixel();
 
 public:
-	LSLPTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {
+	LSLPTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
+		: LSLightProgram(pixelBuffer, colorPalette) {
 			modeCount = 6;
 	}
 
@@ -33,6 +33,6 @@ public:
 	void update(uint32_t ms);
 };
 
-LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
+LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
 
 #endif

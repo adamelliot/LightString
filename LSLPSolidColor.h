@@ -9,11 +9,11 @@
 class LSLPSolidColor : public LSLightProgram {
 protected:
 	uint8_t colorIndex;
-	color_t colors[MAX_COLORS];
+	CRGB colors[MAX_COLORS];
 
 public:
-	LSLPSolidColor(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {}
+	LSLPSolidColor(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
+		: LSLightProgram(pixelBuffer, colorPalette) {}
 
 	uint8_t getProgramID() { return SOLID_COLOR; }
 
@@ -23,6 +23,6 @@ public:
 
 };
 
-LSLightProgram *factorySolidColor(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
+LSLightProgram *factorySolidColor(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
 
 #endif

@@ -5,12 +5,12 @@
 
 class LSCPSolidPalette : public LSColorPalette {
 private:
-	color_t color;
+	CRGB color;
 
 public:
 	
 	void setConfig(void *_config);
-	color_t getColor(uint8_t index);
+	CRGB getColor(uint8_t index);
 };
 
 LSColorPalette *factorySolidPalette();

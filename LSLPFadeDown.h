@@ -12,8 +12,8 @@ protected:
 	uint16_t totalTime;
 
 public:
-	LSLPFadeDown(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {}
+	LSLPFadeDown(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
+		: LSLightProgram(pixelBuffer, colorPalette) {}
 
 	uint8_t getProgramID() { return FADE_DOWN; }
 
@@ -29,6 +29,6 @@ public:
 	void update(uint32_t ms);
 };
 
-LSLightProgram *factoryFadeDown(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
+LSLightProgram *factoryFadeDown(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
 
 #endif

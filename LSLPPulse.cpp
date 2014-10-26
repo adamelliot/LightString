@@ -1,7 +1,7 @@
 #include "LSLPPulse.h"
 
-LSLightProgram *factoryPulse(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc) {
-	return new LSLPPulse(pixelBuffer, colorPalette, colorFunc);
+LSLightProgram *factoryPulse(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
+	return new LSLPPulse(pixelBuffer, colorPalette);
 }
 
 void LSLPPulse::setupMode(uint8_t mode) {

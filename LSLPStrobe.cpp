@@ -1,7 +1,7 @@
 #include "LSLPStrobe.h"
 
-LSLightProgram *factoryStrobe(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc) {
-	return new LSLPStrobe(pixelBuffer, colorPalette, colorFunc);
+LSLightProgram *factoryStrobe(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
+	return new LSLPStrobe(pixelBuffer, colorPalette);
 }
 
 void LSLPStrobe::setupMode(uint8_t mode) {
@@ -16,7 +16,7 @@ void LSLPStrobe::nudge(int32_t data) {
 }
 
 void LSLPStrobe::update(uint32_t ms) {
-	color_t col = colorPalette->getColor(colorIndex);
+	CRGB col = colorPalette->getColor(colorIndex);
 
 	frameCount++;
 	frameCount %= (frames * 2);

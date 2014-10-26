@@ -1,7 +1,7 @@
 #include "LSPixelBuffer.h"
 //#include "LSFont15.h"
 
-LSPixelBuffer::LSPixelBuffer(void *pixels, uint16_t length, uint8_t flags)
+LSPixelBuffer::LSPixelBuffer(CRGB *pixels, uint16_t length, uint8_t flags)
 	: pixels(pixels), length(length), flags(flags)
 {
 	pixelBytes = ((flags | INDEXED_PIXEL_BUFFER) == flags) ? 1 : 3;
@@ -58,17 +58,17 @@ uint16_t LSPixelBuffer::getIndex(uint8_t x, uint8_t y) {
 
 // ============== Setting Colored Pixel Functions ==============
 
-void LSPixelBuffer::setPixel(uint16_t index, color_t col) {
-	((pcolor_t)pixels)[index] = col;
+void LSPixelBuffer::setPixel(uint16_t index, CRGB col) {
+	pixels[index] = col;
 }
 
-void LSPixelBuffer::setMirroredPixel(uint16_t index, color_t col) {
-	((pcolor_t)pixels)[index] = col;
-	((pcolor_t)pixels)[length - index - 1] = col;
+void LSPixelBuffer::setMirroredPixel(uint16_t index, CRGB col) {
+	pixels[index] = col;
+	pixels[length - index - 1] = col;
 }
 
-void LSPixelBuffer::setPixelAt(uint8_t x, uint8_t y, color_t col) {
-	((pcolor_t)pixels)[getIndex(x, y)] = col;
+void LSPixelBuffer::setPixelAt(uint8_t x, uint8_t y, CRGB col) {
+	pixels[getIndex(x, y)] = col;
 }
 
 // ============== Setting Indexed Pixel Functions ==============
@@ -78,7 +78,7 @@ void LSPixelBuffer::setPixelWithColorIndex(uint16_t index, uint8_t colIndex) {
 }
 
 void LSPixelBuffer::setPixelWithPaletteIndex(uint16_t index, uint8_t colIndex) {
-	((pcolor_t)pixels)[index] = colorPalette->getColor(colIndex);
+	pixels[index] = colorPalette->getColor(colIndex);
 }
 
 void LSPixelBuffer::setMirroredPixelWithColorIndex(uint16_t index, uint8_t colIndex) {
@@ -87,10 +87,10 @@ void LSPixelBuffer::setMirroredPixelWithColorIndex(uint16_t index, uint8_t colIn
 }
 
 void LSPixelBuffer::setMirroredPixelWithPaletteIndex(uint16_t index, uint8_t colIndex) {
-	color_t col = colorPalette->getColor(colIndex);
+	CRGB col = colorPalette->getColor(colIndex);
 
-	((pcolor_t)pixels)[index] = col;
-	((pcolor_t)pixels)[length - index - 1] = col;
+	pixels[index] = col;
+	pixels[length - index - 1] = col;
 }
 
 void LSPixelBuffer::setPixelWithColorIndexAt(uint8_t x, uint8_t y, uint8_t colIndex) {
@@ -98,7 +98,7 @@ void LSPixelBuffer::setPixelWithColorIndexAt(uint8_t x, uint8_t y, uint8_t colIn
 }
 
 void LSPixelBuffer::setPixelWithPaletteIndexAt(uint8_t x, uint8_t y, uint8_t colIndex) {
-	((pcolor_t)pixels)[getIndex(x, y)] = colorPalette->getColor(colIndex);
+	pixels[getIndex(x, y)] = colorPalette->getColor(colIndex);
 }
 
 // ============== Pixel Retrival Functions ==============
@@ -135,9 +135,9 @@ void LSPixelBuffer::clear() {
 		((uint8_t *)pixels)[i] = 0;
 }
 
-void LSPixelBuffer::clear(color_t col) {
+void LSPixelBuffer::clear(CRGB col) {
 	for (int i = 0; i < length; i++)
-		((pcolor_t)pixels)[i] = col;
+		pixels[i] = col;
 }
 
 // Only shifts by 1 column
@@ -153,7 +153,7 @@ void LSPixelBuffer::shiftUp(uint16_t by) {
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height - 1; y++) {
 			// TODO: Make this not use getIndex
-			((pcolor_t)pixels)[getIndex(x, y)] = ((pcolor_t)pixels)[getIndex(x, y + 1)];
+			pixels[getIndex(x, y)] = pixels[getIndex(x, y + 1)];
 		}
 	}
 }
@@ -238,7 +238,7 @@ void LSPixelBuffer::drawColumn(uint8_t x, uint8_t y, uint8_t height, uint8_t col
 		((uint8_t *)pixels)[index + i * factor] = colIndex;
 }
 
-void LSPixelBuffer::drawColumn(uint8_t x, uint8_t y0, uint8_t y1, color_t col) {
+void LSPixelBuffer::drawColumn(uint8_t x, uint8_t y0, uint8_t y1, CRGB col) {
 	uint16_t index = getIndex(x, y0);
 	int8_t factor = ((x % 2) == 1 ? 1 : -1);
 
@@ -250,10 +250,10 @@ void LSPixelBuffer::drawColumn(uint8_t x, uint8_t y0, uint8_t y1, color_t col) {
 	}
 
 	for (int i = 0; i <= y1 - y0; i++)
-		((pcolor_t)pixels)[index + i * factor] = col;
+		pixels[index + i * factor] = col;
 }
 
-void LSPixelBuffer::drawRow(uint8_t x0, uint8_t x1, uint8_t y, color_t col) {
+void LSPixelBuffer::drawRow(uint8_t x0, uint8_t x1, uint8_t y, CRGB col) {
 	uint16_t index = getIndex(x0, y);
 	int8_t swap, step, nextStep;
 
@@ -273,7 +273,7 @@ void LSPixelBuffer::drawRow(uint8_t x0, uint8_t x1, uint8_t y, color_t col) {
 	}
 
 	for (int i = 0; i <= x1 - x0; i++) {
-		((pcolor_t)pixels)[index + i] = col;
+		pixels[index + i] = col;
 
 		index += step;
 		swap = step;
@@ -283,7 +283,7 @@ void LSPixelBuffer::drawRow(uint8_t x0, uint8_t x1, uint8_t y, color_t col) {
 }
 
 // Ripped from arduino-tvout 
-void LSPixelBuffer::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, color_t col) {
+void LSPixelBuffer::drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, CRGB col) {
 	if (x0 >= width || y0 >= height || x1 >= width || y1 >= height)
 		return;
 

@@ -1,7 +1,7 @@
 #include "LSLPSolidCycle.h"
 
-LSLightProgram *factorySolidCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc) {
-	return new LSLPSolidCycle(pixelBuffer, colorPalette, colorFunc);
+LSLightProgram *factorySolidCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
+	return new LSLPSolidCycle(pixelBuffer, colorPalette);
 }
 
 void LSLPSolidCycle::setupMode(uint8_t mode) {
@@ -28,7 +28,7 @@ void LSLPSolidCycle::setupMode(uint8_t mode) {
 
 void LSLPSolidCycle::update(uint32_t ms) {
 	colorIndex += changeRate;
-	color_t col = colorPalette->getColor(colorIndex);
+	CRGB col = colorPalette->getColor(colorIndex);
 	uint16_t len = pixelBuffer->getLength();
 
 	if (!split) {
@@ -37,7 +37,7 @@ void LSLPSolidCycle::update(uint32_t ms) {
 		}
 	} else {
 		uint8_t offset = reverse ? (len - offset - 1) : this->offset;
-		color_t col2 = colorPalette->getColor((colorIndex + offset) % 0xff);
+		CRGB col2 = colorPalette->getColor((colorIndex + offset) % 0xff);
 
 		for (int i = 0; i < (len >> 1); i++)
 			pixelBuffer->setPixel(i, col);

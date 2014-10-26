@@ -10,7 +10,7 @@
 #define FADE_STEPS 30
 #define FADE_TIME 1000
 
-typedef LSLightProgram *(*plight_program_factory_func)(LSPixelBuffer *, LSColorPalette *, pcolor_func);
+typedef LSLightProgram *(*plight_program_factory_func)(LSPixelBuffer *, LSColorPalette *);
 
 typedef struct color_palette_s color_palette_t, *pcolor_palette_t;
 typedef struct light_program_s light_program_t, *plight_program_t;
@@ -18,7 +18,7 @@ typedef struct light_section_s light_section_t, *plight_section_t;
 
 pcolor_palette_t create_color_palette(pcolor_palette_factory_func factory, void *config);
 plight_program_t create_light_program(plight_program_factory_func factory);
-plight_section_t create_light_section(pcolor_func colorFunc, LSLEDStrip *lightStrip, uint16_t length, uint16_t offset, uint8_t maxLightPrograms);
+plight_section_t create_light_section(LSLEDStrip *lightStrip, uint16_t length, uint16_t offset, uint8_t maxLightPrograms);
 void free_light_section(plight_section_t section);
 
 struct color_palette_s {
@@ -41,7 +41,6 @@ struct light_program_group_s {
 };
 
 struct light_section_s {
-	pcolor_func colorFunc;
 	uint8_t *supportedPrograms;
 	uint8_t programCount;
 
@@ -132,7 +131,7 @@ public:
 	void addLightProgram(plight_program_factory_func factory);
 
 	plight_section_t getLightSection(uint8_t);
-	uint16_t addLightSection(pcolor_func colorFunc, LSLEDStrip *lightStrip, uint16_t length = 0, uint16_t offset = 0);
+	uint16_t addLightSection(LSLEDStrip *lightStrip, uint16_t length = 0, uint16_t offset = 0);
 	
 	void loop();
 };

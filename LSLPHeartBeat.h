@@ -16,8 +16,8 @@ protected:
 	uint32_t nextLub, nextDub;
 
 public:
-	LSLPHeartBeat(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc)
-		: LSLightProgram(pixelBuffer, colorPalette, colorFunc) {
+	LSLPHeartBeat(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
+		: LSLightProgram(pixelBuffer, colorPalette) {
 		modeCount = 1;
 	}
 	uint8_t getProgramID() { return HEART_BEAT; }
@@ -27,6 +27,6 @@ public:
 
 };
 
-LSLightProgram *factoryHeartBeat(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc);
+LSLightProgram *factoryHeartBeat(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
 
 #endif

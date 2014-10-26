@@ -1,19 +1,11 @@
 #include "LSLightProgram.h"
 
-LSLightProgram::LSLightProgram(LSPixelBuffer *pixelBuffer, LSColorPalette *colorPalette, pcolor_func colorFunc)
-	: pixelBuffer(pixelBuffer), colorPalette(colorPalette), colorFunc(colorFunc), modeCount(1)
+LSLightProgram::LSLightProgram(LSPixelBuffer *pixelBuffer, LSColorPalette *colorPalette)
+	: pixelBuffer(pixelBuffer), colorPalette(colorPalette), modeCount(1)
 {}
 
 LSPixelBuffer *LSLightProgram::getPixelBuffer() {
 	return pixelBuffer;
-}
-
-void LSLightProgram::setColorFunc(pcolor_func colorFunc) {
-	this->colorFunc = colorFunc;
-}
-
-pcolor_func LSLightProgram::getColorFunc() {
-	return colorFunc;
 }
 
 void LSLightProgram::setColorPalette(LSColorPalette *colorPalette) {

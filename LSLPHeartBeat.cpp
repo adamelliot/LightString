@@ -1,7 +1,7 @@
 #include "LSLPHeartBeat.h"
 
-LSLightProgram *factoryHeartBeat(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette, pcolor_func colorFunc) {
-	return new LSLPHeartBeat(pixelBuffer, colorPalette, colorFunc);
+LSLightProgram *factoryHeartBeat(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
+	return new LSLPHeartBeat(pixelBuffer, colorPalette);
 }
 
 void LSLPHeartBeat::setupMode(uint8_t mode) {
@@ -25,14 +25,14 @@ void LSLPHeartBeat::update(uint32_t ms) {
 	pixelBuffer->fade(0.85f);
 
 	if (time > nextLub) {
-		color_t col = colorPalette->getColor(colorIndex += changeRate);
+		CRGB col = colorPalette->getColor(colorIndex += changeRate);
 
 		pixelBuffer->clear(col);
 		nextLub = time + msPerBeat;
 	}
 
 	if (time > nextDub) {
-		color_t col = colorPalette->getColor(colorIndex += changeRate);
+		CRGB col = colorPalette->getColor(colorIndex += changeRate);
 
 		pixelBuffer->clear(col);
 		pixelBuffer->fade(0.75f);
