@@ -130,7 +130,7 @@ plight_program_t LSLightProgramManager::getProgramForSection(uint8_t programID, 
 	return NULL;
 }
 
-void LSLightProgramManager::selectProgramForSection(plight_section_t section, uint8_t programID, uint8_t programMode) {
+void LSLightProgramManager::selectProgramForSection(plight_section_t section, uint8_t programID, uint8_t programMode, bool keepPalette) {
 	bool createProgram = true;
 
 	if (verbose && programID != 0x1) {
@@ -145,6 +145,11 @@ void LSLightProgramManager::selectProgramForSection(plight_section_t section, ui
 	if (createProgram) {
 		plight_program_t program = getProgramForSection(programID, section);
 		section->activeProgram = program->factory(section->pixelBuffer);
+	}
+
+	sectionsChanged++;
+	if (!keepPalette && (sectionsChanged % sectionCount) == 0) {
+		Palettes.next();
 	}
 
 	section->activeProgram->setupMode(programMode);
@@ -171,6 +176,7 @@ void LSLightProgramManager::selectProgramCode(uint16_t programCode, bool keepPal
 	}
 
 	if (!keepPalette) {
+		sectionsChanged = 0;
 		Palettes.next();
 	}
 
@@ -179,7 +185,7 @@ void LSLightProgramManager::selectProgramCode(uint16_t programCode, bool keepPal
 		this->selectProgramGroup(programID);
 	} else {
 		for (int i = 0; i < sectionCount; i++) {
-			this->selectProgramForSection(lightSections[i], programID, mode);
+			this->selectProgramForSection(lightSections[i], programID, mode, true);
 		}
 	}
 }

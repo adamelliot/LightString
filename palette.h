@@ -7,6 +7,8 @@
 #define PALETTE_MIRRORED 0x01
 #define PALETTE_SIZE 256
 
+#define LOG(MES, VAL) {Serial.print(MES); Serial.println(VAL);}
+
 void printColor(CRGB col);
 
 struct CRGBPalette {
@@ -19,8 +21,7 @@ struct CRGBPalette {
 	
 		uint16_t indexSections = index * (size - 1);
 		uint8_t section = indexSections / totalColors;
-	
-		uint8_t weight = ((indexSections << 8) / totalColors) - (section << 8);
+		uint32_t weight = indexSections % totalColors;
 
 		CRGB col = colors[section];
 		col = col.lerp8(colors[section + 1], weight);
@@ -34,8 +35,7 @@ struct CRGBPalette {
 	
 		uint16_t indexSections = index * (size - 1);
 		uint8_t section = indexSections / totalColors;
-	
-		uint8_t weight = ((indexSections << 8) / totalColors) - (section << 8);
+		uint32_t weight = indexSections % totalColors;
 
 		CRGB col = colors[section];
 		col = col.lerp8(colors[section + 1], weight);
@@ -57,12 +57,6 @@ struct CRGBPalette {
 		colors = (CRGB *)calloc(size, sizeof(CRGB));
 		memcpy8(colors, newColors, len * sizeof(CRGB));
 
-		Serial.println(len);
-		printColor(colors[0]);
-		printColor(colors[1]);
-		printColor(colors[2]);
-		printColor(colors[3]);
-
 		if (mirrored) {
 			uint8_t end = size - 1;
 			for (uint8_t i = end; i >= len; i--) {
@@ -71,19 +65,12 @@ struct CRGBPalette {
 		}
 	}
 	
-	inline CRGBPalette(const CRGBPalette& rhs) __attribute__((always_inline))
+	inline CRGBPalette& operator= (const CRGBPalette& rhs) __attribute__((always_inline))
 	{
 		size = rhs.size;
 
 		colors = (CRGB *)calloc(size, sizeof(CRGB));
 		memcpy8(colors, rhs.colors, size * sizeof(CRGB));
-
-		Serial.print("Size: ");
-		Serial.println(size);
-		printColor(colors[0]);
-		printColor(colors[1]);
-		printColor(colors[2]);
-		printColor(colors[3]);
 	}
 	
 	~CRGBPalette() {
@@ -98,7 +85,7 @@ struct CRGBPalette {
 	}
 };
 
-#define RAINBOW_GRADIENT CRGBPalette(4, (CRGB[]){CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Red})
+#define RAINBOW_GRADIENT CRGBPalette(4, (CRGB[]){CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Red})
 
 // Palettes
 

@@ -25,7 +25,7 @@
 */
 // Programs
 #include "LSLPFadeDown.h"
-#include "LSLPGradientCycle.h"/*
+#include "LSLPGradientCycle.h"
 #include "LSLPTwinkle.h"
 #include "LSLPSolidCycle.h"
 #include "LSLPBounce.h"
@@ -35,7 +35,7 @@
 #include "LSLPSolidColor.h"
 #include "LSLPBurst.h"
 #include "LSLPHeartBeat.h"
-#include "LSLPCustomProgram.h"*/
+#include "LSLPCustomProgram.h"
 
 /*
 

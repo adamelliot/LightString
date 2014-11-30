@@ -42,7 +42,6 @@ CRGBPalette PaletteManager::readPalette(uint16_t offset) {
 	uint8_t *colors;
 
 	offset += EEPROM_OFFSET;
-	
 	len = EEPROM.read(offset++);
 
 	colors = (uint8_t *)malloc(len);
@@ -51,7 +50,7 @@ CRGBPalette PaletteManager::readPalette(uint16_t offset) {
 		colors[i] = EEPROM.read(offset++);
 	}
 
-	CRGBPalette newPalette = CRGBPalette(len, (CRGB *)colors);
+	CRGBPalette newPalette = CRGBPalette((len / 3), (CRGB *)colors);
 	delete colors;
 
 	return newPalette;
@@ -62,6 +61,8 @@ void PaletteManager::loadPalette(uint8_t index) {
 	
 	for (int i = 0; i < index; i++) {
 		uint8_t len = EEPROM.read(offset);
+		LOG("LEN: ", len);
+
 		offset += len + 1;
 	}
 
