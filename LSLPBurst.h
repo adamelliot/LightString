@@ -10,8 +10,6 @@ typedef struct burst_s burst_t, *pburst_t;
 struct burst_s {
 	uint16_t index;
 	uint8_t step;
-//	float step;
-//	float stepRate;
 	uint8_t totalSteps;
 	uint8_t colorIndex;
 
@@ -36,8 +34,8 @@ protected:
 	void addBurst();
 
 public:
-	LSLPBurst(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
-		: LSLightProgram(pixelBuffer, colorPalette) {
+	LSLPBurst(LSPixelBuffer *pixelBuffer)
+		: LSLightProgram(pixelBuffer) {
 		modeCount = 5;
 	}
 	uint8_t getProgramID() { return BURST; }
@@ -46,6 +44,6 @@ public:
 	void update(uint32_t ms);
 };
 
-LSLightProgram *factoryBurst(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
+LSLightProgram *factoryBurst(LSPixelBuffer *pixelBuffer);
 
 #endif

@@ -7,30 +7,19 @@
 #define ALL_SECTIONS 0xffff
 #define MAX_MODES 8
 
-#define FADE_STEPS 30
-#define FADE_TIME 1000
+typedef LSLightProgram *(*plight_program_factory_func)(LSPixelBuffer *);
 
-typedef LSLightProgram *(*plight_program_factory_func)(LSPixelBuffer *, LSColorPalette *);
-
-typedef struct color_palette_s color_palette_t, *pcolor_palette_t;
 typedef struct light_program_s light_program_t, *plight_program_t;
 typedef struct light_section_s light_section_t, *plight_section_t;
 
-pcolor_palette_t create_color_palette(pcolor_palette_factory_func factory, void *config);
 plight_program_t create_light_program(plight_program_factory_func factory);
 plight_section_t create_light_section(LSLEDStrip *lightStrip, uint16_t length, uint16_t offset, uint8_t maxLightPrograms);
 void free_light_section(plight_section_t section);
-
-struct color_palette_s {
-	pcolor_palette_factory_func factory;
-	void *config;
-};
 
 struct light_program_s {
 	plight_program_factory_func factory;
 	uint8_t programID;
 };
-
 
 // TODO: Implement program grouping
 // NOTE: Group Program IDs are >= 0x80
@@ -45,10 +34,8 @@ struct light_section_s {
 	uint8_t programCount;
 
 	int16_t programIndexOffset;
-	int16_t paletteIndexOffset;
-	
+
 	LSPixelBuffer *pixelBuffer;
-	LSColorPalette *colorPalette;
 	LSLightProgram *activeProgram;
 	
 	uint32_t programStartedAt;
@@ -57,13 +44,7 @@ struct light_section_s {
 class LSLightProgramManager {
 private:
 	bool verbose;
-	
-	uint8_t maxColorPalettes;
-	pcolor_palette_t *colorPalettes;
-	uint8_t paletteCount;
-	uint8_t *paletteOrder;
-	uint8_t paletteIndex;
-	
+
 	uint8_t maxLightSections;
 	LSLEDStrip **lightStrips;
 	plight_section_t *lightSections;
@@ -84,27 +65,18 @@ private:
 
 	bool paused;
 	uint32_t pauseStartedAt;
-	
-	void saveState();
-	void loadState();
-
-	void selectPaletteForSection(uint8_t index, plight_section_t section);
-	void selectPalette(uint8_t index);
-	void normalizePaletteIndices();
 
 	plight_program_t getProgram(uint8_t programID);
 	plight_program_t getProgramForSection(uint8_t programID, plight_section_t section);
-	void selectProgramForSection(plight_section_t section, uint8_t programID, uint8_t programMode, bool keepPalette = false);
+	void selectProgramForSection(plight_section_t section, uint8_t programID, uint8_t programMode);
 	void selectProgramGroup(uint8_t programID);
 	void nextProgramForSection(plight_section_t section);
 	void normalizeProgramIndices();
-	
-//	void fadeDown();
 
 public:
-	
-	LSLightProgramManager(uint8_t maxLightPrograms = 8, uint8_t maxColorPalettes = 16, uint8_t maxLightSections = 1, bool verbose = false);
-	
+
+	LSLightProgramManager(uint8_t maxLightPrograms = 8, uint8_t maxLightSections = 1, bool verbose = false);
+
 	void setMaxProgramLength(uint32_t maxProgramLength);
 	void setMaxFPS(uint16_t targetFPS);
 	void pause(bool blackout = true, bool fade = true);
@@ -113,13 +85,8 @@ public:
 	
 	void nudge(int32_t);
 	
-	void nextPalette();
-	void prevPalette();
-	void randomizePaletteOrder();
-	void addColorPalette(pcolor_palette_factory_func factory, void *config = NULL);
-
-	void selectProgramCode(uint16_t programCode);
-	void selectProgram(uint8_t programID);
+	void selectProgramCode(uint16_t programCode, bool keepPalette = false);
+	void selectProgram(uint8_t programID, bool keepPalette = false);
 	void selectRandomProgram();
 	void nextProgram();
 	void prevProgram();

@@ -19,8 +19,8 @@ protected:
 	uint16_t bounceTotal;
 
 public:
-	LSLPBounce(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
-		: LSLightProgram(pixelBuffer, colorPalette) {
+	LSLPBounce(LSPixelBuffer *pixelBuffer)
+		: LSLightProgram(pixelBuffer) {
 		modeCount = 4; 
 	}
 	uint8_t getProgramID() { return BOUNCE; }
@@ -29,6 +29,6 @@ public:
 	void update(uint32_t ms);
 };
 
-LSLightProgram *factoryBounce(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
+LSLightProgram *factoryBounce(LSPixelBuffer *pixelBuffer);
 
 #endif

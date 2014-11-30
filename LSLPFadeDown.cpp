@@ -1,7 +1,7 @@
 #include "LSLPFadeDown.h"
 
-LSLightProgram *factoryFadeDown(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
-	return new LSLPFadeDown(pixelBuffer, colorPalette);
+LSLightProgram *factoryFadeDown(LSPixelBuffer *pixelBuffer) {
+	return new LSLPFadeDown(pixelBuffer);
 }
 
 void LSLPFadeDown::setupMode(uint8_t mode) {

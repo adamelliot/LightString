@@ -21,8 +21,8 @@ protected:
 	void setRainbowPixel();
 
 public:
-	LSLPTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
-		: LSLightProgram(pixelBuffer, colorPalette) {
+	LSLPTwinkle(LSPixelBuffer *pixelBuffer)
+		: LSLightProgram(pixelBuffer) {
 			modeCount = 6;
 	}
 
@@ -33,6 +33,6 @@ public:
 	void update(uint32_t ms);
 };
 
-LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
+LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer);
 
 #endif

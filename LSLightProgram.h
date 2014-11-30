@@ -3,23 +3,17 @@
 
 #include "LSPixelBuffer.h"
 
-typedef LSColorPalette *(*pcolor_palette_factory_func)();
-
 class LSLightProgram {
 protected:
 	uint8_t mode;
 	uint8_t modeCount;
-	LSColorPalette *colorPalette;
 	LSPixelBuffer *pixelBuffer;
 
 public:
-	LSLightProgram(LSPixelBuffer *pixelBuffer, LSColorPalette *colorPalette);
+	LSLightProgram(LSPixelBuffer *pixelBuffer);
 
 	LSPixelBuffer *getPixelBuffer();
 	
-	void setColorPalette(LSColorPalette *colorPalette);
-	LSColorPalette *getColorPalette();
-
 	virtual uint8_t getPixelFormats();
 
 	uint8_t getMode();

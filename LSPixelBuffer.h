@@ -2,7 +2,7 @@
 #define _LSPIXELBUFFER_H_
 
 #include "FastLED.h"
-#include "LSColorPalette.h"
+#include "palette.h"
 
 enum LSPixelFormat {
 	RGB_PIXEL_BUFFER = 0x01,
@@ -15,11 +15,9 @@ enum LSPixelFormat {
  */
 class LSPixelBuffer {
 private:
-	
+
 	typedef void (LSPixelBuffer::*psetIndexedPixel)(uint16_t index, uint8_t colIndex);
 	typedef void (LSPixelBuffer::*psetIndexedPixelAt)(uint8_t x, uint8_t y, uint8_t colIndex);
-
-	LSColorPalette *colorPalette;
 
 	uint8_t flags;
 	uint8_t pixelBytes;
@@ -43,9 +41,6 @@ public:
 	uint16_t getWidth();
 	uint16_t getHeight();
 	
-	LSColorPalette *getColorPalette(void);
-	void setColorPalette(LSColorPalette *colorPalette);
-
 	void setPixel(uint16_t index, CRGB col);
 	void setMirroredPixel(uint16_t index, CRGB col);
 	void setPixelAt(uint8_t x, uint8_t y, CRGB col);

@@ -1,7 +1,7 @@
-#include "LSLPStrobe.h"
+#include "LSLPSolidColor.h"
 
-LSLightProgram *factorySolidColor(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
-	return new LSLPSolidColor(pixelBuffer, colorPalette);
+LSLightProgram *factorySolidColor(LSPixelBuffer *pixelBuffer) {
+	return new LSLPSolidColor(pixelBuffer);
 }
 
 void LSLPSolidColor::setupMode(uint8_t mode) {

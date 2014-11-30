@@ -12,8 +12,8 @@ protected:
 	CRGB colors[MAX_COLORS];
 
 public:
-	LSLPSolidColor(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
-		: LSLightProgram(pixelBuffer, colorPalette) {}
+	LSLPSolidColor(LSPixelBuffer *pixelBuffer)
+		: LSLightProgram(pixelBuffer) {}
 
 	uint8_t getProgramID() { return SOLID_COLOR; }
 
@@ -23,6 +23,6 @@ public:
 
 };
 
-LSLightProgram *factorySolidColor(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
+LSLightProgram *factorySolidColor(LSPixelBuffer *pixelBuffer);
 
 #endif

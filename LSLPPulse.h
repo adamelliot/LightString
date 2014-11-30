@@ -21,8 +21,8 @@ private:
 	uint16_t center;
 
 public:
-	LSLPPulse(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
-		: LSLightProgram(pixelBuffer, colorPalette) {}
+	LSLPPulse(LSPixelBuffer *pixelBuffer)
+		: LSLightProgram(pixelBuffer) {}
 
 	uint8_t getProgramID() { return PULSE; }
 
@@ -30,6 +30,6 @@ public:
 	void update(uint32_t ms);
 };
 
-LSLightProgram *factoryPulse(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
+LSLightProgram *factoryPulse(LSPixelBuffer *pixelBuffer);
 
 #endif

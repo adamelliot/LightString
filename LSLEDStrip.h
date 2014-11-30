@@ -10,9 +10,7 @@
 class LSLEDStrip {
 
 private:
-	
 	CLEDController *controller;
-	LSColorPalette *colorPalette;
 
 	CRGB *pixels;
 	uint16_t length;
@@ -23,9 +21,6 @@ public:
 
 	void *getPixels(void);
 	
-	LSColorPalette *getColorPalette(void);
-	void setColorPalette(LSColorPalette *colorPalette);
-
 	uint16_t getLength(void);
 	LSPixelBuffer *getPixelBuffer(uint16_t length = 0, uint16_t offset = 0);
 

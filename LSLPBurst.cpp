@@ -1,8 +1,8 @@
-#include "LSLPBounce.h"
+#include "LSLPBurst.h"
 #include <math.h>
 
-LSLightProgram *factoryBurst(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
-	return new LSLPBurst(pixelBuffer, colorPalette);
+LSLightProgram *factoryBurst(LSPixelBuffer *pixelBuffer) {
+	return new LSLPBurst(pixelBuffer);
 }
 
 void LSLPBurst::setupMode(uint8_t mode) {
@@ -46,7 +46,7 @@ void LSLPBurst::setupMode(uint8_t mode) {
 	bool allowSameColor = false;
 	CRGB col;
 	for (colorIndex = s; colorIndex < s + 0x100; colorIndex++) {
-		col = colorPalette->getColor(colorIndex % 0x100);
+		col = Palettes.getColor(colorIndex % 0x100);
 		if (col.r + col.g + col.b > 192) {
 			allowSameColor = true;
 			break;
@@ -118,7 +118,7 @@ void LSLPBurst::update(uint32_t ms) {
 			uint16_t a = (bursts[i].index + step) % pixelBuffer->getLength();
 			uint16_t b = (pixelBuffer->getLength() + bursts[i].index - step) % pixelBuffer->getLength();
 
-			CRGB col = colorPalette->getColor(bursts[i].colorIndex);
+			CRGB col = Palettes.getColor(bursts[i].colorIndex);
 			uint8_t scale = 255 * (1.0 - (ratio * ratio));
 			col = col.nscale8(scale);
 

@@ -1,7 +1,7 @@
 #include "LSLPTwinkle.h"
 
-LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
-	return new LSLPTwinkle(pixelBuffer, colorPalette);
+LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer) {
+	return new LSLPTwinkle(pixelBuffer);
 }
 
 void LSLPTwinkle::setupMode(uint8_t mode) {
@@ -81,7 +81,7 @@ void LSLPTwinkle::update(uint32_t ms) {
 		for (int i = 0; i < newPoints; i++) {
 			uint16_t index = random(len) * size;
 			for (int j = 0; j < size; j++) {
-				CRGB _col = colorPalette->getColor(colorIndex += indexStep);
+				CRGB _col = Palettes.getColor(colorIndex += indexStep);
 
 				pixelBuffer->setPixel(index + j, _col);
 			}
@@ -94,7 +94,7 @@ void LSLPTwinkle::update(uint32_t ms) {
 		} else {
 			int s = random(0xff);
 			for (int i = s; i < s + 0xff; i++) {
-				_col = colorPalette->getColor(i % 0x100);
+				_col = Palettes.getColor(i % 0x100);
 				if (_col.r + _col.g + _col.b > 64)
 					break;
 			}

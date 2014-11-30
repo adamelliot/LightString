@@ -1,7 +1,7 @@
 #include "LSLPGradientCycle.h"
 
-LSLightProgram *factoryGradientCycle(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
-	return new LSLPGradientCycle(pixelBuffer, colorPalette);
+LSLightProgram *factoryGradientCycle(LSPixelBuffer *pixelBuffer) {
+	return new LSLPGradientCycle(pixelBuffer);
 }
 
 void LSLPGradientCycle::setupMode(uint8_t mode) {

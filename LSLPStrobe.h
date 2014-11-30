@@ -11,8 +11,8 @@ protected:
 	uint16_t frames, frameCount;
 
 public:
-	LSLPStrobe(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette)
-		: LSLightProgram(pixelBuffer, colorPalette) {}
+	LSLPStrobe(LSPixelBuffer *pixelBuffer)
+		: LSLightProgram(pixelBuffer) {}
 
 	uint8_t getProgramID() { return STROBE; }
 
@@ -21,6 +21,6 @@ public:
 	void update(uint32_t ms);
 };
 
-LSLightProgram *factoryStrobe(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette);
+LSLightProgram *factoryStrobe(LSPixelBuffer *pixelBuffer);
 
 #endif

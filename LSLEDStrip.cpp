@@ -24,14 +24,6 @@ void *LSLEDStrip::getPixels(void) {
 	return pixels;
 }
 
-LSColorPalette *LSLEDStrip::getColorPalette(void) {
-	return colorPalette;
-}
-
-void LSLEDStrip::setColorPalette(LSColorPalette *colorPalette) {
-	this->colorPalette = colorPalette;
-}
-
 void LSLEDStrip::update() {/*
 	for (int j = 0; j < length * 3; j += 6) {
 		((uint8_t *)pixels)[j] = 0;

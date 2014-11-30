@@ -1,21 +1,12 @@
 #include "LSLightProgramManager.h"
 #include "LSLPFadeDown.h"
 
-pcolor_palette_t create_color_palette(pcolor_palette_factory_func factory, void *config) {
-	pcolor_palette_t ret = (pcolor_palette_t)calloc(1, sizeof(color_palette_t));
-
-	ret->factory = factory;
-	ret->config = config;
-
-	return ret;
-}
-
 plight_program_t create_light_program(plight_program_factory_func factory) {
 	plight_program_t ret = (plight_program_t)calloc(1, sizeof(light_program_t));
 
 	ret->factory = factory;
 
-	LSLightProgram *tempProgram = factory(NULL, NULL);
+	LSLightProgram *tempProgram = factory(NULL);
 	ret->programID = tempProgram->getProgramID();
 	delete tempProgram;
 
@@ -36,10 +27,10 @@ void free_light_section(plight_section_t section) {
 	free(section);
 }
 
-LSLightProgramManager::LSLightProgramManager(uint8_t maxLightPrograms, uint8_t maxColorPalettes, uint8_t maxLightSections, bool verbose)
+LSLightProgramManager::LSLightProgramManager(uint8_t maxLightPrograms, uint8_t maxLightSections, bool verbose)
 	: maxProgramLength(-1), maxLightPrograms(maxLightPrograms), msPerFrame(20),
-	maxColorPalettes(maxColorPalettes), maxLightSections(maxLightSections),
-	paletteIndex(0), paletteCount(0), programIndex(0), programCount(0), programListLength(0),
+	maxLightSections(maxLightSections),
+	programIndex(0), programCount(0), programListLength(0),
 	sectionCount(0), paused(false), verbose(verbose)
 {
 	if (verbose) {
@@ -49,23 +40,11 @@ LSLightProgramManager::LSLightProgramManager(uint8_t maxLightPrograms, uint8_t m
 
 	// TODO: This will not be enough for all the programs and their modes
 	programList = (uint16_t *)calloc(maxLightPrograms * MAX_MODES, sizeof(uint16_t));
-	colorPalettes = (pcolor_palette_t *)calloc(maxColorPalettes, sizeof(pcolor_palette_t));
 	lightSections = (plight_section_t *)calloc(maxLightSections, sizeof(plight_section_t));
 	lightStrips = (LSLEDStrip **)calloc(maxLightSections, sizeof(LSLEDStrip *));
 	lightPrograms = (plight_program_t *)calloc(maxLightPrograms, sizeof(plight_program_t));
 
-	paletteOrder = (uint8_t *)calloc(maxColorPalettes, sizeof(uint8_t));
 	programOrder = (uint8_t *)calloc(maxLightPrograms, sizeof(uint8_t));
-
-	loadState();
-}
-
-void LSLightProgramManager::saveState() {
-	// TODO: Write the palette and program to EPROM
-}
-
-void LSLightProgramManager::loadState() {
-	// TODO: Read the palette and program to EPROM
 }
 
 // ------------------------ Manager Control ------------------------
@@ -88,8 +67,7 @@ void LSLightProgramManager::pause(bool blackout, bool fade) {
 
 	if (blackout) {
 		if (fade) {
-			paletteIndex--;
-			selectProgram(FADE_DOWN);
+			selectProgram(FADE_DOWN, false);
 		} else {
 			for (int i = 0; i < sectionCount; i++) {
 				LSPixelBuffer *pixelBuffer = lightSections[i]->activeProgram->getPixelBuffer();
@@ -117,95 +95,6 @@ void LSLightProgramManager::nudge(int32_t data) {
 	for (int i = 0; i < sectionCount; i++) {
 		lightSections[i]->activeProgram->nudge(data);
 	}
-}
-
-// ------------------------ Palette Management ------------------------
-
-void LSLightProgramManager::selectPaletteForSection(uint8_t index, plight_section_t section) {
-	if (section->colorPalette)
-		delete section->colorPalette;
-
-	index = paletteOrder[index];
-
-	section->colorPalette = colorPalettes[index]->factory();
-	if (colorPalettes[index]->config) {
-		section->colorPalette->setConfig(colorPalettes[index]->config);
-	}
-
-	if (section->colorPalette->usePaletteTable()) {
-		section->colorPalette->generatePaletteTable();
-	}
-	
-	section->pixelBuffer->setColorPalette(section->colorPalette);
-	section->activeProgram->setColorPalette(section->colorPalette);
-}
-
-void LSLightProgramManager::selectPalette(uint8_t index) {
-	for (uint8_t i = 0; i < sectionCount; i++) {
-		plight_section_t section = lightSections[i];
-		section->paletteIndexOffset = 0;
-
-		this->selectPaletteForSection(paletteIndex, section);
-	}
-}
-
-void LSLightProgramManager::normalizePaletteIndices() {
-	uint8_t minIndex = 0xff;
-
-	for (int i = 0; i < sectionCount; i++) {
-		if (minIndex > lightSections[i]->paletteIndexOffset)
-			minIndex = lightSections[i]->paletteIndexOffset;
-	}
-
-	for (int i = 0; i < sectionCount; i++) {
-		lightSections[i]->paletteIndexOffset -= minIndex;
-	}
-
-	paletteIndex += minIndex;
-	paletteIndex %= paletteCount;
-}
-
-// Select the next palette and set that palette for all programs
-void LSLightProgramManager::nextPalette() {
-	this->normalizePaletteIndices();
-
-	this->selectPalette(paletteIndex);
-
-	paletteIndex++;
-	paletteIndex %= paletteCount;
-}
-
-void LSLightProgramManager::prevPalette() {
-	this->normalizePaletteIndices();
-
-	this->selectPalette(paletteIndex);
-
-	if (paletteIndex == 0)
-		paletteIndex = paletteCount - 1;
-	else
-		paletteIndex--;
-	paletteIndex %= paletteCount;
-}
-
-void LSLightProgramManager::randomizePaletteOrder() {
-	for (int i = 0; i < paletteCount; i++)
-		paletteOrder[i] = maxColorPalettes;
-
-	uint8_t paletteIndex;
-	for (int i = 0; i < paletteCount; i++) {
-		while (paletteOrder[paletteIndex = random(paletteCount)] != maxColorPalettes);
-		paletteOrder[paletteIndex] = i;
-	}
-}
-
-void LSLightProgramManager::addColorPalette(pcolor_palette_factory_func factory, void *config) {
-	if (paletteCount >= maxColorPalettes) {
-		if (verbose) Serial.println(F("ERROR: Already loaded the maximum amount of palettes."));
-		return;
-	}
-
-	colorPalettes[paletteCount] = create_color_palette(factory, config);
-	paletteOrder[paletteCount] = paletteCount++;
 }
 
 // ------------------------ Program Management ------------------------
@@ -241,7 +130,7 @@ plight_program_t LSLightProgramManager::getProgramForSection(uint8_t programID, 
 	return NULL;
 }
 
-void LSLightProgramManager::selectProgramForSection(plight_section_t section, uint8_t programID, uint8_t programMode, bool keepPalette) {
+void LSLightProgramManager::selectProgramForSection(plight_section_t section, uint8_t programID, uint8_t programMode) {
 	bool createProgram = true;
 
 	if (verbose && programID != 0x1) {
@@ -255,13 +144,7 @@ void LSLightProgramManager::selectProgramForSection(plight_section_t section, ui
 
 	if (createProgram) {
 		plight_program_t program = getProgramForSection(programID, section);
-		section->activeProgram = program->factory(section->pixelBuffer, section->colorPalette);
-	}
-
-	if ((!section->activeProgram->usePreviousPalette() && !keepPalette) || !section->colorPalette) {
-		uint8_t index = (paletteIndex + section->paletteIndexOffset) % paletteCount;
-		this->selectPaletteForSection(index, section);
-		section->paletteIndexOffset++;
+		section->activeProgram = program->factory(section->pixelBuffer);
 	}
 
 	section->activeProgram->setupMode(programMode);
@@ -272,7 +155,7 @@ void LSLightProgramManager::selectProgramGroup(uint8_t programID) {
 	
 }
 
-void LSLightProgramManager::selectProgramCode(uint16_t programCode) {
+void LSLightProgramManager::selectProgramCode(uint16_t programCode, bool keepPalette) {
 	uint8_t programID = (uint8_t)(programCode >> 8);
 	uint8_t mode = ((uint8_t)programCode & 0xff);
 
@@ -287,17 +170,21 @@ void LSLightProgramManager::selectProgramCode(uint16_t programCode) {
 		}
 	}
 
+	if (!keepPalette) {
+		Palettes.next();
+	}
+
 	// Select programs for each section
 	if ((programID & 0x80) == 0x80) {
 		this->selectProgramGroup(programID);
 	} else {
 		for (int i = 0; i < sectionCount; i++) {
-			this->selectProgramForSection(lightSections[i], programID, mode, true);
+			this->selectProgramForSection(lightSections[i], programID, mode);
 		}
 	}
 }
 
-void LSLightProgramManager::selectProgram(uint8_t programID) {
+void LSLightProgramManager::selectProgram(uint8_t programID, bool keepPalette) {
 	uint16_t code = programID << 8;
 	
 	for (int i = 0; i < programListLength; i++) {
@@ -307,7 +194,7 @@ void LSLightProgramManager::selectProgram(uint8_t programID) {
 		}
 	}
 
-	this->selectProgramCode(code);
+	this->selectProgramCode(code, keepPalette);
 
 	programIndex++;
 	programIndex %= programListLength;
@@ -407,7 +294,7 @@ void LSLightProgramManager::addLightProgram(plight_program_factory_func factory,
 	}
 
 	lightPrograms[programCount++] = program;
-	LSLightProgram *tempProgram = program->factory(NULL, NULL);
+	LSLightProgram *tempProgram = program->factory(NULL);
 
 	if (!tempProgram->hideFromProgramList()) {
 		for (int i = 0; i < modeCount; i++) {
@@ -449,7 +336,7 @@ void LSLightProgramManager::randomizeProgramOrder() {
 }
 
 void LSLightProgramManager::addLightProgram(plight_program_factory_func factory, uint16_t sections) {
-	LSLightProgram *tempProgram = factory(NULL, NULL);
+	LSLightProgram *tempProgram = factory(NULL);
 	uint8_t modeCount = tempProgram->getModeCount();
 	uint8_t *modes = (uint8_t *)calloc(modeCount, sizeof(uint8_t));
 	

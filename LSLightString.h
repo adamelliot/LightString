@@ -8,21 +8,24 @@
  #include <pins_arduino.h>
 #endif
 
+#include <EEPROM.h>
+
 // Core Functionality
 
-#include "LSColorPalette.h"
+#include "palette.h"
+
 #include "LSPixelBuffer.h"
 #include "LSLEDStrip.h"
 #include "LSLightProgram.h"
 #include "LSLightProgramManager.h"
-
+/*
 // Palettes
 #include "LSCPSolidPalette.h"
 #include "LSCPGradientPalette.h"
-
+*/
 // Programs
 #include "LSLPFadeDown.h"
-#include "LSLPGradientCycle.h"
+#include "LSLPGradientCycle.h"/*
 #include "LSLPTwinkle.h"
 #include "LSLPSolidCycle.h"
 #include "LSLPBounce.h"
@@ -32,7 +35,7 @@
 #include "LSLPSolidColor.h"
 #include "LSLPBurst.h"
 #include "LSLPHeartBeat.h"
-#include "LSLPCustomProgram.h"
+#include "LSLPCustomProgram.h"*/
 
 /*
 

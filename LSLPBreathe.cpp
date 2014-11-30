@@ -1,7 +1,7 @@
 #include "LSLPBreathe.h"
 
-LSLightProgram *factoryBreathe(LSPixelBuffer *pixelBuffer, LSColorPalette* colorPalette) {
-	return new LSLPBreathe(pixelBuffer, colorPalette);
+LSLightProgram *factoryBreathe(LSPixelBuffer *pixelBuffer) {
+	return new LSLPBreathe(pixelBuffer);
 }
 
 void LSLPBreathe::setupMode(uint8_t mode) {
@@ -12,7 +12,7 @@ void LSLPBreathe::setupMode(uint8_t mode) {
 }
 
 void LSLPBreathe::update(uint32_t ms) {
-	CRGB col = colorPalette->getColor(0);
+	CRGB col = Palettes.getColor(0);
 	
 	if (factor >= 1.0f) {
 		direction = -1.0;

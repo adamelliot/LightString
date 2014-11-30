@@ -43,14 +43,6 @@ uint16_t LSPixelBuffer::getHeight() {
 	return this->height;
 }
 
-LSColorPalette *LSPixelBuffer::getColorPalette(void) {
-	return colorPalette;
-}
-
-void LSPixelBuffer::setColorPalette(LSColorPalette *colorPalette) {
-	this->colorPalette = colorPalette;
-}
-
 // TODO: Make this adjustable based on orientation
 uint16_t LSPixelBuffer::getIndex(uint8_t x, uint8_t y) {
 	return (height * x) + ((x % 2) == 1 ? y : (height - 1) - y);
@@ -78,7 +70,7 @@ void LSPixelBuffer::setPixelWithColorIndex(uint16_t index, uint8_t colIndex) {
 }
 
 void LSPixelBuffer::setPixelWithPaletteIndex(uint16_t index, uint8_t colIndex) {
-	pixels[index] = colorPalette->getColor(colIndex);
+	pixels[index] = Palettes.getColor(colIndex);
 }
 
 void LSPixelBuffer::setMirroredPixelWithColorIndex(uint16_t index, uint8_t colIndex) {
@@ -87,7 +79,7 @@ void LSPixelBuffer::setMirroredPixelWithColorIndex(uint16_t index, uint8_t colIn
 }
 
 void LSPixelBuffer::setMirroredPixelWithPaletteIndex(uint16_t index, uint8_t colIndex) {
-	CRGB col = colorPalette->getColor(colIndex);
+	CRGB col = Palettes.getColor(colIndex);
 
 	pixels[index] = col;
 	pixels[length - index - 1] = col;
@@ -98,7 +90,7 @@ void LSPixelBuffer::setPixelWithColorIndexAt(uint8_t x, uint8_t y, uint8_t colIn
 }
 
 void LSPixelBuffer::setPixelWithPaletteIndexAt(uint8_t x, uint8_t y, uint8_t colIndex) {
-	pixels[getIndex(x, y)] = colorPalette->getColor(colIndex);
+	pixels[getIndex(x, y)] = Palettes.getColor(colIndex);
 }
 
 // ============== Pixel Retrival Functions ==============
