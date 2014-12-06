@@ -7,13 +7,17 @@
 #define PALETTE_MIRRORED 0x01
 #define PALETTE_SIZE 256
 
-#define LOG(MES, VAL) {Serial.print(MES); Serial.println(VAL);}
+#define LOG(MSG, VAL) {Serial.print(MSG " "); Serial.println(VAL);}
+#define LOG2(MSG, V1, V2) {Serial.print(MSG " "); Serial.print(V1); Serial.print(", "); Serial.println(V2);}
 
 void printColor(CRGB col);
 
+
+#define MAX_PALETTE_COLORS 6
+
 struct CRGBPalette {
 	uint8_t size;
-	CRGB *colors;
+	CRGB colors[MAX_PALETTE_COLORS];
 
 	inline CRGB& operator[] (uint16_t index) __attribute__((always_inline))
 	{
@@ -28,7 +32,7 @@ struct CRGBPalette {
 		
 		return col;
 	}
-
+	/*
 	inline CRGB& operator[] (uint16_t index) const __attribute__((always_inline))
 	{
 		uint16_t totalColors = PALETTE_SIZE;
@@ -41,10 +45,12 @@ struct CRGBPalette {
 		col = col.lerp8(colors[section + 1], weight);
 		
 		return col;
-	}
+	}*/
 	
 	inline CRGBPalette() : size(3) {
-		colors = (CRGB *)calloc(size, sizeof(CRGB));
+//		colors = (CRGB *)malloc(size * sizeof(CRGB));
+//		LOG("malloc: ", (uint16_t)colors);
+
 		colors[0] = CRGB::Red;
 		colors[1] = CRGB::Green;
 		colors[2] = CRGB::Blue;
@@ -53,8 +59,9 @@ struct CRGBPalette {
 	inline CRGBPalette(uint8_t len, const CRGB newColors[], bool mirrored = false)
 		: size(mirrored ? ((len << 1) - 1) : len)
 	{
-		
-		colors = (CRGB *)calloc(size, sizeof(CRGB));
+//		colors = (CRGB *)malloc(size * sizeof(CRGB));
+//		LOG("malloc: ", (uint16_t)colors);
+		// LOG("calloc: ", sizeof(CRGB) * size);
 		memcpy8(colors, newColors, len * sizeof(CRGB));
 
 		if (mirrored) {
@@ -64,17 +71,23 @@ struct CRGBPalette {
 			}
 		}
 	}
-	
+
 	inline CRGBPalette& operator= (const CRGBPalette& rhs) __attribute__((always_inline))
 	{
-		size = rhs.size;
+		if (size != rhs.size) {
+//			free(colors);
+//			colors = (CRGB *)realloc(colors, size * sizeof(CRGB));
+			size = rhs.size;
+//			LOG2("realloc: ", (uint16_t)colors, size * sizeof(CRGB));
+		}
 
-		colors = (CRGB *)calloc(size, sizeof(CRGB));
 		memcpy8(colors, rhs.colors, size * sizeof(CRGB));
 	}
 	
 	~CRGBPalette() {
-		delete colors;
+		//LOG("free: ", sizeof(CRGB) * size);
+//		LOG("free: ", (uint16_t)colors);
+		free(colors);
 	}
 	
 	inline CRGBPalette& nscale8(uint8_t scale)
@@ -86,6 +99,26 @@ struct CRGBPalette {
 };
 
 #define RAINBOW_GRADIENT CRGBPalette(4, (CRGB[]){CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Red})
+
+#define BLUE_GREEN_GRADIENT CRGBPalette(2, (CRGB[]){CRGB::Blue, CRGB(0, 255, 64)}, true)
+#define GREEN_GRADIENT CRGBPalette(2, (CRGB[]){CRGB::Green, CRGB(0, 32, 0)}, true)
+#define YELLOW_GRADIENT CRGBPalette(2, (CRGB[]){CRGB(255, 191, 63), CRGB(63, 47, 15)}, true)
+#define WHITE_GRADIENT CRGBPalette(2, (CRGB[]){CRGB::White, CRGB::Black}, true)
+
+#define RED_GREEN_GRADIENT CRGBPalette(2, (CRGB[]){CRGB::Red, CRGB::Lime})
+
+#define GREEN_BLUE_GRADIENT CRGBPalette(3, (CRGB[]){CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB(0, 255, 64)})
+#define RED_ORGANGE_GRADIENT CRGBPalette(3, (CRGB[]){CRGB(128, 128, 128), CRGB(128, 31, 0), CRGB(128, 95, 0)}, true)
+
+#define BLUE_WHITE_GRADIENT CRGBPalette(3, (CRGB[]){CRGB(0, 31, 255), CRGB(255, 255, 255), CRGB(0, 31, 255)})
+#define BLUE_WHITISH_GRADIENT CRGBPalette(3, (CRGB[]){CRGB(0, 31, 255), CRGB(191, 191, 191), CRGB(0, 31, 255)})
+
+#define BLUE_YELLOW_BLACK_GRADIENT CRGBPalette(5, (CRGB[]){CRGB(0, 95, 255), CRGB(255, 255, 0), CRGB::White, CRGB::Black, CRGB(0, 31, 255)})
+#define RED_WHITE_BLACK_GRADIENT CRGBPalette(5, (CRGB[]){CRGB(255, 0, 31), CRGB(255, 0, 0), CRGB::White, CRGB::Black, CRGB(255, 0, 31)})
+
+#define RED_WHITE_GRADIENT CRGBPalette(4, (CRGB[]){CRGB(255, 31, 0), CRGB(255, 0, 0), CRGB(255, 255, 255), CRGB(255, 31, 0)})
+#define GREEN_WHITE_GRADIENT CRGBPalette(4, (CRGB[]){CRGB(0, 255, 31), CRGB(0, 255, 0), CRGB(255, 255, 255), CRGB(0, 255, 31)})
+#define RED_WHITISH_GRADIENT CRGBPalette(4, (CRGB[]){CRGB(255, 31, 0), CRGB(255, 0, 0), CRGB(191, 191, 191), CRGB(255, 31, 0)})
 
 // Palettes
 
@@ -101,29 +134,12 @@ PALLETE_2_M(cyanPinkGradient, CRGB(0, 255, 255), CRGB(255, 0, 96));
 
 PALLETE_5(cyanPinkBlackGradient, CRGB(0, 255, 192), CRGB::Black, CRGB(255, 16, 64), CRGB::Black, CRGB(0, 255, 192));
 
-PALLETE_2_M(blueGreenGradient, CRGB::Blue, CRGB(0, 255, 64));
-PALLETE_2_M(greenGradient, CRGB::Green, CRGB(0, 32, 0));
-PALLETE_2_M(yellowGradient, CRGB(255, 191, 63), CRGB(63, 47, 15));
-PALLETE_2_M(whiteGradient, CRGB::White, CRGB::Black);
-
 PALLETE_5(greenBlueBlackGradient, CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB::Black, CRGB::Black, CRGB(0, 255, 64));
 
-PALLETE_3(greenBlueGradient, CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB(0, 255, 64));
-PALLETE_3_M(redOrgangeGradient, CRGB(128, 128, 128), CRGB(128, 31, 0), CRGB(128, 95, 0));
-
 PALLETE_5(redOrgangeBlackGradient, CRGB(255, 31, 0), CRGB(255, 191, 0), CRGB::Black, CRGB::Black, CRGB(255, 31, 0));
-PALLETE_5(redWhiteBlackGradient, CRGB(255, 0, 31), CRGB(255, 0, 0), CRGB::White, CRGB::Black, CRGB(255, 0, 31));
-
-PALLETE_4(redWhiteGradient, CRGB(255, 31, 0), CRGB(255, 0, 0), CRGB(255, 255, 255), CRGB(255, 31, 0));
-PALLETE_4(greenWhiteGradient, CRGB(0, 255, 31), CRGB(0, 255, 0), CRGB(255, 255, 255), CRGB(0, 255, 31));
-PALLETE_4(redWhitishGradient, CRGB(255, 31, 0), CRGB(255, 0, 0), CRGB(191, 191, 191), CRGB(255, 31, 0));
 
 PALLETE_5(blueWhiteBlackGradient, CRGB(0, 31, 25), CRGB(255, 255, 255), CRGB::White, CRGB::Black, CRGB(0, 31, 255));
 
-PALLETE_3(blueWhiteGradient, CRGB(0, 31, 255), CRGB(255, 255, 255), CRGB(0, 31, 255));
-PALLETE_3(blueWhitishGradient, CRGB(0, 31, 255), CRGB(191, 191, 191), CRGB(0, 31, 255));
-
-PALLETE_5(blueYellowBlackGradient, CRGB(0, 95, 255), CRGB(255, 255, 0), CRGB::White, CRGB::Black, CRGB(0, 31, 255));
 
 PALLETE_4(blueYellowBlackHardGradient, CRGB(0, 0, 0), CRGB(16, 16, 0), CRGB(255, 255, 0), CRGB(0, 95, 255));
 
@@ -151,7 +167,7 @@ protected:
 //	uint8_t *paletteOrder;
 
 	CRGBPalette currentPalette;
-	
+
 	void resetCustomPalettes();
 	void writePalette(uint16_t offset, CRGBPalette &palette);
 	CRGBPalette readPalette(uint16_t offset);

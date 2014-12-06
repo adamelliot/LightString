@@ -78,6 +78,7 @@ private:
 public:
 
 	LSLightProgramManager(uint8_t maxLightPrograms = 8, uint8_t maxLightSections = 1, bool verbose = false);
+	void setup();
 
 	void setMaxProgramLength(uint32_t maxProgramLength);
 	void setMaxFPS(uint16_t targetFPS);

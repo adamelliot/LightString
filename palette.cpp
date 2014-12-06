@@ -14,7 +14,7 @@ void printColor(CRGB col) {
 }
 
 PaletteManager::PaletteManager()
-	: writePalettes(false), customPalettes(0), staticOffset(0)
+	: writePalettes(false), customPalettes(0), staticOffset(0), currentPalette(CRGBPalette())
 {
 	staticPalettes = EEPROM.read(0);
 }
@@ -39,19 +39,19 @@ void PaletteManager::writePalette(uint16_t offset, CRGBPalette &palette) {
 
 CRGBPalette PaletteManager::readPalette(uint16_t offset) {
 	uint8_t len;
-	uint8_t *colors;
+	uint8_t colors[MAX_PALETTE_COLORS * sizeof(CRGB)];
 
 	offset += EEPROM_OFFSET;
 	len = EEPROM.read(offset++);
 
-	colors = (uint8_t *)malloc(len);
+	//colors = (uint8_t *)malloc(len);
 
 	for (int i = 0; i < len; i++) {
 		colors[i] = EEPROM.read(offset++);
 	}
 
 	CRGBPalette newPalette = CRGBPalette((len / 3), (CRGB *)colors);
-	delete colors;
+	//free(colors);
 
 	return newPalette;
 }
@@ -59,10 +59,10 @@ CRGBPalette PaletteManager::readPalette(uint16_t offset) {
 void PaletteManager::loadPalette(uint8_t index) {
 	uint16_t offset = EEPROM_OFFSET;
 	
+	// LOG("Palette Index:", index);
+	
 	for (int i = 0; i < index; i++) {
 		uint8_t len = EEPROM.read(offset);
-		LOG("LEN: ", len);
-
 		offset += len + 1;
 	}
 
