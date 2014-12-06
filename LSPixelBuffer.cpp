@@ -7,6 +7,8 @@ LSPixelBuffer::LSPixelBuffer(CRGB *pixels, uint16_t length, uint8_t flags)
 	pixelBytes = ((flags | INDEXED_PIXEL_BUFFER) == flags) ? 1 : 3;
 	bytes = length * pixelBytes;
 	
+	LOG2("PIXELS: ", (uint16_t)pixels, length);
+	
 	if ((flags | INDEXED_PIXEL_BUFFER) == flags) {
 		setIndexedPixel = &LSPixelBuffer::setPixelWithColorIndex;
 		setMirroredIndexedPixel = &LSPixelBuffer::setMirroredPixelWithColorIndex;

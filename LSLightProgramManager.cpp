@@ -13,11 +13,12 @@ plight_program_t create_light_program(plight_program_factory_func factory) {
 	return ret;
 }
 
-plight_section_t create_light_section(LSLEDStrip *lightStrip, uint16_t length, uint16_t offset, uint8_t maxLightPrograms) {
+plight_section_t create_light_section(CRGB *pixels, uint16_t length, uint8_t maxLightPrograms) {
 	plight_section_t ret = (plight_section_t)calloc(1, sizeof(light_section_t));
 
 	ret->supportedPrograms = (uint8_t *)calloc(maxLightPrograms, sizeof(uint8_t));
-	ret->pixelBuffer = lightStrip->getPixelBuffer(length, offset);
+	ret->pixelBuffer = new LSPixelBuffer(pixels, length);
+	ret->pixelBuffer->clear();
 
 	return ret;
 }
@@ -31,7 +32,7 @@ LSLightProgramManager::LSLightProgramManager(uint8_t maxLightPrograms, uint8_t m
 	: maxProgramLength(-1), maxLightPrograms(maxLightPrograms), msPerFrame(20),
 	maxLightSections(maxLightSections),
 	programIndex(0), programCount(0), programListLength(0),
-	sectionCount(0), paused(false), verbose(verbose)
+	sectionCount(0), paused(false), verbose(verbose), brightness(255)
 {}
 
 void LSLightProgramManager::setup() {
@@ -45,9 +46,7 @@ void LSLightProgramManager::setup() {
 	programList = (uint16_t *)calloc(maxLightPrograms * MAX_MODES, sizeof(uint16_t));
 	LOG2("programList: ", (uint16_t)programList, maxLightPrograms * MAX_MODES * sizeof(uint16_t));
 	
-	
 	lightSections = (plight_section_t *)calloc(maxLightSections, sizeof(plight_section_t));
-	lightStrips = (LSLEDStrip **)calloc(maxLightSections, sizeof(LSLEDStrip *));
 	lightPrograms = (plight_program_t *)calloc(maxLightPrograms, sizeof(plight_program_t));
 
 	programOrder = (uint8_t *)calloc(maxLightPrograms, sizeof(uint8_t));
@@ -391,25 +390,13 @@ plight_section_t LSLightProgramManager::getLightSection(uint8_t index) {
 	return lightSections[index];
 }
 
-uint16_t LSLightProgramManager::addLightSection(LSLEDStrip *lightStrip, uint16_t length, uint16_t offset) {
+uint16_t LSLightProgramManager::addLightSection(CRGB *pixels, uint16_t length) {
 	if (sectionCount >= maxLightSections) {
 		if (verbose) Serial.println(F("ERROR: Maximum amount of light sections already added."));
 		return 0xffff;
 	}
 
-	if (length == 0) length = lightStrip->getLength();
-	lightSections[sectionCount] = create_light_section(lightStrip, length, offset, maxLightPrograms);
-
-	int i = 0;
-	do {
-		if (lightStrips[i] == lightStrip)
-			break;
-		if (!lightStrips[i]) {
-			lightStrips[i] = lightStrip;
-			break;
-		}
-	} while (i < maxLightSections && lightStrips[i++]);
-
+	lightSections[sectionCount] = create_light_section(pixels, length, maxLightPrograms);
 	sectionCount++;
 	
 	return 1 << (sectionCount - 1);
@@ -442,7 +429,5 @@ void LSLightProgramManager::loop() {
 		}
 	}
 
-	for (int i = 0; lightStrips[i] && (i < sectionCount); i++) {
-		lightStrips[i]->update();
-	}
+	FastLED.show();
 }

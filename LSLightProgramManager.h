@@ -1,8 +1,8 @@
 #ifndef _LSLIGHTPROGRAMMANAGER_H_
 #define _LSLIGHTPROGRAMMANAGER_H_
 
+#include "FastLED.h"
 #include "LSLightProgram.h"
-#include "LSLEDStrip.h"
 
 #define ALL_SECTIONS 0xffff
 #define MAX_MODES 8
@@ -13,7 +13,7 @@ typedef struct light_program_s light_program_t, *plight_program_t;
 typedef struct light_section_s light_section_t, *plight_section_t;
 
 plight_program_t create_light_program(plight_program_factory_func factory);
-plight_section_t create_light_section(LSLEDStrip *lightStrip, uint16_t length, uint16_t offset, uint8_t maxLightPrograms);
+plight_section_t create_light_section(CRGB *pixels, uint16_t length, uint8_t maxLightPrograms);
 void free_light_section(plight_section_t section);
 
 struct light_program_s {
@@ -44,9 +44,10 @@ struct light_section_s {
 class LSLightProgramManager {
 private:
 	bool verbose;
+	
+	uint8_t brightness;
 
 	uint8_t maxLightSections;
-	LSLEDStrip **lightStrips;
 	plight_section_t *lightSections;
 	uint8_t sectionCount;
 	
@@ -101,7 +102,7 @@ public:
 	void addLightProgram(plight_program_factory_func factory);
 
 	plight_section_t getLightSection(uint8_t);
-	uint16_t addLightSection(LSLEDStrip *lightStrip, uint16_t length = 0, uint16_t offset = 0);
+	uint16_t addLightSection(CRGB *pixels, uint16_t length);
 	
 	void loop();
 };

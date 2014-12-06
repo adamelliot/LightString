@@ -15,7 +15,6 @@
 #include "palette.h"
 
 #include "LSPixelBuffer.h"
-#include "LSLEDStrip.h"
 #include "LSLightProgram.h"
 #include "LSLightProgramManager.h"
 /*
