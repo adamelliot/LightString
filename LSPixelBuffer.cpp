@@ -1,30 +1,18 @@
 #include "LSPixelBuffer.h"
 //#include "LSFont15.h"
 
-LSPixelBuffer::LSPixelBuffer(CRGB *pixels, uint16_t length, uint8_t flags)
-	: pixels(pixels), length(length), flags(flags)
+LSPixelBuffer::LSPixelBuffer(CRGB *pixels, uint16_t length)
+	: pixels(pixels), length(length)
 {
-	pixelBytes = ((flags | INDEXED_PIXEL_BUFFER) == flags) ? 1 : 3;
-	bytes = length * pixelBytes;
-	
-	LOG2("PIXELS: ", (uint16_t)pixels, length);
-	
-	if ((flags | INDEXED_PIXEL_BUFFER) == flags) {
-		setIndexedPixel = &LSPixelBuffer::setPixelWithColorIndex;
-		setMirroredIndexedPixel = &LSPixelBuffer::setMirroredPixelWithColorIndex;
-		setIndexedPixelAt = &LSPixelBuffer::setPixelWithColorIndexAt;
-	} else {
-		setIndexedPixel = &LSPixelBuffer::setPixelWithPaletteIndex;
-		setMirroredIndexedPixel = &LSPixelBuffer::setMirroredPixelWithPaletteIndex;
-		setIndexedPixelAt = &LSPixelBuffer::setPixelWithPaletteIndexAt;
-	}
+	// LOG2("PIXELS: ", (uint16_t)pixels, length);
 }
 
-bool LSPixelBuffer::useIndexedPixelBuffer() {
-	return (flags | INDEXED_PIXEL_BUFFER) == flags;
+void LSPixelBuffer::setPixels(CRGB *pixels, uint16_t length) {
+	this->pixels = pixels;
+	this->length = length;
 }
 
-void *LSPixelBuffer::getPixels() {
+CRGB *LSPixelBuffer::getPixels() {
 	return pixels;
 }
 
@@ -65,67 +53,26 @@ void LSPixelBuffer::setPixelAt(uint8_t x, uint8_t y, CRGB col) {
 	pixels[getIndex(x, y)] = col;
 }
 
-// ============== Setting Indexed Pixel Functions ==============
-
-void LSPixelBuffer::setPixelWithColorIndex(uint16_t index, uint8_t colIndex) {
-	((uint8_t *)pixels)[index] = colIndex;
-}
-
-void LSPixelBuffer::setPixelWithPaletteIndex(uint16_t index, uint8_t colIndex) {
-	pixels[index] = Palettes.getColor(colIndex);
-}
-
-void LSPixelBuffer::setMirroredPixelWithColorIndex(uint16_t index, uint8_t colIndex) {
-	((uint8_t *)pixels)[index] = colIndex;
-	((uint8_t *)pixels)[length - index - 1] = colIndex;
-}
-
-void LSPixelBuffer::setMirroredPixelWithPaletteIndex(uint16_t index, uint8_t colIndex) {
-	CRGB col = Palettes.getColor(colIndex);
-
-	pixels[index] = col;
-	pixels[length - index - 1] = col;
-}
-
-void LSPixelBuffer::setPixelWithColorIndexAt(uint8_t x, uint8_t y, uint8_t colIndex) {
-	((uint8_t *)pixels)[getIndex(x, y)] = colIndex;
-}
-
-void LSPixelBuffer::setPixelWithPaletteIndexAt(uint8_t x, uint8_t y, uint8_t colIndex) {
-	pixels[getIndex(x, y)] = Palettes.getColor(colIndex);
-}
-
 // ============== Pixel Retrival Functions ==============
 
-void *LSPixelBuffer::getPixel(uint16_t index) {
-	return (void *)((uint8_t *)pixels + (index * pixelBytes));
+CRGB LSPixelBuffer::getPixel(uint16_t index) {
+	return pixels[index];
 }
 
 // TODO: Fix this method
-void *LSPixelBuffer::getPixelAt(uint8_t x, uint8_t y) {
-	return 0;
+CRGB LSPixelBuffer::getPixelAt(uint8_t x, uint8_t y) {
+	return CRGB::Black;
 }
 
 // ============== Full Buffer Modifiers ==============
-// NOTE: These are not all finished...
-
-/**
- * Fast fade doesn't use FP, just shift, only allows 8 steps.
- */
-void LSPixelBuffer::fade(uint8_t shift) {
-	for (int i = 0; i < bytes; i++) {
-		((uint8_t *)pixels)[i] >>= shift;
-	}
-}
 
 void LSPixelBuffer::fade(float ratio) {
-	for (int i = 0; i < bytes; i++) {
-		((uint8_t *)pixels)[i] *= ratio;
-	}
+	uint8_t scale = ratio * 255;
+	nscale8(pixels, length, scale);
 }
 
 void LSPixelBuffer::clear() {
-	for (int i = 0; i < bytes; i++)
+	for (int i = 0; i < length; i++)
 		((uint8_t *)pixels)[i] = 0;
 }
 

@@ -12,7 +12,7 @@ protected:
 	uint16_t totalTime;
 
 public:
-	LSLPFadeDown(LSPixelBuffer *pixelBuffer)
+	LSLPFadeDown(LSPixelBuffer *pixelBuffer = 0)
 		: LSLightProgram(pixelBuffer) {}
 
 	uint8_t getProgramID() { return FADE_DOWN; }

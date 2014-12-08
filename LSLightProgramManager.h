@@ -6,20 +6,17 @@
 
 #define ALL_SECTIONS 0xffff
 #define MAX_MODES 8
+#define MAX_LIGHT_PROGRAMS 6
+#define MAX_LIGHT_SECTIONS 1
+
+#define VERBOSE
 
 typedef LSLightProgram *(*plight_program_factory_func)(LSPixelBuffer *);
 
-typedef struct light_program_s light_program_t, *plight_program_t;
+#define LOG(MSG, VAL) {Serial.print(F(MSG " ")); Serial.println(VAL); }
+#define LOG2(MSG, V1, V2) {Serial.print(F(MSG " ")); Serial.print(V1); Serial.print(F(", ")); Serial.println(V2); }
+
 typedef struct light_section_s light_section_t, *plight_section_t;
-
-plight_program_t create_light_program(plight_program_factory_func factory);
-plight_section_t create_light_section(CRGB *pixels, uint16_t length, uint8_t maxLightPrograms);
-void free_light_section(plight_section_t section);
-
-struct light_program_s {
-	plight_program_factory_func factory;
-	uint8_t programID;
-};
 
 // TODO: Implement program grouping
 // NOTE: Group Program IDs are >= 0x80
@@ -30,15 +27,19 @@ struct light_program_group_s {
 };
 
 struct light_section_s {
-	uint8_t *supportedPrograms;
+	uint8_t supportedPrograms[MAX_LIGHT_PROGRAMS];
 	uint8_t programCount;
 
 	int16_t programIndexOffset;
 
-	LSPixelBuffer *pixelBuffer;
+	LSPixelBuffer pixelBuffer;
 	LSLightProgram *activeProgram;
 	
 	uint32_t programStartedAt;
+	
+	inline light_section_s() 
+		: programCount(0), programIndexOffset(0), programStartedAt(0), activeProgram(0) {
+	}
 };
 
 class LSLightProgramManager {
@@ -47,18 +48,16 @@ private:
 	
 	uint8_t brightness;
 
-	uint8_t maxLightSections;
-	plight_section_t *lightSections;
+	light_section_t lightSections[MAX_LIGHT_SECTIONS];
 	uint8_t sectionCount;
 	
 	uint8_t sectionsChanged;
 
-	uint8_t maxLightPrograms;
-	plight_program_t *lightPrograms;
-	uint16_t *programList;
+	LSLightProgram *lightPrograms[MAX_LIGHT_PROGRAMS];
+	uint16_t programList[MAX_LIGHT_PROGRAMS * MAX_MODES];
 	uint8_t programListLength;
 	uint8_t programCount;
-	uint8_t *programOrder; // Order of the program list
+	uint8_t programOrder[MAX_LIGHT_PROGRAMS]; // Order of the program list
 	uint8_t programIndex; // Index in the program order
 
 	// Program Manager Timing
@@ -69,16 +68,16 @@ private:
 	bool paused;
 	uint32_t pauseStartedAt;
 
-	plight_program_t getProgram(uint8_t programID);
-	plight_program_t getProgramForSection(uint8_t programID, plight_section_t section);
-	void selectProgramForSection(plight_section_t section, uint8_t programID, uint8_t programMode, bool keepPalette = false);
+	LSLightProgram *getProgram(uint8_t programID);
+	LSLightProgram *getProgramForSection(uint8_t programID, light_section_t &section);
+	void selectProgramForSection(light_section_t &section, uint8_t programID, uint8_t programMode, bool keepPalette = false);
 	void selectProgramGroup(uint8_t programID);
-	void nextProgramForSection(plight_section_t section);
+	void nextProgramForSection(light_section_t &section);
 	void normalizeProgramIndices();
 
 public:
 
-	LSLightProgramManager(uint8_t maxLightPrograms = 8, uint8_t maxLightSections = 1, bool verbose = false);
+	LSLightProgramManager();
 	void setup();
 
 	void setMaxProgramLength(uint32_t maxProgramLength);
@@ -96,10 +95,10 @@ public:
 	void prevProgram();
 	void randomizeProgramOrder();
 
-	void addLightProgram(plight_program_factory_func factory, uint16_t sections, uint8_t modes[], uint8_t modeCount);
-	void addLightProgram(plight_program_factory_func factory, uint8_t modes[], uint8_t modeCount);
-	void addLightProgram(plight_program_factory_func factory, uint16_t sections);
-	void addLightProgram(plight_program_factory_func factory);
+	void addLightProgram(LSLightProgram &program, uint16_t sections, uint8_t modes[], uint8_t modeCount);
+	void addLightProgram(LSLightProgram &program, uint8_t modes[], uint8_t modeCount);
+	void addLightProgram(LSLightProgram &program, uint16_t sections);
+	void addLightProgram(LSLightProgram &program);
 
 	plight_section_t getLightSection(uint8_t);
 	uint16_t addLightSection(CRGB *pixels, uint16_t length);

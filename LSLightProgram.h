@@ -10,11 +10,10 @@ protected:
 	LSPixelBuffer *pixelBuffer;
 
 public:
-	LSLightProgram(LSPixelBuffer *pixelBuffer);
+	LSLightProgram(LSPixelBuffer *pixelBuffer = 0);
 
+	void setPixelBuffer(LSPixelBuffer *pixelBuffer);
 	LSPixelBuffer *getPixelBuffer();
-	
-	virtual uint8_t getPixelFormats();
 
 	uint8_t getMode();
 	uint8_t getModeCount();

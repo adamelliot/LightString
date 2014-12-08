@@ -1,6 +1,7 @@
 #include "LSLPFadeDown.h"
 
 LSLightProgram *factoryFadeDown(LSPixelBuffer *pixelBuffer) {
+	Serial.println("FadeDown");
 	return new LSLPFadeDown(pixelBuffer);
 }
 

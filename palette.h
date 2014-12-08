@@ -7,11 +7,7 @@
 #define PALETTE_MIRRORED 0x01
 #define PALETTE_SIZE 256
 
-#define LOG(MSG, VAL) {Serial.print(MSG " "); Serial.println(VAL);}
-#define LOG2(MSG, V1, V2) {Serial.print(MSG " "); Serial.print(V1); Serial.print(", "); Serial.println(V2);}
-
 void printColor(CRGB col);
-
 
 #define MAX_PALETTE_COLORS 6
 
@@ -19,7 +15,7 @@ struct CRGBPalette {
 	uint8_t size;
 	CRGB colors[MAX_PALETTE_COLORS];
 
-	inline CRGB& operator[] (uint16_t index) __attribute__((always_inline))
+	inline CRGB operator[] (uint16_t index) __attribute__((always_inline))
 	{
 		uint16_t totalColors = PALETTE_SIZE;
 	
@@ -28,9 +24,9 @@ struct CRGBPalette {
 		uint32_t weight = indexSections % totalColors;
 
 		CRGB col = colors[section];
-		col = col.lerp8(colors[section + 1], weight);
-		
-		return col;
+		//col = col.lerp8(colors[section + 1], weight);
+
+		return col.lerp8(colors[section + 1], weight);
 	}
 	/*
 	inline CRGB& operator[] (uint16_t index) const __attribute__((always_inline))

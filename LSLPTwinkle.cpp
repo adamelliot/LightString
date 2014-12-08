@@ -7,7 +7,6 @@ LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer) {
 void LSLPTwinkle::setupMode(uint8_t mode) {
 	size = random(4) + 2;
 	variableSize = false;
-	fastFade = 0;
 	fadeRate = 0.93f;
 
 	switch (mode) {
@@ -35,7 +34,7 @@ void LSLPTwinkle::setupMode(uint8_t mode) {
 		break;
 		
 		case 5: // Static mode
-		fastFade = 1;
+		fadeRate = 0.875;
 		size = 1;
 		break;
 		
@@ -65,17 +64,13 @@ void LSLPTwinkle::nudge(int32_t data) {
 }
 
 void LSLPTwinkle::update(uint32_t ms) {
-	if (fastFade) {
-		pixelBuffer->fade(fastFade);
-	} else {
-		pixelBuffer->fade(fadeRate);
-	}
+	pixelBuffer->fade(fadeRate);
 
 	if (variableSize)
 		size = random(5) + 1;
 
 	uint16_t len = pixelBuffer->getLength() / size;
-	uint8_t newPoints = random(len >> (fastFade ? 1 : (fadeRate > 0.9f ? 3 : 2))) + 1;
+	uint8_t newPoints = random(len >> (fadeRate > 0.9f ? 3 : 2)) + 1;
 
 	if (colorCycle) {
 		for (int i = 0; i < newPoints; i++) {

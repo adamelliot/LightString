@@ -1,6 +1,7 @@
 #include "LSLPGradientCycle.h"
 
 LSLightProgram *factoryGradientCycle(LSPixelBuffer *pixelBuffer) {
+	Serial.println("GradientCycle");
 	return new LSLPGradientCycle(pixelBuffer);
 }
 
@@ -25,14 +26,18 @@ void LSLPGradientCycle::drawMirrored() {
 	uint8_t fact = (0xff / pixelBuffer->getLength()) * sections;
 	if (fact < 1) fact = 1;
 
-	for (int i = 0; i < pixelBuffer->getLength() >> 1; i++)
-		pixelBuffer->setMirroredPixelWithPaletteIndex(i, i * fact + colorIndex);
+	for (int i = 0; i < pixelBuffer->getLength() >> 1; i++) {
+		CRGB col = Palettes.getColor(i * fact + colorIndex);
+		pixelBuffer->setMirroredPixel(i, col);
+	}
 }
 
 void LSLPGradientCycle::drawNormal() {
 	uint16_t fact = (0xff / pixelBuffer->getLength()) * sections;
-	for (int i = 0; i < pixelBuffer->getLength(); i++)
-		pixelBuffer->setPixelWithPaletteIndex(i, i * fact + colorIndex);
+	for (int i = 0; i < pixelBuffer->getLength(); i++) {
+		CRGB col = Palettes.getColor(i * fact + colorIndex);
+		pixelBuffer->setPixel(i, col);
+	}
 }
 
 void LSLPGradientCycle::update(uint32_t ms) {

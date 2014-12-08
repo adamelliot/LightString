@@ -4,12 +4,12 @@ LSLightProgram::LSLightProgram(LSPixelBuffer *pixelBuffer)
 	: pixelBuffer(pixelBuffer), modeCount(1)
 {}
 
-LSPixelBuffer *LSLightProgram::getPixelBuffer() {
-	return pixelBuffer;
+void LSLightProgram::setPixelBuffer(LSPixelBuffer *pixelBuffer) {
+	this->pixelBuffer = pixelBuffer;
 }
 
-uint8_t LSLightProgram::getPixelFormats() {
-	return RGB_PIXEL_BUFFER; // Should support simple RGB pixels
+LSPixelBuffer *LSLightProgram::getPixelBuffer() {
+	return pixelBuffer;
 }
 
 uint8_t LSLightProgram::getModeCount() {

@@ -16,7 +16,7 @@ protected:
 	void drawNormal();
 
 public:
-	LSLPGradientCycle(LSPixelBuffer *pixelBuffer)
+	LSLPGradientCycle(LSPixelBuffer *pixelBuffer = 0)
 		: LSLightProgram(pixelBuffer) {
 		modeCount = 2; 
 	}

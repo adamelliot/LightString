@@ -40,10 +40,11 @@ void LSLPBounce::setupMode(uint8_t mode) {
 void LSLPBounce::update(uint32_t ms) {
 	if (fade) pixelBuffer->fade(fadeRate);
 
+	CRGB col = Palettes.getColor(colorIndex);
 	if (mirrored) {
-		(pixelBuffer->*pixelBuffer->setMirroredIndexedPixel)(bounceIndex, colorIndex);
+		pixelBuffer->setPixel(bounceIndex, col);
 	} else {
-		(pixelBuffer->*pixelBuffer->setIndexedPixel)(bounceIndex, colorIndex);
+		pixelBuffer->setMirroredPixel(bounceIndex, col);
 	}
 	
 	bounceIndex += bounceStep;

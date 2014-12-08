@@ -4,25 +4,14 @@
 #include "FastLED.h"
 #include "palette.h"
 
-enum LSPixelFormat {
-	RGB_PIXEL_BUFFER = 0x01,
-	RGBA_PIXEL_BUFFER = 0x02,
-	INDEXED_PIXEL_BUFFER = 0x04
-};
-
 /**
  * Class managing pixels. General managing a LSLEDStrand
  */
 class LSPixelBuffer {
 private:
 
-	typedef void (LSPixelBuffer::*psetIndexedPixel)(uint16_t index, uint8_t colIndex);
-	typedef void (LSPixelBuffer::*psetIndexedPixelAt)(uint8_t x, uint8_t y, uint8_t colIndex);
-
-	uint8_t flags;
-	uint8_t pixelBytes;
 	uint16_t width, height;
-	uint16_t length, bytes;
+	uint16_t length;
 
 	CRGB *pixels;
 
@@ -30,37 +19,23 @@ private:
 
 public:
 
-	LSPixelBuffer(CRGB *pixels, uint16_t length, uint8_t flags = 0);
+	LSPixelBuffer(CRGB *pixels = 0, uint16_t length = 0);
 
-	bool useIndexedPixelBuffer();
-
-	void *getPixels();
+	void setPixels(CRGB *pixels, uint16_t length);
+	CRGB *getPixels();
 	uint16_t getLength();
 	
 	void setSize(uint16_t width, uint16_t height);
 	uint16_t getWidth();
 	uint16_t getHeight();
-	
+
 	void setPixel(uint16_t index, CRGB col);
 	void setMirroredPixel(uint16_t index, CRGB col);
 	void setPixelAt(uint8_t x, uint8_t y, CRGB col);
 
-	psetIndexedPixel setIndexedPixel;
-	psetIndexedPixel setMirroredIndexedPixel;
-	psetIndexedPixelAt setIndexedPixelAt;
-
-	void setPixelWithColorIndex(uint16_t index, uint8_t colIndex);
-	void setPixelWithPaletteIndex(uint16_t index, uint8_t colIndex);
-
-	void setMirroredPixelWithColorIndex(uint16_t index, uint8_t colIndex);
-	void setMirroredPixelWithPaletteIndex(uint16_t index, uint8_t colIndex);
-
-	void setPixelWithColorIndexAt(uint8_t x, uint8_t y, uint8_t colIndex);
-	void setPixelWithPaletteIndexAt(uint8_t x, uint8_t y, uint8_t colIndex);
-
 	// Return a pointer to the pixel
-	void *getPixel(uint16_t index);
-	void *getPixelAt(uint8_t x, uint8_t y);
+	CRGB getPixel(uint16_t index);
+	CRGB getPixelAt(uint8_t x, uint8_t y);
 
 	void fade(uint8_t shift = 1);
 	void fade(float ratio);

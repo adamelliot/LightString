@@ -26,12 +26,14 @@ void LSLPPulse::update(uint32_t ms) {
 	uint8_t offset = 0;
 	if (pulseTotal % 2 == 0) offset = 1;
 
+	CRGB col = Palettes.getColor(colorIndex);
+
 	if (mirrored) {
-		(pixelBuffer->*pixelBuffer->setMirroredIndexedPixel)(center + pulseIndex, colorIndex);
-		(pixelBuffer->*pixelBuffer->setMirroredIndexedPixel)(center - pulseIndex - offset, colorIndex);
+		pixelBuffer->setMirroredPixel(center + pulseIndex, col);
+		pixelBuffer->setMirroredPixel(center - pulseIndex - offset, col);
 	} else {
-		(pixelBuffer->*pixelBuffer->setIndexedPixel)(center + pulseIndex, colorIndex);
-		(pixelBuffer->*pixelBuffer->setIndexedPixel)(center - pulseIndex - offset, colorIndex);
+		pixelBuffer->setPixel(center + pulseIndex, col);
+		pixelBuffer->setPixel(center - pulseIndex - offset, col);
 	}
 	
 	pulseIndex += pulseStep;

@@ -15,13 +15,12 @@ protected:
 	uint8_t colorIndex;
 	uint8_t indexStep;
 	uint8_t size;
-	uint8_t fastFade;
 	float fadeRate;
 
 	void setRainbowPixel();
 
 public:
-	LSLPTwinkle(LSPixelBuffer *pixelBuffer)
+	LSLPTwinkle(LSPixelBuffer *pixelBuffer = 0)
 		: LSLightProgram(pixelBuffer) {
 			modeCount = 6;
 	}
