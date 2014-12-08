@@ -16,7 +16,7 @@
 
 #include "LSPixelBuffer.h"
 #include "LSLightProgram.h"
-#include "LSLightProgramManager.h"
+#include "ProgramManager.h"
 /*
 // Palettes
 #include "LSCPSolidPalette.h"

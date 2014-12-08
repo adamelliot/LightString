@@ -1,9 +1,5 @@
 #include "LSLPTwinkle.h"
 
-LSLightProgram *factoryTwinkle(LSPixelBuffer *pixelBuffer) {
-	return new LSLPTwinkle(pixelBuffer);
-}
-
 void LSLPTwinkle::setupMode(uint8_t mode) {
 	size = random(4) + 2;
 	variableSize = false;
