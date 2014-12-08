@@ -11,6 +11,8 @@ void printColor(CRGB col);
 
 #define MAX_PALETTE_COLORS 6
 
+namespace LightString {
+
 struct CRGBPalette {
 	uint8_t size;
 	CRGB colors[MAX_PALETTE_COLORS];
@@ -94,7 +96,7 @@ struct CRGBPalette {
 	}
 };
 
-#define RAINBOW_GRADIENT CRGBPalette(4, (CRGB[]){CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Red})
+#define RAINBOW_GRADIENT CRGBPalette(4, (CRGB[]){CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Red})
 
 #define BLUE_GREEN_GRADIENT CRGBPalette(2, (CRGB[]){CRGB::Blue, CRGB(0, 255, 64)}, true)
 #define GREEN_GRADIENT CRGBPalette(2, (CRGB[]){CRGB::Green, CRGB(0, 32, 0)}, true)
@@ -191,6 +193,10 @@ public:
 	void previous();
 };
 
-extern PaletteManager Palettes;
+};
+
+extern LightString::PaletteManager Palettes;
+
+
 
 #endif

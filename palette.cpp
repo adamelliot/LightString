@@ -1,6 +1,8 @@
 #include "EEPROM.h"
 #include "palette.h"
 
+using namespace LightString;
+
 PaletteManager Palettes;
 
 void printColor(CRGB col) {
