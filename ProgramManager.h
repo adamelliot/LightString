@@ -6,13 +6,10 @@
 
 #define ALL_SECTIONS 0xffff
 #define MAX_MODES 7
-#define MAX_LIGHT_PROGRAMS 8
+#define MAX_LIGHT_PROGRAMS 10
 #define MAX_LIGHT_SECTIONS 1
 
 #define VERBOSE
-
-#define LOG(MSG, VAL) {Serial.print(F(MSG " ")); Serial.println(VAL); }
-#define LOG2(MSG, V1, V2) {Serial.print(F(MSG " ")); Serial.print(V1); Serial.print(F(", ")); Serial.println(V2); }
 
 namespace LightString {
 
@@ -55,7 +52,7 @@ private:
 	uint16_t programList[MAX_LIGHT_PROGRAMS * MAX_MODES];
 	uint8_t programListLength;
 	uint8_t programCount;
-	uint8_t programOrder[MAX_LIGHT_PROGRAMS]; // Order of the program list
+	uint8_t programOrder[MAX_LIGHT_PROGRAMS * MAX_MODES]; // Order of the program list
 	uint8_t programIndex; // Index in the program order
 
 	// Program Manager Timing
@@ -79,6 +76,8 @@ public:
 	void setup();
 
 	void setMaxProgramLength(uint32_t maxProgramLength);
+	int32_t getMaxProgramLength();
+	
 	void setMaxFPS(uint16_t targetFPS);
 	void pause(bool blackout = true, bool fade = true);
 	void unpause();
@@ -89,8 +88,8 @@ public:
 	void selectProgramCode(uint16_t programCode, bool keepPalette = false);
 	void selectProgram(uint8_t programID, bool keepPalette = false);
 	void selectRandomProgram();
-	void nextProgram();
-	void prevProgram();
+	void nextProgram(bool keepPalette = false);
+	void prevProgram(bool keepPalette = false);
 	void randomizeProgramOrder();
 
 	void addLightProgram(LightProgram &program, uint16_t sections, uint8_t modes[], uint8_t modeCount);

@@ -4,7 +4,7 @@
 #include "LightString.h"
 
 #define BURST 0x0a
-#define MAX_BURSTS 8
+#define MAX_BURSTS 9
 
 namespace LightString {
 

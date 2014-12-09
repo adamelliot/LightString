@@ -20,6 +20,10 @@ void ProgramManager::setMaxProgramLength(uint32_t maxProgramLength) {
 	this->maxProgramLength = maxProgramLength;
 }
 
+int32_t ProgramManager::getMaxProgramLength() {
+	return this->maxProgramLength;
+}
+
 void ProgramManager::setMaxFPS(uint16_t targetFPS) {
 	msPerFrame = 1000 / targetFPS;
 }
@@ -176,7 +180,7 @@ void ProgramManager::selectProgram(uint8_t programID, bool keepPalette) {
 
 void ProgramManager::selectRandomProgram() {
 	programIndex = random(programListLength);
-	this->nextProgram();
+	this->nextProgram(true);
 
 	programIndex++;
 	programIndex %= programListLength;
@@ -221,9 +225,7 @@ void ProgramManager::normalizeProgramIndices() {
 	programIndex %= programListLength;
 }
 
-
-// TODO: This may not work quite right
-void ProgramManager::nextProgram() {
+void ProgramManager::nextProgram(bool keepPalette) {
 	this->normalizeProgramIndices();
 
 	programIndex++;
@@ -231,10 +233,10 @@ void ProgramManager::nextProgram() {
 	
 	uint8_t index = programOrder[programIndex];
 
-	this->selectProgramCode(programList[index]);
+	this->selectProgramCode(programList[index], keepPalette);
 }
 
-void ProgramManager::prevProgram() {
+void ProgramManager::prevProgram(bool keepPalette) {
 	this->normalizeProgramIndices();
 	
 	if (programIndex == 0)
@@ -245,7 +247,7 @@ void ProgramManager::prevProgram() {
 
 	uint8_t index = programOrder[programIndex];
 
-	this->selectProgramCode(programList[index]);
+	this->selectProgramCode(programList[index], keepPalette);
 }
 
 void ProgramManager::addLightProgram(LightProgram &program, uint16_t sections, uint8_t modes[], uint8_t modeCount) {
@@ -356,7 +358,7 @@ void ProgramManager::loop() {
 	for (int i = 0; i < sectionCount; i++) {
 		LightProgram *program = lightSections[i].activeProgram;
 		uint32_t sectionTimeDelta = time - lightSections[i].programStartedAt;
-
+		
 		if (program->isProgramFinished() || 
 			(program->getProgramLength() > 0 && sectionTimeDelta > program->getProgramLength()) ||
 			(maxProgramLength > 0 && sectionTimeDelta > maxProgramLength))

@@ -11,6 +11,9 @@ void printColor(CRGB col);
 
 #define MAX_PALETTE_COLORS 6
 
+#define LOG(MSG, VAL) {Serial.print(F(MSG " ")); Serial.println(VAL); }
+#define LOG2(MSG, V1, V2) {Serial.print(F(MSG " ")); Serial.print(V1); Serial.print(F(", ")); Serial.println(V2); }
+
 namespace LightString {
 
 struct CRGBPalette {
@@ -26,12 +29,11 @@ struct CRGBPalette {
 		uint32_t weight = indexSections % totalColors;
 
 		CRGB col = colors[section];
-		//col = col.lerp8(colors[section + 1], weight);
 
 		return col.lerp8(colors[section + 1], weight);
 	}
 	/*
-	inline CRGB& operator[] (uint16_t index) const __attribute__((always_inline))
+	inline CRGB operator[] (uint16_t index) const __attribute__((always_inline))
 	{
 		uint16_t totalColors = PALETTE_SIZE;
 	
@@ -40,15 +42,10 @@ struct CRGBPalette {
 		uint32_t weight = indexSections % totalColors;
 
 		CRGB col = colors[section];
-		col = col.lerp8(colors[section + 1], weight);
-		
-		return col;
+		return col.lerp8(colors[section + 1], weight);
 	}*/
 	
 	inline CRGBPalette() : size(3) {
-//		colors = (CRGB *)malloc(size * sizeof(CRGB));
-//		LOG("malloc: ", (uint16_t)colors);
-
 		colors[0] = CRGB::Red;
 		colors[1] = CRGB::Green;
 		colors[2] = CRGB::Blue;
@@ -57,9 +54,6 @@ struct CRGBPalette {
 	inline CRGBPalette(uint8_t len, const CRGB newColors[], bool mirrored = false)
 		: size(mirrored ? ((len << 1) - 1) : len)
 	{
-//		colors = (CRGB *)malloc(size * sizeof(CRGB));
-//		LOG("malloc: ", (uint16_t)colors);
-		// LOG("calloc: ", sizeof(CRGB) * size);
 		memcpy8(colors, newColors, len * sizeof(CRGB));
 
 		if (mirrored) {
@@ -73,19 +67,10 @@ struct CRGBPalette {
 	inline CRGBPalette& operator= (const CRGBPalette& rhs) __attribute__((always_inline))
 	{
 		if (size != rhs.size) {
-//			free(colors);
-//			colors = (CRGB *)realloc(colors, size * sizeof(CRGB));
 			size = rhs.size;
-//			LOG2("realloc: ", (uint16_t)colors, size * sizeof(CRGB));
 		}
 
 		memcpy8(colors, rhs.colors, size * sizeof(CRGB));
-	}
-	
-	~CRGBPalette() {
-		//LOG("free: ", sizeof(CRGB) * size);
-//		LOG("free: ", (uint16_t)colors);
-		free(colors);
 	}
 	
 	inline CRGBPalette& nscale8(uint8_t scale)
@@ -103,7 +88,7 @@ struct CRGBPalette {
 #define YELLOW_GRADIENT CRGBPalette(2, (CRGB[]){CRGB(255, 191, 63), CRGB(63, 47, 15)}, true)
 #define WHITE_GRADIENT CRGBPalette(2, (CRGB[]){CRGB::White, CRGB::Black}, true)
 
-#define RED_GREEN_GRADIENT CRGBPalette(2, (CRGB[]){CRGB::Red, CRGB::Lime})
+#define RED_GREEN_GRADIENT CRGBPalette(2, (CRGB[]){CRGB::Red, CRGB::Green})
 
 #define GREEN_BLUE_GRADIENT CRGBPalette(3, (CRGB[]){CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB(0, 255, 64)})
 #define RED_ORGANGE_GRADIENT CRGBPalette(3, (CRGB[]){CRGB(128, 128, 128), CRGB(128, 31, 0), CRGB(128, 95, 0)}, true)
@@ -175,7 +160,7 @@ public:
 	PaletteManager();
 
 	void updateEEPROM();
-	// void randomizeOrder();
+	void randomizeOrder();
 
 	uint8_t paletteCount();
 

@@ -19,6 +19,10 @@ PaletteManager::PaletteManager()
 	: writePalettes(false), customPalettes(0), staticOffset(0), currentPalette(CRGBPalette())
 {
 	staticPalettes = EEPROM.read(0);
+	if (staticPalettes > 0) {
+		paletteIndex = 0;
+		loadPalette(0);
+	}
 }
 
 void PaletteManager::updateEEPROM() {
@@ -58,10 +62,6 @@ CRGBPalette PaletteManager::readPalette(uint16_t offset) {
 void PaletteManager::loadPalette(uint8_t index) {
 	uint16_t offset = EEPROM_OFFSET;
 
-//	currentPalette = CRGBPalette();
-//	return;
-	// LOG("Palette Index:", index);
-	
 	for (int i = 0; i < index; i++) {
 		uint8_t len = EEPROM.read(offset);
 		offset += len + 1;
@@ -86,6 +86,11 @@ CRGB PaletteManager::getColor(uint8_t index) {
 	return currentPalette[index];
 }
 
+void PaletteManager::randomizeOrder() {
+	paletteIndex = random8(0, paletteCount());
+	loadPalette(paletteIndex);
+}
+
 void PaletteManager::add(CRGBPalette palette) {
 	if (!writePalettes) return;
 	
@@ -107,7 +112,7 @@ void PaletteManager::setActive(CRGBPalette &palette) {
 void PaletteManager::next() {
 	paletteIndex++;
 	paletteIndex %= paletteCount();
-	
+
 	loadPalette(paletteIndex);
 }
 
