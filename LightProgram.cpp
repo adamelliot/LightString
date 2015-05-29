@@ -6,7 +6,7 @@ LightProgram::LightProgram(PixelBuffer *pixelBuffer)
 	: pixelBuffer(pixelBuffer), modeCount(1)
 {}
 
-void LightProgram::setPixelBuffer(PixelBuffer *pixelBuffer) {
+void LightProgram::setpixelBuffer(PixelBuffer *pixelBuffer) {
 	this->pixelBuffer = pixelBuffer;
 }
 

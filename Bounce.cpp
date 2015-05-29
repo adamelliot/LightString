@@ -23,13 +23,13 @@ void Bounce::setupMode(uint8_t mode) {
 		break;
 	}
 
-	fadeRate = 0.75 + ((float)random(201) / 1000);
+	fadeRate = 192 + random(12);
 	
 	colorIndex = random(0xff);
 	changeRate = random(7) + 1;
 	
 	bounceStep = random(2) == 1 ? 1 : -1;
-	bounceTotal = mirrored ? pixelBuffer->getLength() >> 1 : pixelBuffer->getLength();
+	bounceTotal = mirrored ? pixelBuffer->length >> 1 : pixelBuffer->length;
 	bounceIndex = bounceTotal >> 1;
 }
 
@@ -38,9 +38,9 @@ void Bounce::update(uint32_t ms) {
 
 	CRGB col = Palettes.getColor(colorIndex);
 	if (mirrored) {
-		pixelBuffer->setPixel(bounceIndex, col);
-	} else {
 		pixelBuffer->setMirroredPixel(bounceIndex, col);
+	} else {
+		pixelBuffer->setPixel(bounceIndex, col);
 	}
 	
 	bounceIndex += bounceStep;

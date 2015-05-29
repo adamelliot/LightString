@@ -115,7 +115,7 @@ void ProgramManager::selectProgramForSection(light_section_t &section, uint8_t p
 
 	LightProgram *program = getProgramForSection(programID, section);
 	section.activeProgram = program;
-	section.activeProgram->setPixelBuffer(&section.pixelBuffer);
+	section.activeProgram->setpixelBuffer(&section.pixelBuffer);
 
 	if (!keepPalette) {
 		sectionsChanged++;
@@ -275,7 +275,7 @@ void ProgramManager::addLightProgram(LightProgram &program, uint16_t sections, u
 			Serial.print(F("Adding Program Code: "));
 			Serial.print((programID << 8) | modes[i], HEX);
 			Serial.print(" at: ");
-			Serial.println((uint16_t)&program);
+			Serial.println((uint32_t)&program);
 #endif
 
 			programList[programListLength] = (programID << 8) | modes[i];
@@ -337,8 +337,7 @@ uint16_t ProgramManager::addLightSection(CRGB *pixels, uint16_t length) {
 		return 0xffff;
 	}
 
-	lightSections[sectionCount] = light_section_t();
-	lightSections[sectionCount].pixelBuffer.setPixels(pixels, length);
+	lightSections[sectionCount] = light_section_t(pixels, length);
 	sectionCount++;
 	
 	return 1 << (sectionCount - 1);

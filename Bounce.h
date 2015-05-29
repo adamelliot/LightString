@@ -12,7 +12,7 @@ protected:
 	bool fade;
 	bool mirrored;
 
-	float fadeRate;
+	uint8_t fadeRate;
 	uint8_t colorIndex;
 	uint8_t changeRate;
 

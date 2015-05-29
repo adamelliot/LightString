@@ -22,7 +22,7 @@ void SolidColor::nudge(int32_t data) {
 
 void SolidColor::update(uint32_t ms) {
 	CRGB col = colors[colorIndex];
-	pixelBuffer->clear(col);
+	pixelBuffer->showColor(col);
 
 	LightProgram::update(ms);
 }

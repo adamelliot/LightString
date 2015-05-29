@@ -4,7 +4,7 @@
 #include "LightString.h"
 
 #define BURST 0x0a
-#define MAX_BURSTS 9
+#define MAX_BURSTS 12
 
 namespace LightString {
 
@@ -25,7 +25,7 @@ protected:
 	bool oneWay;
 	bool left, right;
 
-	float fadeRate;
+	uint8_t fadeRate;
 	uint8_t colorIndex;
 	uint8_t changeRate;
 	uint8_t changeJump;

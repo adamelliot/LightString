@@ -25,7 +25,7 @@ void Breathe::update(uint32_t ms) {
 	col.g *= factor;
 	col.b *= factor;
 	
-	pixelBuffer->clear(col);
+	pixelBuffer->showColor(col);
 
 	LightProgram::update(ms);
 }

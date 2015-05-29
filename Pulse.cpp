@@ -5,14 +5,14 @@ void Pulse::setupMode(uint8_t mode) {
 	mirrored = 1;//random(2) == 0;
 	bounce = random(3) != 1;
 
-	fadeRate = 0.5 + ((float)random(201) / 1000);
+	fadeRate = 128 + random(15);
 	
 	colorIndex = 0; //random(0xff);
 	changeRate = 5; //random(8) + 3;
 	
 	pulseStep = random(2) == 1 ? 1 : -1;
 	pulseIndex = 0;
-	pulseTotal = mirrored ? pixelBuffer->getLength() >> 1 : pixelBuffer->getLength();
+	pulseTotal = mirrored ? pixelBuffer->length >> 1 : pixelBuffer->length;
 	center = pulseTotal >> 1;
 }
 

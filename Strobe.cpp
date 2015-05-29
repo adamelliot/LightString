@@ -18,7 +18,7 @@ void Strobe::update(uint32_t ms) {
 	frameCount %= (frames * 2);
 
 	if ((frameCount / frames) == 1) {
-		pixelBuffer->clear(col);
+		pixelBuffer->showColor(col);
 	} else {
 		pixelBuffer->clear();
 	}

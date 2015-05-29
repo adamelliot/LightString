@@ -5,7 +5,7 @@
 #include "LightProgram.h"
 
 #define ALL_SECTIONS 0xffff
-#define MAX_MODES 7
+#define MAX_MODES 5
 #define MAX_LIGHT_PROGRAMS 10
 #define MAX_LIGHT_SECTIONS 1
 
@@ -34,9 +34,12 @@ struct light_section_s {
 	
 	uint32_t programStartedAt;
 	
-	inline light_section_s() 
-		: programCount(0), programIndexOffset(0), programStartedAt(0), activeProgram(0) {
-	}
+	inline light_section_s() : programCount(0), programIndexOffset(0), 
+		programStartedAt(0), activeProgram(0) {}
+	
+	inline light_section_s(CRGB* pixels, uint16_t length)
+		: pixelBuffer(pixels, length), programCount(0), programIndexOffset(0), 
+		programStartedAt(0), activeProgram(0) {}
 };
 
 class ProgramManager {

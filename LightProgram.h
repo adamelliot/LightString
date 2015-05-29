@@ -1,7 +1,7 @@
 #ifndef _LIGHTPROGRAM_H_
 #define _LIGHTPROGRAM_H_
 
-#include "PixelBuffer.h"
+#include "drawing.h"
 
 namespace LightString {
 
@@ -14,7 +14,7 @@ protected:
 public:
 	LightProgram(PixelBuffer *pixelBuffer = 0);
 
-	void setPixelBuffer(PixelBuffer *pixelBuffer);
+	void setpixelBuffer(PixelBuffer *pixelBuffer);
 	PixelBuffer *getPixelBuffer();
 
 	uint8_t getMode();

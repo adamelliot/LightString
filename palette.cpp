@@ -19,6 +19,9 @@ PaletteManager::PaletteManager()
 	: writePalettes(false), customPalettes(0), staticOffset(0), currentPalette(CRGBPalette())
 {
 	staticPalettes = EEPROM.read(0);
+
+	if (staticPalettes == 255) staticPalettes = 0;
+
 	if (staticPalettes > 0) {
 		paletteIndex = 0;
 		loadPalette(0);
@@ -87,7 +90,7 @@ CRGB PaletteManager::getColor(uint8_t index) {
 }
 
 void PaletteManager::randomizeOrder() {
-	paletteIndex = random8(0, paletteCount());
+	paletteIndex = random(paletteCount());
 	loadPalette(paletteIndex);
 }
 

@@ -25,7 +25,7 @@ void SolidCycle::setupMode(uint8_t mode) {
 void SolidCycle::update(uint32_t ms) {
 	colorIndex += changeRate;
 	CRGB col = Palettes.getColor(colorIndex);
-	uint16_t len = pixelBuffer->getLength();
+	uint16_t len = pixelBuffer->length;
 
 	if (!split) {
 		for (int i = 0; i < len; i++) {

@@ -2,7 +2,8 @@
 #define _PALETTE_H_
 
 #include <Arduino.h>
-#include "FastLED.h"
+#include <EEPROM.h>
+#include <FastLED.h>
 
 #define PALETTE_MIRRORED 0x01
 #define PALETTE_SIZE 256
@@ -63,6 +64,21 @@ struct CRGBPalette {
 			}
 		}
 	}
+	
+	inline CRGBPalette(CRGB col0) : size(1)
+	{ colors[0] = col0; }
+
+	inline CRGBPalette(CRGB col0, CRGB col1) : size(2)
+	{ colors[0] = col0; colors[1] = col1; }
+
+	inline CRGBPalette(CRGB col0, CRGB col1, CRGB col2) : size(3)
+	{ colors[0] = col0; colors[1] = col1; colors[2] = col2; }
+
+	inline CRGBPalette(CRGB col0, CRGB col1, CRGB col2, CRGB col3) : size(4)
+	{ colors[0] = col0; colors[1] = col1; colors[2] = col2; colors[3] = col3; }
+
+	inline CRGBPalette(CRGB col0, CRGB col1, CRGB col2, CRGB col3, CRGB col4) : size(5)
+	{ colors[0] = col0; colors[1] = col1; colors[2] = col2; colors[3] = col3; colors[4] = col4; }
 
 	inline CRGBPalette& operator= (const CRGBPalette& rhs) __attribute__((always_inline))
 	{
@@ -71,6 +87,8 @@ struct CRGBPalette {
 		}
 
 		memcpy8(colors, rhs.colors, size * sizeof(CRGB));
+
+    return *this;
 	}
 	
 	inline CRGBPalette& nscale8(uint8_t scale)
@@ -78,42 +96,46 @@ struct CRGBPalette {
 		for (uint8_t i = 0; i < size; i++) {
 			colors[i].nscale8(scale);
 		}
+    
+    return *this;
 	}
 };
 
-#define RAINBOW_GRADIENT CRGBPalette(4, (CRGB[]){CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Red})
+#define RAINBOW_GRADIENT 						CRGBPalette(CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Red)
+                            				
+#define BLUE_GREEN_GRADIENT 				CRGBPalette(CRGB::Blue, CRGB(0, 255, 64), CRGB::Blue)
+#define GREEN_GRADIENT 							CRGBPalette(CRGB::Green, CRGB(0, 32, 0), CRGB::Green)
+#define YELLOW_GRADIENT 						CRGBPalette(CRGB(255, 191, 63), CRGB(63, 47, 15), CRGB(255, 191, 63))
+#define WHITE_GRADIENT 							CRGBPalette(CRGB::White, CRGB::Black, CRGB::White)
+                            				
+#define RED_GREEN_GRADIENT 					CRGBPalette(CRGB::Red, CRGB::Green)
+                              			
+#define GREEN_BLUE_GRADIENT 				CRGBPalette(CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB(0, 255, 64))
+#define RED_ORGANGE_GRADIENT 				CRGBPalette(CRGB(128, 128, 128), CRGB(128, 31, 0), CRGB(128, 95, 0), CRGB(128, 31, 0), CRGB(128, 128, 128))
+                              			
+#define BLUE_WHITE_GRADIENT 				CRGBPalette(CRGB(0, 31, 255), CRGB(255, 255, 255), CRGB(0, 31, 255))
+#define BLUE_WHITISH_GRADIENT				CRGBPalette(CRGB(0, 31, 255), CRGB(191, 191, 191), CRGB(0, 31, 255))
 
-#define BLUE_GREEN_GRADIENT CRGBPalette(2, (CRGB[]){CRGB::Blue, CRGB(0, 255, 64)}, true)
-#define GREEN_GRADIENT CRGBPalette(2, (CRGB[]){CRGB::Green, CRGB(0, 32, 0)}, true)
-#define YELLOW_GRADIENT CRGBPalette(2, (CRGB[]){CRGB(255, 191, 63), CRGB(63, 47, 15)}, true)
-#define WHITE_GRADIENT CRGBPalette(2, (CRGB[]){CRGB::White, CRGB::Black}, true)
+#define BLUE_YELLOW_BLACK_GRADIENT 	CRGBPalette(CRGB(0, 95, 255), CRGB(255, 255, 0), CRGB::White, CRGB::Black, CRGB(0, 31, 255))
+#define RED_WHITE_BLACK_GRADIENT 		CRGBPalette(CRGB(255, 0, 31), CRGB(255, 0, 0), CRGB::White, CRGB::Black, CRGB(255, 0, 31))
 
-#define RED_GREEN_GRADIENT CRGBPalette(2, (CRGB[]){CRGB::Red, CRGB::Green})
+#define RED_WHITE_GRADIENT 					CRGBPalette(CRGB(255, 31, 0), CRGB(255, 0, 0), CRGB(255, 255, 255), CRGB(255, 31, 0))
+#define GREEN_WHITE_GRADIENT 				CRGBPalette(CRGB(0, 255, 31), CRGB(0, 255, 0), CRGB(255, 255, 255), CRGB(0, 255, 31))
+#define RED_WHITISH_GRADIENT 				CRGBPalette(CRGB(255, 31, 0), CRGB(255, 0, 0), CRGB(191, 191, 191), CRGB(255, 31, 0))
 
-#define GREEN_BLUE_GRADIENT CRGBPalette(3, (CRGB[]){CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB(0, 255, 64)})
-#define RED_ORGANGE_GRADIENT CRGBPalette(3, (CRGB[]){CRGB(128, 128, 128), CRGB(128, 31, 0), CRGB(128, 95, 0)}, true)
-
-#define BLUE_WHITE_GRADIENT CRGBPalette(3, (CRGB[]){CRGB(0, 31, 255), CRGB(255, 255, 255), CRGB(0, 31, 255)})
-#define BLUE_WHITISH_GRADIENT CRGBPalette(3, (CRGB[]){CRGB(0, 31, 255), CRGB(191, 191, 191), CRGB(0, 31, 255)})
-
-#define BLUE_YELLOW_BLACK_GRADIENT CRGBPalette(5, (CRGB[]){CRGB(0, 95, 255), CRGB(255, 255, 0), CRGB::White, CRGB::Black, CRGB(0, 31, 255)})
-#define RED_WHITE_BLACK_GRADIENT CRGBPalette(5, (CRGB[]){CRGB(255, 0, 31), CRGB(255, 0, 0), CRGB::White, CRGB::Black, CRGB(255, 0, 31)})
-
-#define RED_WHITE_GRADIENT CRGBPalette(4, (CRGB[]){CRGB(255, 31, 0), CRGB(255, 0, 0), CRGB(255, 255, 255), CRGB(255, 31, 0)})
-#define GREEN_WHITE_GRADIENT CRGBPalette(4, (CRGB[]){CRGB(0, 255, 31), CRGB(0, 255, 0), CRGB(255, 255, 255), CRGB(0, 255, 31)})
-#define RED_WHITISH_GRADIENT CRGBPalette(4, (CRGB[]){CRGB(255, 31, 0), CRGB(255, 0, 0), CRGB(191, 191, 191), CRGB(255, 31, 0)})
+#define CYAN_PINK_GRADIENT 					CRGBPalette(CRGB(0, 255, 255), CRGB(255, 0, 96), CRGB(0, 255, 255))
+#define BLUE_YELLOW_GRADIENT 				CRGBPalette(CRGB(0, 95, 255), CRGB(255, 255, 0), CRGB(0, 31, 255))
+#define GREEN_YELLOW_GRADIENT 			CRGBPalette(CRGB(31, 255, 31), CRGB(255, 191, 63), CRGB(31, 255, 31))
+#define RAINBOW_BLACK_GRADIENT 			CRGBPalette(CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Black, CRGB::Red)
 
 // Palettes
 
 /*
-PALLETE_5(rainbowBlackGradient, CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Black, CRGB::Red);
 
 PALLETE_2_M(pinkPurpleGradient, CRGB(255, 0, 128), CRGB(96, 0, 192));
 PALLETE_2_M(solidRedGradient, CRGB(255, 192, 0), CRGB(255, 192, 0));
 
 PALLETE_5(pinkPurpleBlackGradient, CRGB(255, 0, 128), CRGB(96, 0, 192), CRGB::Black, CRGB::Black, CRGB(255, 0, 128));
-
-PALLETE_2_M(cyanPinkGradient, CRGB(0, 255, 255), CRGB(255, 0, 96));
 
 PALLETE_5(cyanPinkBlackGradient, CRGB(0, 255, 192), CRGB::Black, CRGB(255, 16, 64), CRGB::Black, CRGB(0, 255, 192));
 
@@ -122,12 +144,7 @@ PALLETE_5(greenBlueBlackGradient, CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB::Black
 PALLETE_5(redOrgangeBlackGradient, CRGB(255, 31, 0), CRGB(255, 191, 0), CRGB::Black, CRGB::Black, CRGB(255, 31, 0));
 
 PALLETE_5(blueWhiteBlackGradient, CRGB(0, 31, 25), CRGB(255, 255, 255), CRGB::White, CRGB::Black, CRGB(0, 31, 255));
-
-
 PALLETE_4(blueYellowBlackHardGradient, CRGB(0, 0, 0), CRGB(16, 16, 0), CRGB(255, 255, 0), CRGB(0, 95, 255));
-
-PALLETE_3(blueYellowGradient, CRGB(0, 95, 255), CRGB(255, 255, 0), CRGB(0, 31, 255));
-PALLETE_3(greenYellowGradient, CRGB(31, 255, 31), CRGB(255, 191, 63), CRGB(31, 255, 31));
 
 PALLETE_2(whiteSolidGradient, CRGB(64, 64, 64), CRGB(64, 64, 64));
 */
@@ -139,6 +156,7 @@ PALLETE_2(whiteSolidGradient, CRGB(64, 64, 64), CRGB(64, 64, 64));
 
 class PaletteManager {
 protected:
+  bool useEEPROM;
 	bool writePalettes;
 	
 	uint8_t staticPalettes;
@@ -181,7 +199,5 @@ public:
 };
 
 extern LightString::PaletteManager Palettes;
-
-
 
 #endif

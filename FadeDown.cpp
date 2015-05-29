@@ -28,7 +28,7 @@ bool FadeDown::isProgramFinished() {
 }
 
 void FadeDown::update(uint32_t ms) {
-	float ratio = (float)(steps - (step + 1)) / (float)(steps - step);
+	uint8_t ratio = ((steps - (step + 1)) * 255) / (steps - step);
 	pixelBuffer->fade(ratio);
 	step++;
 

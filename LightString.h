@@ -8,13 +8,11 @@
  #include <pins_arduino.h>
 #endif
 
-#include <EEPROM.h>
-
 // Core Functionality
 
-#include "Palette.h"
+#include "palette.h"
+#include "drawing.h"
 
-#include "PixelBuffer.h"
 #include "LightProgram.h"
 #include "ProgramManager.h"
 
@@ -30,22 +28,7 @@
 #include "SolidColor.h"
 #include "Burst.h"
 #include "HeartBeat.h"
-#include "CustomProgram.h"
-
-/*
-
-#include "2DLines.h"
-#include "Fire.h"
-#include "Plasma.h"
-
-#include "SoundStrip.h"
-
-// Poi Programs
-
-#include "PoiText.h"
-#include "PoiCheckers.h"
-#include "PoiGears.h"
-*/
+// #include "CustomProgram.h"
 
 using namespace LightString;
 

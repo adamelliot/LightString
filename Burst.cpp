@@ -36,7 +36,7 @@ void Burst::setupMode(uint8_t mode) {
 		
 	}
 
-	fadeRate = 0.84 + ((float)random(120) / 1000);
+	fadeRate = 210 + random(15);
 
 	int s = random(0x100);
 	bool allowSameColor = false;
@@ -69,7 +69,7 @@ void Burst::addBurst() {
 	for (int i = 0; i < MAX_BURSTS; i++) {
 		if (bursts[i].totalSteps <= bursts[i].step) {
 			bursts[i].colorIndex = (colorIndex += changeJump);
-			bursts[i].index = random(pixelBuffer->getLength());
+			bursts[i].index = random(pixelBuffer->length);
 			bursts[i].step = 0;
 			bursts[i].totalSteps = random(minBurstLength, minBurstLength + 5);
 
@@ -94,7 +94,7 @@ void Burst::addBurst() {
 void Burst::update(uint32_t ms) {
 	if (fade) pixelBuffer->fade(fadeRate);
 
-	uint16_t lenOffset = (pixelBuffer->getLength() / 20) >> (mirrored ? 1 : 0);
+	uint16_t lenOffset = (pixelBuffer->length / 20) >> (mirrored ? 1 : 0);
 
 	if (random(max(minBurstLength - lenOffset, 1)) == 0) {
 		this->addBurst();
@@ -111,8 +111,8 @@ void Burst::update(uint32_t ms) {
 		uint8_t step = (uint8_t)offset;
 		
 		if (true) {
-			uint16_t a = (bursts[i].index + step) % pixelBuffer->getLength();
-			uint16_t b = (pixelBuffer->getLength() + bursts[i].index - step) % pixelBuffer->getLength();
+			uint16_t a = (bursts[i].index + step) % pixelBuffer->length;
+			uint16_t b = (pixelBuffer->length + bursts[i].index - step) % pixelBuffer->length;
 
 			CRGB col = Palettes.getColor(bursts[i].colorIndex);
 			uint8_t scale = 255 * (1.0 - (ratio * ratio));

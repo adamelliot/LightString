@@ -12,26 +12,26 @@ void HeartBeat::setupMode(uint8_t mode) {
 	nextDub = nextLub + msDubOffset;
 
 	colorIndex = random(0xff);
-	changeRate = 1;
+	changeRate = 1 + random(5);
 }
 
 void HeartBeat::update(uint32_t ms) {
 	uint32_t time = millis();
 
-	pixelBuffer->fade(0.85f);
+	pixelBuffer->fade(227);
 
 	if (time > nextLub) {
 		CRGB col = Palettes.getColor(colorIndex += changeRate);
 
-		pixelBuffer->clear(col);
+		pixelBuffer->showColor(col);
 		nextLub = time + msPerBeat;
 	}
 
 	if (time > nextDub) {
 		CRGB col = Palettes.getColor(colorIndex += changeRate);
 
-		pixelBuffer->clear(col);
-		pixelBuffer->fade(0.75f);
+		pixelBuffer->showColor(col);
+		pixelBuffer->fade(192);
 		nextDub = nextLub + msDubOffset;
 	}
 
