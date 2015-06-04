@@ -31,7 +31,11 @@ uint8_t LightProgram::getProgramID() {
 }
 
 uint16_t LightProgram::getNextProgramCode() {
-	return 0x100; // FADE_DOWN
+	return 0; // Any program
+}
+
+TProgramTransition LightProgram::getTransition() {
+	return FADE_DOWN;
 }
 
 bool LightProgram::usePreviousPalette() {

@@ -11,7 +11,18 @@
 
 #define VERBOSE
 
+using namespace LightString;
+
 namespace LightString {
+	
+const uint8_t kTransitionFrames = 30;
+	
+typedef enum {
+	NONE = 0,
+	STARTING,
+	RUNNING,
+	FINISHED
+} TTransisionState;
 
 typedef struct light_section_s light_section_t, *plight_section_t;
 
@@ -34,18 +45,18 @@ struct light_section_s {
 	
 	uint32_t programStartedAt;
 	
+	TTransisionState transitionState;
+	
 	inline light_section_s() : programCount(0), programIndexOffset(0), 
-		programStartedAt(0), activeProgram(0) {}
+		programStartedAt(0), activeProgram(0), transitionState(NONE) {}
 	
 	inline light_section_s(CRGB* pixels, uint16_t length)
 		: pixelBuffer(pixels, length), programCount(0), programIndexOffset(0), 
-		programStartedAt(0), activeProgram(0) {}
+		programStartedAt(0), activeProgram(0), transitionState(NONE) {}
 };
 
 class ProgramManager {
 private:
-	uint8_t brightness;
-
 	light_section_t lightSections[MAX_LIGHT_SECTIONS];
 	uint8_t sectionCount;
 	
@@ -66,6 +77,10 @@ private:
 	bool paused;
 	uint32_t pauseStartedAt;
 
+	uint8_t brightness;
+	int16_t targetBrightness, adjustedBrightness;
+	int16_t brightnessStep;
+
 	LightProgram *getProgram(uint8_t programID);
 	LightProgram *getProgramForSection(uint8_t programID, light_section_t &section);
 	void selectProgramForSection(light_section_t &section, uint8_t programID, uint8_t programMode, bool keepPalette = false);
@@ -76,7 +91,6 @@ private:
 public:
 
 	ProgramManager();
-	void setup();
 
 	void setMaxProgramLength(uint32_t maxProgramLength);
 	int32_t getMaxProgramLength();
@@ -102,7 +116,14 @@ public:
 
 	plight_section_t getLightSection(uint8_t);
 	uint16_t addLightSection(CRGB *pixels, uint16_t length);
-	
+
+	void fadeDown();
+	void fadeUp(bool forceZero = true);
+	void setBrightness(uint8_t brightness);
+	bool isTransitioning();
+	void transitionBrightness();
+
+	void finishProgramForSection(light_section_t &section, uint32_t timeDelta);
 	void loop();
 };
 

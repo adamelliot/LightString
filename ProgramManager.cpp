@@ -1,18 +1,12 @@
 #include "ProgramManager.h"
-#include "FadeDown.h"
+#include "palette.h"
 
 ProgramManager::ProgramManager()
 	: maxProgramLength(-1), msPerFrame(20),
 	programIndex(0), programCount(0), programListLength(0),
-	sectionCount(0), paused(false), brightness(255)
+	sectionCount(0), paused(false),
+	brightness(255), adjustedBrightness(255), targetBrightness(255), brightnessStep(0)
 {}
-
-void ProgramManager::setup() {
-/*	if (verbose) {
-		Serial.begin(9600);
-		Serial.print(F("\n\n   -=-   Light String Booting   -=-\n\n"));
-	}*/
-}
 
 // ------------------------ Manager Control ------------------------
 
@@ -40,8 +34,9 @@ void ProgramManager::pause(bool blackout, bool fade) {
 
 	if (blackout) {
 		if (fade) {
-			selectProgram(FADE_DOWN, false);
+			this->fadeDown();
 		} else {
+			// TODO: Hard fade to black instead of wipe
 			for (int i = 0; i < sectionCount; i++) {
 				PixelBuffer *pixelBuffer = lightSections[i].activeProgram->getPixelBuffer();
 				pixelBuffer->clear();
@@ -52,6 +47,8 @@ void ProgramManager::pause(bool blackout, bool fade) {
 
 void ProgramManager::unpause() {
 	if (!paused) return;
+
+	this->fadeUp();
 
 	paused = false;
 	uint32_t timeDelta = millis() - pauseStartedAt;
@@ -343,7 +340,81 @@ uint16_t ProgramManager::addLightSection(CRGB *pixels, uint16_t length) {
 	return 1 << (sectionCount - 1);
 }
 
+// -------------------- Brightness Control -------------------
+
+void ProgramManager::fadeDown() {
+	targetBrightness = 0;
+	brightnessStep = -adjustedBrightness / kTransitionFrames;
+}
+
+void ProgramManager::fadeUp(bool forceZero) {
+	if (forceZero) {
+		adjustedBrightness = 0;
+		FastLED.setBrightness(adjustedBrightness);
+	}
+
+	targetBrightness = brightness;
+	brightnessStep = (brightness - adjustedBrightness) / kTransitionFrames;
+}
+
+void ProgramManager::setBrightness(uint8_t brightness) {
+	this->brightness = brightness;
+	this->adjustedBrightness = brightness;
+	this->targetBrightness = brightness;
+
+	FastLED.setBrightness(brightness);
+}
+
+bool ProgramManager::isTransitioning() {
+	return adjustedBrightness != targetBrightness;
+}
+
+void ProgramManager::transitionBrightness() {
+	if (!this->isTransitioning()) return;
+
+	adjustedBrightness += brightnessStep;
+
+	if (abs(targetBrightness - adjustedBrightness) < abs(brightnessStep)) {
+		adjustedBrightness = targetBrightness;
+	}
+
+	FastLED.setBrightness(adjustedBrightness);
+}
+
 // -------------------- Primary Manager Loop -------------------
+
+
+void ProgramManager::finishProgramForSection(light_section_t &section, uint32_t timeDelta) {
+	if (section.transitionState == STARTING) {
+		if (section.activeProgram->getTransition() == FADE_DOWN) {
+			Serial.println("Fade Down");
+			this->fadeDown();
+		}
+
+		section.transitionState = RUNNING;
+	}
+
+	switch (section.activeProgram->getTransition()) {
+		case OVERWRITE:
+		section.transitionState = FINISHED;
+		break;
+
+		case WIPE:
+		section.pixelBuffer.clear();
+		section.transitionState = FINISHED;
+		break;
+		
+		case FADE_DOWN:
+		if (!this->isTransitioning()) {
+			section.pixelBuffer.clear();
+			section.transitionState = FINISHED;
+			this->setBrightness(this->brightness);
+		} else {
+			section.activeProgram->update(timeDelta);
+		}
+		break;
+	}
+}
 
 void ProgramManager::loop() {
 	uint32_t time = millis(), timeDelta = time - lastTime;
@@ -354,6 +425,8 @@ void ProgramManager::loop() {
 		delay(msPerFrame - timeDelta);
 	}
 
+	this->transitionBrightness();
+
 	for (int i = 0; i < sectionCount; i++) {
 		LightProgram *program = lightSections[i].activeProgram;
 		uint32_t sectionTimeDelta = time - lightSections[i].programStartedAt;
@@ -362,13 +435,19 @@ void ProgramManager::loop() {
 			(program->getProgramLength() > 0 && sectionTimeDelta > program->getProgramLength()) ||
 			(maxProgramLength > 0 && sectionTimeDelta > maxProgramLength))
 		{
-			if (!paused)
+			if (lightSections[i].transitionState == NONE) {
+				lightSections[i].transitionState = STARTING;
+			}
+
+			this->finishProgramForSection(lightSections[i], timeDelta);
+
+			if (lightSections[i].transitionState == FINISHED && !paused) {
+				lightSections[i].transitionState = NONE;
 				nextProgramForSection(lightSections[i]);
+			}
 
 		} else {
 			program->update(timeDelta);
 		}
 	}
-
-	FastLED.show();
 }

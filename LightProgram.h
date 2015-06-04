@@ -3,7 +3,16 @@
 
 #include "drawing.h"
 
+using namespace LightString;
+
 namespace LightString {
+	
+typedef enum {
+	OVERWRITE = 0, // Starts playing new program over existing data
+	WIPE, // Clears data and starts new program immediately
+	FADE_DOWN, // Forces all lights to fade while playing
+	FREEZE_FADE // Forces just the section to freeze, then fade down
+} TProgramTransition;
 
 class LightProgram {
 protected:
@@ -24,6 +33,8 @@ public:
 	// 0 indicates no program ID
 	virtual uint8_t getProgramID();
 	virtual uint16_t getNextProgramCode();
+	
+	virtual TProgramTransition getTransition();
 
 	// Indicates that the program wants to use the palette of the last program
 	virtual bool usePreviousPalette();

@@ -1,52 +1,55 @@
 #include "drawing.h"
-/*
-void vertline8(CRGB *leds, uint16_t x, uint16_t y0, uint16_t y1, CRGB col) {
-	if (y0 > y1) {
-		uint8_t swap = y0;
-		y1 = y0;
-		y0 = swap;
-	}
 
-#warning not done
-  
-  BREAKCOMPILE
-
-	for (int i = 0; i <= y1 - y0; i++)
-		leds[XY(x, y0 + i)] = col;
-}*/
-
-void vertline(CRGB *leds, uint8_t x, uint8_t y0, uint8_t y1, CRGB col) {
-	if (y0 > y1) {
-		uint8_t swap = y0;
-		y1 = y0;
-		y0 = swap;
-	}
-	
-	for (int i = 0; i <= y1 - y0; i++)
-		leds[XY(x, y0 + i)] = col;
+inline void setPixel8(int16_t x, int16_t y, CRGB col) {
+	int8_t ax = x >> 8, ay = y >> 8;
+	uint8_t fx0 = x & 0xff, fy0 = y & 0xff, fx1 = 0xff - fx0;
 }
 
-void horzline(CRGB *leds, uint8_t x0, uint8_t x1, uint8_t y, CRGB col) {
-	if (x0 > x1) {
-		uint8_t swap = x0;
-		x1 = x0;
-		x0 = swap;
+void vertLine(CRGB *pixels, int16_t x, int16_t y, int16_t len, CRGB col) {
+	if (len == 0) return;
+	
+	if (len < 0) {
+		y += (len + 1);
+		len *= -1;
+	}
+	
+	for (int i = 0; i < len; i++)
+		pixels[xy(x, y + i)] = col;
+}
+
+void horzLine(CRGB *pixels, int16_t x, int16_t y, int16_t len, CRGB col) {
+	if (len == 0) return;
+
+	if (len < 0) {
+		x += (len + 1);
+		len *= -1;
 	}
 
-	for (int i = 0; i <= x1 - x0; i++)
-		leds[XY(x0 + i, y)] = col;
+	for (int i = 0; i < len; i++)
+		pixels[xy(x + i, y)] = col;
+}
+
+void drawRect(CRGB *pixels, int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col) {
+//	if (x0 > x1) SWAP(x0, x1);
+	if (y0 > y1) SWAP(y0, y1);
+
+	for (; y0 < y1; y0++) {
+		horzLine(pixels, x0, y0, x1 - x0, col);
+	}
 }
 
 // Ripped from arduino-tvout 
-void lineto(CRGB *leds, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, CRGB col) {
-	if (x0 >= kMatrixWidth || y0 >= kMatrixHeight || x1 >= kMatrixWidth || y1 >= kMatrixHeight)
-		return;
+void lineTo(CRGB *pixels, int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col) {
+	//	if (x0 >= kMatrixWidth || y0 >= kMatrixHeight || x1 >= kMatrixWidth || y1 >= kMatrixHeight)
+	//	return;
 
 	if (x0 == x1) {
-		vertline(leds, x0, y0, y1, col);
-	} else if (y0 == y1)
-		horzline(leds, x0, x1, y0, col);
-	else {
+		y1 += y1 < y0 ? -1 : 1;
+		vertLine(pixels, x0, y0, y1 - y0, col);
+	} else if (y0 == y1) {
+		x1 += x1 < x0 ? -1 : 1;
+		horzLine(pixels, x0, y0, x1 - x0, col);
+	} else {
 		int e;
 		signed int dx, dy,j, temp;
 		signed char s1, s2, xchange;
@@ -94,7 +97,7 @@ void lineto(CRGB *leds, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, CRGB col
 		e = ((int)dy << 1) - dx;	
 
 		for (j = 0; j <= dx; j++) {
-			leds[XY(x,y)] = col;
+			pixels[xy(x,y)] = col;
 
 			if (e >= 0) {
 				if (xchange == 1) x = x + s1;

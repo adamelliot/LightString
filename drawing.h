@@ -3,22 +3,22 @@
 
 #include "FastLED.h"
 
+#define SWAP(x, y) do { typeof(x) SWAP = x; x = y; y = SWAP; } while (0)
+
 extern const uint8_t kMatrixWidth;
 extern const uint8_t kMatrixHeight;
 
 extern uint8_t *generic_map;
 
-int16_t XY(uint8_t, uint8_t);
+extern int16_t xy(int16_t, int16_t);
 
-// Fixed methods are antialiased
-// void vertline8(CRGB *pixels, uint16_t x, uint16_t y0, uint16_t y1, CRGB col);
-// void horzline8(CRGB *pixels, uint16_t x0, uint16_t x1, uint16_t y, CRGB col);
+void setPixel8(int16_t x, int16_t y, CRGB col);
 
-// Aliased methods
-void vertline(CRGB *pixels, uint8_t x, uint8_t y0, uint8_t y1, CRGB col);
-void horzline(CRGB *pixels, uint8_t x0, uint8_t x1, uint8_t y, CRGB col);
-void lineto(CRGB *pixels, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, CRGB col);
+void vertLine(CRGB *pixels, int16_t x, int16_t y, int16_t len, CRGB col);
+void horzLine(CRGB *pixels, uint8_t x, uint8_t y, int16_t len, CRGB col);
+void lineTo(CRGB *pixels, int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col);
 
+void drawRect(CRGB *pixels, int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col);
 
 namespace LightString {
   
@@ -51,6 +51,10 @@ struct PixelBuffer {
   inline void fade(uint8_t fadeRate) {
     nscale8(pixels, length, fadeRate);
   }
+	
+	inline void drawRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col) {
+		::drawRect(pixels, x0, y0, x1, y1, col);
+	}
 };
 
 struct Rect {
