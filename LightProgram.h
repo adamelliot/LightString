@@ -23,7 +23,7 @@ protected:
 public:
 	LightProgram(PixelBuffer *pixelBuffer = 0);
 
-	void setpixelBuffer(PixelBuffer *pixelBuffer);
+	void setPixelBuffer(PixelBuffer *pixelBuffer);
 	PixelBuffer *getPixelBuffer();
 
 	uint8_t getMode();
@@ -33,7 +33,7 @@ public:
 	// 0 indicates no program ID
 	virtual uint8_t getProgramID();
 	virtual uint16_t getNextProgramCode();
-	
+
 	virtual TProgramTransition getTransition();
 
 	// Indicates that the program wants to use the palette of the last program
@@ -44,9 +44,6 @@ public:
 	virtual bool isProgramFinished();
 	// Returns how long this program should run in ms
 	virtual int32_t getProgramLength(); // -1 = forever
-
-	virtual void setConfig(void *config);
-	virtual void *getConfig();
 
 	virtual void nudge(int32_t data);
 

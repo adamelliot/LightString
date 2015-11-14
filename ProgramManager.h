@@ -5,8 +5,9 @@
 #include "LightProgram.h"
 
 #define ALL_SECTIONS 0xffff
-#define MAX_MODES 5
-#define MAX_LIGHT_PROGRAMS 10
+
+#define MAX_MODES 6
+#define MAX_LIGHT_PROGRAMS 6
 #define MAX_LIGHT_SECTIONS 1
 
 #define VERBOSE
@@ -16,7 +17,7 @@ using namespace LightString;
 namespace LightString {
 	
 const uint8_t kTransitionFrames = 30;
-	
+
 typedef enum {
 	NONE = 0,
 	STARTING,
@@ -24,17 +25,24 @@ typedef enum {
 	FINISHED
 } TTransisionState;
 
-typedef struct light_section_s light_section_t, *plight_section_t;
+typedef enum {
+	PROGRAM_STARTED = 0,
+	PROGRAM_FINISHED
+} TProgramEvent;
+
+typedef void (* ProgramEvent)(LightProgram &lightProgram, TProgramEvent event);
+
+// typedef struct light_section_s light_section_t, *plight_section_t;
 
 // TODO: Implement program grouping
 // NOTE: Group Program IDs are >= 0x80
-struct light_program_group_s {
+struct LightProgramGroup {
 	uint8_t programID;
 	// Pairs of codes and strip addreses
 	uint32_t *programCodes;
 };
 
-struct light_section_s {
+struct LightSection {
 	uint8_t supportedPrograms[MAX_LIGHT_PROGRAMS];
 	uint8_t programCount;
 
@@ -42,22 +50,22 @@ struct light_section_s {
 
 	PixelBuffer pixelBuffer;
 	LightProgram *activeProgram;
-	
+
 	uint32_t programStartedAt;
-	
+
 	TTransisionState transitionState;
-	
-	inline light_section_s() : programCount(0), programIndexOffset(0), 
+
+	inline LightSection() : programCount(0), programIndexOffset(0), 
 		programStartedAt(0), activeProgram(0), transitionState(NONE) {}
-	
-	inline light_section_s(CRGB* pixels, uint16_t length)
+
+	inline LightSection(CRGB* pixels, uint16_t length)
 		: pixelBuffer(pixels, length), programCount(0), programIndexOffset(0), 
 		programStartedAt(0), activeProgram(0), transitionState(NONE) {}
 };
 
 class ProgramManager {
 private:
-	light_section_t lightSections[MAX_LIGHT_SECTIONS];
+	LightSection lightSections[MAX_LIGHT_SECTIONS];
 	uint8_t sectionCount;
 	
 	uint8_t sectionsChanged;
@@ -82,10 +90,10 @@ private:
 	int16_t brightnessStep;
 
 	LightProgram *getProgram(uint8_t programID);
-	LightProgram *getProgramForSection(uint8_t programID, light_section_t &section);
-	void selectProgramForSection(light_section_t &section, uint8_t programID, uint8_t programMode, bool keepPalette = false);
+	LightProgram *getProgramForSection(uint8_t programID, LightSection &section);
+	void selectProgramForSection(LightSection &section, uint8_t programID, uint8_t programMode, bool keepPalette = false);
 	void selectProgramGroup(uint8_t programID);
-	void nextProgramForSection(light_section_t &section);
+	void nextProgramForSection(LightSection &section);
 	void normalizeProgramIndices();
 
 public:
@@ -94,14 +102,14 @@ public:
 
 	void setMaxProgramLength(uint32_t maxProgramLength);
 	int32_t getMaxProgramLength();
-	
+
 	void setMaxFPS(uint16_t targetFPS);
 	void pause(bool blackout = true, bool fade = true);
 	void unpause();
 	void togglePause();
-	
+
 	void nudge(int32_t);
-	
+
 	void selectProgramCode(uint16_t programCode, bool keepPalette = false);
 	void selectProgram(uint8_t programID, bool keepPalette = false);
 	void selectRandomProgram();
@@ -114,7 +122,7 @@ public:
 	void addLightProgram(LightProgram &program, uint16_t sections);
 	void addLightProgram(LightProgram &program);
 
-	plight_section_t getLightSection(uint8_t);
+	LightSection *getLightSection(uint8_t);
 	uint16_t addLightSection(CRGB *pixels, uint16_t length);
 
 	void fadeDown();
@@ -123,7 +131,7 @@ public:
 	bool isTransitioning();
 	void transitionBrightness();
 
-	void finishProgramForSection(light_section_t &section, uint32_t timeDelta);
+	void finishProgramForSection(LightSection &section, uint32_t timeDelta);
 	void loop();
 };
 

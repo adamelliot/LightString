@@ -78,7 +78,7 @@ LightProgram *ProgramManager::getProgram(uint8_t programID) {
 	return NULL;
 }
 
-LightProgram *ProgramManager::getProgramForSection(uint8_t programID, light_section_t &section) {
+LightProgram *ProgramManager::getProgramForSection(uint8_t programID, LightSection &section) {
 	// Program is supported
 	for (int i = 0; i < programCount; i++) {
 		if (section.supportedPrograms[i] == programID)
@@ -102,7 +102,7 @@ LightProgram *ProgramManager::getProgramForSection(uint8_t programID, light_sect
 	return NULL;
 }
 
-void ProgramManager::selectProgramForSection(light_section_t &section, uint8_t programID, uint8_t programMode, bool keepPalette) {
+void ProgramManager::selectProgramForSection(LightSection &section, uint8_t programID, uint8_t programMode, bool keepPalette) {
 #ifdef VERBOSE
 	if (programID != 0x1) {
 		Serial.print(F("Selecting Program Code: "));
@@ -112,7 +112,7 @@ void ProgramManager::selectProgramForSection(light_section_t &section, uint8_t p
 
 	LightProgram *program = getProgramForSection(programID, section);
 	section.activeProgram = program;
-	section.activeProgram->setpixelBuffer(&section.pixelBuffer);
+	section.activeProgram->setPixelBuffer(&section.pixelBuffer);
 
 	if (!keepPalette) {
 		sectionsChanged++;
@@ -120,7 +120,7 @@ void ProgramManager::selectProgramForSection(light_section_t &section, uint8_t p
 			Palettes.next();
 		}
 	}
-	
+
 	section.activeProgram->setupMode(programMode);
 	section.programStartedAt = millis();
 }
@@ -183,7 +183,7 @@ void ProgramManager::selectRandomProgram() {
 	programIndex %= programListLength;
 }
 
-void ProgramManager::nextProgramForSection(light_section_t &section) {
+void ProgramManager::nextProgramForSection(LightSection &section) {
 	uint8_t programID;
 	uint8_t mode;
 
@@ -258,7 +258,7 @@ void ProgramManager::addLightProgram(LightProgram &program, uint16_t sections, u
 
 	for (int i = 0; i < sectionCount; i++) {
 		if (((1 << i) | sections) == sections) {
-			light_section_t &section = lightSections[i];
+			LightSection &section = lightSections[i];
 			section.supportedPrograms[section.programCount++] = programID;
 		}
 	}
@@ -320,7 +320,7 @@ void ProgramManager::randomizeProgramOrder() {
 
 // -------------------- Adding Sections -------------------
 
-plight_section_t ProgramManager::getLightSection(uint8_t index) {
+LightSection *ProgramManager::getLightSection(uint8_t index) {
 	if (index >= sectionCount) return NULL;
 
 	return &lightSections[index];
@@ -334,7 +334,7 @@ uint16_t ProgramManager::addLightSection(CRGB *pixels, uint16_t length) {
 		return 0xffff;
 	}
 
-	lightSections[sectionCount] = light_section_t(pixels, length);
+	lightSections[sectionCount] = LightSection(pixels, length);
 	sectionCount++;
 	
 	return 1 << (sectionCount - 1);
@@ -383,11 +383,10 @@ void ProgramManager::transitionBrightness() {
 
 // -------------------- Primary Manager Loop -------------------
 
-
-void ProgramManager::finishProgramForSection(light_section_t &section, uint32_t timeDelta) {
+void ProgramManager::finishProgramForSection(LightSection &section, uint32_t timeDelta) {
 	if (section.transitionState == STARTING) {
 		if (section.activeProgram->getTransition() == FADE_DOWN) {
-			Serial.println("Fade Down");
+			// Serial.println("Fade Down");
 			this->fadeDown();
 		}
 
@@ -403,7 +402,7 @@ void ProgramManager::finishProgramForSection(light_section_t &section, uint32_t 
 		section.pixelBuffer.clear();
 		section.transitionState = FINISHED;
 		break;
-		
+
 		case FADE_DOWN:
 		if (!this->isTransitioning()) {
 			section.pixelBuffer.clear();
@@ -423,6 +422,8 @@ void ProgramManager::loop() {
 	// TODO: Frame rate limiting isn't working quite right
 	if (timeDelta < msPerFrame) {
 		delay(msPerFrame - timeDelta);
+		
+		// return;
 	}
 
 	this->transitionBrightness();
@@ -430,7 +431,7 @@ void ProgramManager::loop() {
 	for (int i = 0; i < sectionCount; i++) {
 		LightProgram *program = lightSections[i].activeProgram;
 		uint32_t sectionTimeDelta = time - lightSections[i].programStartedAt;
-		
+
 		if (program->isProgramFinished() || 
 			(program->getProgramLength() > 0 && sectionTimeDelta > program->getProgramLength()) ||
 			(maxProgramLength > 0 && sectionTimeDelta > maxProgramLength))

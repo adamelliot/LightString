@@ -6,7 +6,7 @@ LightProgram::LightProgram(PixelBuffer *pixelBuffer)
 	: pixelBuffer(pixelBuffer), modeCount(1)
 {}
 
-void LightProgram::setpixelBuffer(PixelBuffer *pixelBuffer) {
+void LightProgram::setPixelBuffer(PixelBuffer *pixelBuffer) {
 	this->pixelBuffer = pixelBuffer;
 }
 
@@ -53,9 +53,6 @@ bool LightProgram::isProgramFinished() {
 int32_t LightProgram::getProgramLength() {
 	return -1;
 }
-
-void LightProgram::setConfig(void *config) {}
-void *LightProgram::getConfig() { return NULL; }
 
 void LightProgram::nudge(int32_t) {}
 

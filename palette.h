@@ -33,6 +33,7 @@ struct CRGBPalette {
 
 		return col.lerp8(colors[section + 1], weight);
 	}
+
 	/*
 	inline CRGB operator[] (uint16_t index) const __attribute__((always_inline))
 	{
@@ -45,7 +46,7 @@ struct CRGBPalette {
 		CRGB col = colors[section];
 		return col.lerp8(colors[section + 1], weight);
 	}*/
-	
+
 	inline CRGBPalette() : size(3) {
 		colors[0] = CRGB::Red;
 		colors[1] = CRGB::Green;
@@ -101,10 +102,17 @@ struct CRGBPalette {
 	}
 };
 
-#define RAINBOW_GRADIENT 						CRGBPalette(CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Red)
+#define SOLID_RED										CRGBPalette(CRGB::Red, CRGB::Red)
+#define SOLID_GREEN									CRGBPalette(CRGB::Lime, CRGB::Lime)
+#define SOLID_BLUE									CRGBPalette(CRGB::Blue, CRGB::Blue)
+#define SOLID_AQUA									CRGBPalette(CRGB::Aqua, CRGB::Aqua)
+#define SOLID_AZURE									CRGBPalette(CRGB::Azure, CRGB::Azure)
+
+#define RAINBOW_GRADIENT 						CRGBPalette(CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Red)
                             				
 #define BLUE_GREEN_GRADIENT 				CRGBPalette(CRGB::Blue, CRGB(0, 255, 64), CRGB::Blue)
-#define GREEN_GRADIENT 							CRGBPalette(CRGB::Green, CRGB(0, 32, 0), CRGB::Green)
+#define GREEN_GRADIENT 							CRGBPalette(CRGB::Lime, CRGB(0, 32, 0), CRGB::Lime)
+#define LIME_GRADIENT 							CRGBPalette(CRGB::Lime, CRGB::Green, CRGB::Lime)
 #define YELLOW_GRADIENT 						CRGBPalette(CRGB(255, 191, 63), CRGB(63, 47, 15), CRGB(255, 191, 63))
 #define WHITE_GRADIENT 							CRGBPalette(CRGB::White, CRGB::Black, CRGB::White)
                             				

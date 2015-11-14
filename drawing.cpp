@@ -30,11 +30,45 @@ void horzLine(CRGB *pixels, int16_t x, int16_t y, int16_t len, CRGB col) {
 }
 
 void drawRect(CRGB *pixels, int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col) {
-//	if (x0 > x1) SWAP(x0, x1);
 	if (y0 > y1) SWAP(y0, y1);
 
 	for (; y0 < y1; y0++) {
 		horzLine(pixels, x0, y0, x1 - x0, col);
+	}
+}
+
+
+// Midpoint Circle Algorithm
+// https://en.wikipedia.org/wiki/Midpoint%5Fcircle%5Falgorithm
+void drawSolidCircle(CRGB *pixels, int16_t x0, int16_t y0, uint8_t radius, CRGB col) {
+	int16_t x = radius;
+	int16_t y = 0;
+	int16_t decisionOver2 = 1 - x;
+
+	while (x >= y) {
+		// pixels[xy( x + x0,  y + y0)] = col;
+		// pixels[xy(-x + x0,  y + y0)] = col;
+		horzLine(pixels, -x + x0, y + y0, x * 2, col);
+
+		// pixels[xy( y + x0,  x + y0)] = col;
+		// pixels[xy(-y + x0,  x + y0)] = col;
+		horzLine(pixels, -y + x0, x + y0, y * 2, col);
+
+		// pixels[xy(-x + x0, -y + y0)] = col;
+		// pixels[xy( x + x0, -y + y0)] = col;
+		horzLine(pixels, -x + x0, -y + y0, x * 2, col);
+
+		// pixels[xy(-y + x0, -x + y0)] = col;
+		// pixels[xy( y + x0, -x + y0)] = col;
+		horzLine(pixels, -y + x0, -x + y0, y * 2, col);
+
+		y++;
+		if (decisionOver2 <= 0) {
+			decisionOver2 += 2 * y + 1;
+		} else {
+			x--;
+			decisionOver2 += 2 * (y - x) + 1;
+		}
 	}
 }
 
