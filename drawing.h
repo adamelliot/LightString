@@ -12,6 +12,8 @@ extern uint8_t *generic_map;
 
 extern int16_t xy(int16_t, int16_t);
 
+void blink(CRGB col = CRGB::Yellow, int times = 4, int timing = 75);
+
 void setPixel8(int16_t x, int16_t y, CRGB col);
 
 void vertLine(CRGB *pixels, int16_t x, int16_t y, int16_t len, CRGB col);
@@ -20,6 +22,8 @@ void lineTo(CRGB *pixels, int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB c
 
 void drawRect(CRGB *pixels, int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col);
 void drawSolidCircle(CRGB *pixels, int16_t x, int16_t y, uint8_t radius, CRGB col);
+
+extern void hsv2rgb_rainbow(const CHSV& hsv, CRGB& rgb);
 
 namespace LightString {
 
@@ -194,50 +198,242 @@ struct MovingPoint8 : Point<uint16_t> {
 };
 
 
-struct Pixel {
-	uint8_t a;
-	uint8_t r, g, b;
+/*
+ * Pixel is based on CRGB, but adds alpha channel functionality so
+ * layering PixelBuffers can properly create composites.
+ * Pixel and CRGB can both be used as templates for PixelBuffer
+ *
+ * NOTE: Alpha is generally preserved on the local pixel during operations
+ */
+struct Pixel : CRGB {
+	union {
+		uint8_t a;
+		uint8_t alpha;
+	};
 
-	CRGB toCRGB() {
-		return CRGB(r, g, b);
+	inline Pixel() __attribute__((always_inline)) {}
+	inline Pixel(uint8_t r, uint8_t g, uint8_t b) __attribute__((always_inline)) 
+		: CRGB(r, g, b), a(0xff) {}
+	inline Pixel(uint8_t a, uint8_t r, uint8_t g, uint8_t b) __attribute__((always_inline)) 
+		: CRGB(r, g, b), a(a) {}
+
+	// Can't set full alpha through this construtor so 3 channel notation works
+	inline Pixel(uint32_t colorcode) __attribute__((always_inline)) 
+		: CRGB(colorcode), a(0xff)
+	{
+		if ((colorcode >> 24) != 0) a = (colorcode >> 24) & 0xff;
 	}
+
+	inline Pixel(uint32_t colorcode, uint8_t a) __attribute__((always_inline)) 
+		: CRGB(colorcode), a(a) {}
+
+	inline Pixel(const Pixel &rhs) __attribute__((always_inline))
+		: CRGB(rhs.r, rhs.g, rhs.b), a(rhs.a) {}
+
+	inline Pixel(const CRGB &rhs) __attribute__((always_inline))
+		: CRGB(rhs.r, rhs.g, rhs.b), a(0xff) {}
+
+	inline Pixel(const CHSV &rhs) __attribute__((always_inline))
+		: a(0xff)
+	{
+		hsv2rgb_rainbow(rhs, (CRGB &)(*this->raw));
+	}
+
+	/*
+	inline Pixel& setRGB(uint8_t nr, uint8_t ng, uint8_t nb) __attribute__((always_inline))
+	{
+		r = nr;
+		g = ng;
+		b = nb;
+		return *this;
+	}
+
+	inline Pixel& setHSV(uint8_t hue, uint8_t sat, uint8_t val) __attribute__((always_inline))
+	{
+		hsv2rgb_rainbow(CHSV(hue, sat, val), (CRGB &)(*(raw + 1)));
+		return *this;
+	}
+
+	inline Pixel& setHue (uint8_t hue) __attribute__((always_inline))
+	{
+		hsv2rgb_rainbow(CHSV(hue, 255, 255), (CRGB &)(*(raw + 1)));
+		return *this;
+	}
+*/
+	inline Pixel& operator= (const Pixel& rhs) __attribute__((always_inline)) {
+		a = rhs.a;
+		this->r = rhs.r;
+		this->g = rhs.g;
+		this->b = rhs.b;
+		return *this;
+	}
+/*
+	inline Pixel& operator= (const CRGB& rhs) __attribute__((always_inline)) {
+		a = 0xff;
+		r = rhs.r;
+		g = rhs.g;
+		b = rhs.b;
+	}
+
+	// add one RGB to another, saturating at 0xFF for each channel
+	inline Pixel& operator+= (const CRGB& rhs)
+	{
+		r = qadd8(r, rhs.r);
+		g = qadd8(g, rhs.g);
+		b = qadd8(b, rhs.b);
+		return *this;
+	}
+*/
+	inline Pixel& operator+= (const Pixel& rhs)
+	{
+		this->r = qadd8(r, rhs.r);
+		this->g = qadd8(g, rhs.g);
+		this->b = qadd8(b, rhs.b);
+		return *this;
+	}
+	/*
+	// add a contstant to each channel, saturating at 0xFF
+	// this is NOT an operator+= overload because the compiler
+	// can't usefully decide when it's being passed a 32-bit
+	// constant (e.g. CRGB::Red) and an 8-bit one (CRGB::Blue)
+	inline Pixel& addToRGB (uint8_t d)
+	{
+		r = qadd8(r, d);
+		g = qadd8(g, d);
+		b = qadd8(b, d);
+		return *this;
+	}
+
+	// subtract one RGB from another, saturating at 0x00 for each channel
+	inline Pixel& operator-= (const CRGB& rhs)
+	{
+		r = qsub8( r, rhs.r);
+		g = qsub8( g, rhs.g);
+		b = qsub8( b, rhs.b);
+		return *this;
+	}
+*/
+	inline Pixel& operator-= (const Pixel& rhs)
+	{
+		this->r = qsub8(r, rhs.r);
+		this->g = qsub8(g, rhs.g);
+		this->b = qsub8(b, rhs.b);
+		return *this;
+	}
+	/*
+	// subtract a constant from each channel, saturating at 0x00
+	// this is NOT an operator+= overload because the compiler
+	// can't usefully decide when it's being passed a 32-bit
+	// constant (e.g. CRGB::Red) and an 8-bit one (CRGB::Blue)
+	inline Pixel& subtractFromRGB(uint8_t d)
+	{
+		r = qsub8(r, d);
+		g = qsub8(g, d);
+		b = qsub8(b, d);
+		return *this;
+	}
+
+	// subtract a constant of '1' from each channel, saturating at 0x00
+	inline Pixel& operator-- ()  __attribute__((always_inline))
+	{
+		subtractFromRGB(1);
+		return *this;
+	}
+
+	// subtract a constant of '1' from each channel, saturating at 0x00
+	inline Pixel operator-- (int DUMMY_ARG)  __attribute__((always_inline))
+	{
+		Pixel retval(*this);
+		--(*this);
+		return retval;
+	}
+
+	// add a constant of '1' from each channel, saturating at 0xFF
+	inline Pixel& operator++ ()  __attribute__((always_inline))
+	{
+		addToRGB(1);
+		return *this;
+	}
+
+	// add a constant of '1' from each channel, saturating at 0xFF
+	inline Pixel operator++ (int DUMMY_ARG)  __attribute__((always_inline))
+	{
+		Pixel retval(*this);
+		++(*this);
+		return retval;
+	}
+
+	// divide each of the channels by a constant
+	inline Pixel& operator/= (uint8_t d )
+	{
+		r /= d;
+		g /= d;
+		b /= d;
+		return *this;
+	}
+
+	// right shift each of the channels by a constant
+	inline Pixel& operator>>= (uint8_t d)
+	{
+		r >>= d;
+		g >>= d;
+		b >>= d;
+		return *this;
+	}
+
+	// multiply each of the channels by a constant,
+	// saturating each channel at 0xFF
+	inline Pixel& operator*= (uint8_t d )
+	{
+		r = qmul8( r, d);
+		g = qmul8( g, d);
+		b = qmul8( b, d);
+		return *this;
+	}
+*/
 };
 
-struct PixelBuffer {
-  CRGB *pixels;
-  uint16_t length;
-  
-	PixelBuffer() : pixels(0), length(0) {}
+template <typename T>
+struct TPixelBuffer {
+	T *pixels;
+	uint16_t length;
 
-  PixelBuffer(CRGB *pixels, uint16_t length)
-    : pixels(pixels), length(length) {}
+	inline TPixelBuffer() __attribute__((always_inline)) __attribute__((always_inline))
+		: pixels(0), length(0) {}
 
-  inline void setPixel(uint16_t index, CRGB col) {
-    pixels[index] = col;
-  }
+	inline TPixelBuffer(T *pixels, uint16_t length) __attribute__((always_inline))
+		: pixels(pixels), length(length) {}
+	/*
+	inline T& operator[] (uint16_t i) __attribute__((always_inline)) {
+		return pixels[i];
+	}*/
 
-	inline void setPixels(uint16_t index, uint8_t length, CRGB col) {
+	inline void setPixel(uint16_t index, T col) __attribute__((always_inline)) {
+		pixels[index] = col;
+	}
+
+	inline void setPixels(uint16_t index, uint8_t length, T col) __attribute__((always_inline)) {
 		for (uint16_t i = index; i < index + length; i++) {
 			pixels[i] = col;
 		}
 	}
 
-  inline void setMirroredPixel(uint16_t index, CRGB col) {
-  	pixels[index] = col;
-  	pixels[length - index - 1] = col;
-  }
+	inline void setMirroredPixel(uint16_t index, T col) __attribute__((always_inline)) {
+		pixels[index] = col;
+		pixels[length - index - 1] = col;
+	}
 
-  inline void clear() {
-    memset8((void*)pixels, 0, sizeof(struct CRGB) * length);
-  }
-  
-  inline void showColor(CRGB col) {
-    fill_solid(pixels, length, col);
-  }
-  
-  inline void fade(uint8_t fadeRate) {
-    nscale8(pixels, length, fadeRate);
-  }
+	inline void clear() __attribute__((always_inline)) {
+		memset8((void*)pixels, 0, sizeof(T) * length);
+	}
+
+	inline void showColor(T col) __attribute__((always_inline)) {
+		fill_solid(pixels, length, col);
+	}
+
+	inline void fade(uint8_t fadeRate) __attribute__((always_inline)) {
+		nscale8(pixels, length, fadeRate);
+	}
 	
 	inline void drawRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col) {
 		::drawRect(pixels, x0, y0, x1, y1, col);
@@ -258,6 +454,24 @@ struct PixelBuffer {
 	inline void drawSolidCircle(Point<float> pt, uint8_t radius, CRGB col) {
 		::drawSolidCircle(pixels, pt.x, pt.y, radius, col);
 	}
+};
+
+struct PixelBuffer : TPixelBuffer<CRGB> {
+	inline PixelBuffer() __attribute__((always_inline))
+		: TPixelBuffer<CRGB>() {}
+	
+	inline PixelBuffer(CRGB *pixels, uint16_t length) __attribute__((always_inline))
+		: TPixelBuffer<CRGB>(pixels, length) {}
+
+};
+
+struct AlphaPixelBuffer : TPixelBuffer<Pixel> {
+	inline AlphaPixelBuffer() __attribute__((always_inline))
+		: TPixelBuffer<Pixel>() {}
+
+	inline AlphaPixelBuffer(Pixel *pixels, uint16_t length) __attribute__((always_inline))
+		: TPixelBuffer<Pixel>(pixels, length) {}
+	
 };
 
 };

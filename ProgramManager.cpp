@@ -1,11 +1,10 @@
 #include "ProgramManager.h"
-#include "palette.h"
 
 ProgramManager::ProgramManager()
-	: maxProgramLength(-1), msPerFrame(20),
-	programIndex(0), programCount(0), programListLength(0),
-	sectionCount(0), paused(false),
-	brightness(255), adjustedBrightness(255), targetBrightness(255), brightnessStep(0)
+	: sectionCount(0), programListLength(0), programCount(0), programIndex(0),
+		maxProgramLength(-1), msPerFrame(20),
+		paused(false), brightness(255), targetBrightness(255), adjustedBrightness(255),
+		brightnessStep(0), programEventHandler(0)
 {}
 
 // ------------------------ Manager Control ------------------------
@@ -27,7 +26,7 @@ void ProgramManager::pause(bool blackout, bool fade) {
 
 	paused = true;
 	pauseStartedAt = millis();
-	
+
 #ifdef VERBOSE
 	Serial.println(F("Pause"));
 #endif
@@ -69,29 +68,37 @@ void ProgramManager::nudge(int32_t data) {
 
 // ------------------------ Program Management ------------------------
 
-LightProgram *ProgramManager::getProgram(uint8_t programID) {
+LightProgram *ProgramManager::getProgram(ProgramCode programCode) {
+	int copy = 0;
 	for (int i = 0; i < programCount; i++) {
-		if (lightPrograms[i]->getProgramID() == programID)
-			return lightPrograms[i];
+		if (lightPrograms[i]->getProgramID() == programCode.programID) {
+			if (copy == programCode.copyID) {
+				return lightPrograms[i];
+			} else {
+				copy++;
+			}
+		}
 	}
 
 	return NULL;
 }
 
-LightProgram *ProgramManager::getProgramForSection(uint8_t programID, LightSection &section) {
+LightProgram *ProgramManager::getProgramForSection(ProgramCode programCode, LightSection &section) {
 	// Program is supported
 	for (int i = 0; i < programCount; i++) {
-		if (section.supportedPrograms[i] == programID)
-			return this->getProgram(programID);
+		if (section.supportedPrograms[i] == programCode.programID) {
+			return this->getProgram(programCode);
+		}
 	}
 
 	// Program isn't supported so find the next program in the queue that is
 	for (int i = 0; i < programListLength; i++) {
-		programID = (uint8_t)(programList[(i + 1 + programIndex) % programListLength] >> 8);
+		programCode = programList[(i + 1 + programIndex) % programListLength];
 
 		for (int i = 0; i < programCount; i++) {
-			if (section.supportedPrograms[i] == programID)
-				return this->getProgram(programID);
+			if (section.supportedPrograms[i] == programCode.programID) {
+				return this->getProgram(programCode);
+			}
 		}
 	}
 
@@ -102,37 +109,36 @@ LightProgram *ProgramManager::getProgramForSection(uint8_t programID, LightSecti
 	return NULL;
 }
 
-void ProgramManager::selectProgramForSection(LightSection &section, uint8_t programID, uint8_t programMode, bool keepPalette) {
+void ProgramManager::selectProgramForSection(LightSection &section, ProgramCode programCode) {
 #ifdef VERBOSE
-	if (programID != 0x1) {
-		Serial.print(F("Selecting Program Code: "));
-		Serial.println((programID << 8) | programMode, HEX);
-	}
+	Serial.print(F("Selecting Program: "));
+	Serial.print((programCode.programID << 8) | programCode.mode, HEX);
+	Serial.print(F(" ("));
+	Serial.print(programCode.copyID, DEC);
+	Serial.println(F(")"));
 #endif
 
-	LightProgram *program = getProgramForSection(programID, section);
+	if (programEventHandler) {
+		programEventHandler(*section.activeProgram, PROGRAM_FINISHED);
+	}
+
+	LightProgram *program = getProgramForSection(programCode, section);
 	section.activeProgram = program;
 	section.activeProgram->setPixelBuffer(&section.pixelBuffer);
 
-	if (!keepPalette) {
-		sectionsChanged++;
-		if ((sectionsChanged % sectionCount) == 0) {
-			Palettes.next();
-		}
+	if (programEventHandler) {
+		programEventHandler(*section.activeProgram, PROGRAM_STARTED);
 	}
 
-	section.activeProgram->setupMode(programMode);
+	section.activeProgram->setupMode(programCode.mode);
 	section.programStartedAt = millis();
 }
-
+/*
 void ProgramManager::selectProgramGroup(uint8_t programID) {
 	
 }
-
-void ProgramManager::selectProgramCode(uint16_t programCode, bool keepPalette) {
-	uint8_t programID = (uint8_t)(programCode >> 8);
-	uint8_t mode = ((uint8_t)programCode & 0xff);
-
+*/
+void ProgramManager::selectProgramCode(ProgramCode programCode) {
 	for (int i = 0; i < sectionCount; i++) {
 		lightSections[i].programIndexOffset = 0;
 	}
@@ -144,32 +150,30 @@ void ProgramManager::selectProgramCode(uint16_t programCode, bool keepPalette) {
 		}
 	}
 
-	if (!keepPalette) {
-		sectionsChanged = 0;
-		Palettes.next();
-	}
-
-	// Select programs for each section
+	/* NOTE: Group check
 	if ((programID & 0x80) == 0x80) {
 		this->selectProgramGroup(programID);
 	} else {
-		for (int i = 0; i < sectionCount; i++) {
-			this->selectProgramForSection(lightSections[i], programID, mode, true);
-		}
+	*/
+
+	// Select programs for each section
+	for (int i = 0; i < sectionCount; i++) {
+		this->selectProgramForSection(lightSections[i], programCode);
 	}
 }
 
-void ProgramManager::selectProgram(uint8_t programID, bool keepPalette) {
-	uint16_t code = programID << 8;
-	
+void ProgramManager::selectProgram(uint8_t programID, uint8_t copyID) {
+	ProgramCode programCode(programID, copyID);
+
 	for (int i = 0; i < programListLength; i++) {
-		if (programList[programOrder[i]] == code) {
+		ProgramCode &pc = programList[programOrder[i]];
+		if (pc.programID == programCode.programID && pc.copyID == programCode.programID) {
 			programIndex = i;
 			break;
 		}
 	}
 
-	this->selectProgramCode(code, keepPalette);
+	this->selectProgramCode(programCode);
 
 	programIndex++;
 	programIndex %= programListLength;
@@ -177,33 +181,28 @@ void ProgramManager::selectProgram(uint8_t programID, bool keepPalette) {
 
 void ProgramManager::selectRandomProgram() {
 	programIndex = random(programListLength);
-	this->nextProgram(true);
+	this->nextProgram();
 
 	programIndex++;
 	programIndex %= programListLength;
 }
 
 void ProgramManager::nextProgramForSection(LightSection &section) {
-	uint8_t programID;
-	uint8_t mode;
+	ProgramCode programCode;
 
 	if (section.activeProgram->getNextProgramCode() == 0) {
 		uint8_t index = programOrder[(programIndex + section.programIndexOffset) % programListLength];
 		section.programIndexOffset++;
 
-		uint16_t programCode = programList[index];
-
-		programID = (uint8_t)(programCode >> 8);
-		mode = ((uint8_t)programCode & 0xff);
+		programCode = programList[index];
 	} else {
+		uint16_t code = section.activeProgram->getNextProgramCode();
 
-		uint16_t programCode = section.activeProgram->getNextProgramCode();
-
-		programID = (uint8_t)(programCode >> 8);
-		mode = ((uint8_t)programCode & 0xff);
+		programCode.programID = (uint8_t)(code >> 8);
+		programCode.mode = ((uint8_t)code & 0xff);
 	}
 
-	this->selectProgramForSection(section, programID, mode, section.activeProgram->usePreviousPalette());
+	this->selectProgramForSection(section, programCode);
 }
 
 void ProgramManager::normalizeProgramIndices() {
@@ -222,7 +221,7 @@ void ProgramManager::normalizeProgramIndices() {
 	programIndex %= programListLength;
 }
 
-void ProgramManager::nextProgram(bool keepPalette) {
+void ProgramManager::nextProgram() {
 	this->normalizeProgramIndices();
 
 	programIndex++;
@@ -230,10 +229,10 @@ void ProgramManager::nextProgram(bool keepPalette) {
 	
 	uint8_t index = programOrder[programIndex];
 
-	this->selectProgramCode(programList[index], keepPalette);
+	this->selectProgramCode(programList[index]);
 }
 
-void ProgramManager::prevProgram(bool keepPalette) {
+void ProgramManager::prevProgram() {
 	this->normalizeProgramIndices();
 	
 	if (programIndex == 0)
@@ -244,15 +243,16 @@ void ProgramManager::prevProgram(bool keepPalette) {
 
 	uint8_t index = programOrder[programIndex];
 
-	this->selectProgramCode(programList[index], keepPalette);
+	this->selectProgramCode(programList[index]);
 }
 
 void ProgramManager::addLightProgram(LightProgram &program, uint16_t sections, uint8_t modes[], uint8_t modeCount) {
 	uint8_t programID = program.getProgramID();
 
+	int copyID = 0;
 	for (int i = 0; i < programCount; i++) {
 		if (lightPrograms[i]->getProgramID() == programID) {
-			return;
+			copyID++;
 		}
 	}
 
@@ -275,13 +275,26 @@ void ProgramManager::addLightProgram(LightProgram &program, uint16_t sections, u
 			Serial.println((uint32_t)&program);
 #endif
 
-			programList[programListLength] = (programID << 8) | modes[i];
+			programList[programListLength] = ProgramCode(programID, copyID, modes[i]);
 			programOrder[programListLength] = programListLength++;
 		}
 	}
 }
 
 void ProgramManager::addLightProgram(LightProgram &program, uint8_t modes[], uint8_t modeCount) {
+	addLightProgram(program, ALL_SECTIONS, modes, modeCount);
+}
+
+void ProgramManager::addLightProgram(LightProgram &program, EProgramMode programModes) {
+	uint8_t modeCount = program.getModeCount();
+	uint8_t modes[MAX_MODES];
+	
+	for (int i = 0; i < MAX_MODES; i++) {
+		if (((programModes >> i) & 1) == 1) {
+			modes[i] = i;
+		}
+	}
+
 	addLightProgram(program, ALL_SECTIONS, modes, modeCount);
 }
 
@@ -297,7 +310,13 @@ void ProgramManager::addLightProgram(LightProgram &program, uint16_t sections) {
 void ProgramManager::addLightProgram(LightProgram &program) {
 	addLightProgram(program, ALL_SECTIONS);
 }
-
+/*
+void ProgramManager::addLightPrograms(LightProgram programs[], uint8_t count) {
+	for (int i = 0; i < count; i++) {
+		addLightProgram(programs[i]);
+	}
+}
+*/
 void ProgramManager::randomizeProgramOrder() {
 	for (int i = 0; i < programListLength; i++)
 		programOrder[i] = 0xff;
@@ -307,15 +326,6 @@ void ProgramManager::randomizeProgramOrder() {
 		while (programOrder[programIndex = random(programListLength)] != 0xff);
 		programOrder[programIndex] = i;
 	}
-	/*
-	Serial.print("Order: ");
-	for (int i = 0; i < programListLength; i++) {
-		Serial.print(programOrder[i]);
-		Serial.print("-");
-		Serial.print(programList[programOrder[i]], HEX);
-		Serial.print(", ");
-	}
-	Serial.println();*/
 }
 
 // -------------------- Adding Sections -------------------

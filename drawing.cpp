@@ -1,5 +1,21 @@
 #include "drawing.h"
 
+using namespace LightString;
+
+void blink(CRGB col, int times, int timing) {
+	CRGB saveCol = *FastLED.leds();
+	
+	for (int i = 0; i < times; i++) {
+		*FastLED.leds() = col;
+		FastLED.show();
+		delay(timing);
+		FastLED.showColor(CRGB::Black);
+		delay(timing >> 1);
+	}
+
+	*FastLED.leds() = saveCol;
+}
+
 inline void setPixel8(int16_t x, int16_t y, CRGB col) {
 	int8_t ax = x >> 8, ay = y >> 8;
 	uint8_t fx0 = x & 0xff, fy0 = y & 0xff, fx1 = 0xff - fx0;
@@ -200,74 +216,6 @@ void pixelBuffer::drawText(uint8_t x, uint8_t y, uint8_t textX, uint8_t textY, u
 	}
 	
 //	Serial.println("= = =\n");
-}
-
-void pixelBuffer::drawColumn(uint8_t x, uint8_t y, uint8_t height, uint8_t *buffer) {
-	uint16_t index = getIndex(x, y);
-	int8_t factor = ((x % 2) == 1 ? 1 : -1);
-
-	if (!height) return;
-	if (y + height > this->height)
-		height = this->height - y;
-
-	for (int i = 0; i <= height; i++)
-		((uint8_t *)pixels)[index + i * factor] = buffer[i];
-}
-
-void pixelBuffer::drawColumn(uint8_t x, uint8_t y, uint8_t height, uint8_t colIndex) {
-	uint16_t index = getIndex(x, y);
-	int8_t factor = ((x % 2) == 1 ? 1 : -1);
-
-	if (!height) return;
-	if (y + height > this->height)
-		height = this->height - y;
-
-	for (int i = 0; i < height; i++)
-		((uint8_t *)pixels)[index + i * factor] = colIndex;
-}
-
-void pixelBuffer::drawColumn(uint8_t x, uint8_t y0, uint8_t y1, CRGB col) {
-	uint16_t index = getIndex(x, y0);
-	int8_t factor = ((x % 2) == 1 ? 1 : -1);
-
-	if (y0 == y1) return;
-	if (y0 > y1) {
-		uint8_t swap = y0;
-		y1 = y0;
-		y0 = swap;
-	}
-
-	for (int i = 0; i <= y1 - y0; i++)
-		pixels[index + i * factor] = col;
-}
-
-void pixelBuffer::drawRow(uint8_t x0, uint8_t x1, uint8_t y, CRGB col) {
-	uint16_t index = getIndex(x0, y);
-	int8_t swap, step, nextStep;
-
-	if (x0 == x1) return;
-	if (x0 > x1) {
-		uint8_t swap = x0;
-		x1 = x0;
-		x0 = swap;
-	}
-
-	if ((x0 % 2) == 1) {
-		step = ((height - 1) - y) * 2;
-		nextStep = y * 2;
-	} else {
-		step = y * 2;
-		nextStep = ((height - 1) - y) * 2;
-	}
-
-	for (int i = 0; i <= x1 - x0; i++) {
-		pixels[index + i] = col;
-
-		index += step;
-		swap = step;
-		step = nextStep;
-		nextStep = swap;
-	}
 }
 
 */

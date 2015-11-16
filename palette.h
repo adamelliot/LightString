@@ -5,7 +5,6 @@
 #include <EEPROM.h>
 #include <FastLED.h>
 
-#define PALETTE_MIRRORED 0x01
 #define PALETTE_SIZE 256
 
 void printColor(CRGB col);
