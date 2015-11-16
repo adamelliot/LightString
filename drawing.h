@@ -212,9 +212,7 @@ struct Pixel : CRGB {
 	};
 
 	inline Pixel() __attribute__((always_inline)) {}
-	inline Pixel(uint8_t r, uint8_t g, uint8_t b) __attribute__((always_inline)) 
-		: CRGB(r, g, b), a(0xff) {}
-	inline Pixel(uint8_t a, uint8_t r, uint8_t g, uint8_t b) __attribute__((always_inline)) 
+	inline Pixel(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xff) __attribute__((always_inline)) 
 		: CRGB(r, g, b), a(a) {}
 
 	// Can't set full alpha through this construtor so 3 channel notation works
@@ -397,12 +395,24 @@ template <typename T>
 struct TPixelBuffer {
 	T *pixels;
 	uint16_t length;
+	bool shouldDelete;
 
 	inline TPixelBuffer() __attribute__((always_inline)) __attribute__((always_inline))
-		: pixels(0), length(0) {}
+		: pixels(0), length(0), shouldDelete(false) {}
 
 	inline TPixelBuffer(T *pixels, uint16_t length) __attribute__((always_inline))
-		: pixels(pixels), length(length) {}
+		: pixels(pixels), length(length), shouldDelete(false) {}
+
+	inline TPixelBuffer(const uint16_t length) : length(length) {
+		pixels = new T[length];
+		memset8(pixels, 0, sizeof(T) * length);
+		shouldDelete = true;
+	}
+
+	inline ~TPixelBuffer() {
+		if (shouldDelete) delete pixels;
+	}
+
 	/*
 	inline T& operator[] (uint16_t i) __attribute__((always_inline)) {
 		return pixels[i];
@@ -456,22 +466,26 @@ struct TPixelBuffer {
 	}
 };
 
-struct PixelBuffer : TPixelBuffer<CRGB> {
-	inline PixelBuffer() __attribute__((always_inline))
+struct CRGBBuffer : TPixelBuffer<CRGB> {
+	inline CRGBBuffer() __attribute__((always_inline))
 		: TPixelBuffer<CRGB>() {}
 	
-	inline PixelBuffer(CRGB *pixels, uint16_t length) __attribute__((always_inline))
+	inline CRGBBuffer(CRGB *pixels, uint16_t length) __attribute__((always_inline))
 		: TPixelBuffer<CRGB>(pixels, length) {}
+
+	inline CRGBBuffer(const uint16_t length) : TPixelBuffer(length) {}
 
 };
 
-struct AlphaPixelBuffer : TPixelBuffer<Pixel> {
-	inline AlphaPixelBuffer() __attribute__((always_inline))
+struct PixelBuffer : TPixelBuffer<Pixel> {
+	inline PixelBuffer() __attribute__((always_inline))
 		: TPixelBuffer<Pixel>() {}
 
-	inline AlphaPixelBuffer(Pixel *pixels, uint16_t length) __attribute__((always_inline))
+	inline PixelBuffer(Pixel *pixels, uint16_t length) __attribute__((always_inline))
 		: TPixelBuffer<Pixel>(pixels, length) {}
-	
+
+	inline PixelBuffer(const uint16_t length) : TPixelBuffer(length) {}
+
 };
 
 };

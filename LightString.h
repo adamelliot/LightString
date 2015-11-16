@@ -16,6 +16,8 @@
 #include "LightProgram.h"
 #include "ProgramManager.h"
 
+#define LIGHTSTRING_VERSION "0.3"
+
 using namespace LightString;
 
 #endif

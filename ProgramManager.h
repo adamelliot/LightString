@@ -9,6 +9,7 @@
 #define MAX_MODES 6
 #define MAX_LIGHT_PROGRAMS 6
 #define MAX_LIGHT_SECTIONS 1
+#define MAX_LAYERS 3
 
 #define VERBOSE
 
@@ -61,18 +62,20 @@ struct LightSection {
 
 	int16_t programIndexOffset;
 
-	PixelBuffer pixelBuffer;
+	CRGBBuffer *outputBuffer;
+//	PixelBuffer *bufferPool[MAX_LAYERS * 2];
+
 	LightProgram *activeProgram;
 
 	uint32_t programStartedAt;
 
 	ETransisionState transitionState;
 
-	inline LightSection() : programCount(0), programIndexOffset(0), 
+	inline LightSection() : programCount(0), programIndexOffset(0), outputBuffer(0),
 		activeProgram(0), programStartedAt(0), transitionState(NONE) {}
 
-	inline LightSection(CRGB* pixels, uint16_t length)
-		: programCount(0), programIndexOffset(0), pixelBuffer(pixels, length), 
+	inline LightSection(CRGBBuffer *outputBuffer)
+		: programCount(0), programIndexOffset(0), outputBuffer(outputBuffer), 
 		activeProgram(0), programStartedAt(0), transitionState(NONE) {}
 };
 
@@ -146,7 +149,7 @@ public:
 	// void addLightPrograms(LightProgram programs[], uint8_t count);
 
 	LightSection *getLightSection(uint8_t);
-	uint16_t addLightSection(CRGB *pixels, uint16_t length);
+	uint16_t addLightSection(CRGBBuffer *pixelBuffer);
 
 	void fadeDown();
 	void fadeUp(bool forceZero = true);

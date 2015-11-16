@@ -49,7 +49,7 @@ public:
 		: modeCount(modeCount), layer(0), pixelBuffer(0) {}
 
 	void setPixelBuffer(T *pixelBuffer) { this->pixelBuffer = pixelBuffer; }
-	PixelBuffer *getPixelBuffer() { return pixelBuffer; }
+	T *getPixelBuffer() { return pixelBuffer; }
 
 	uint8_t getMode() { return mode; }
 	uint8_t getModeCount() { return modeCount; }
@@ -84,7 +84,7 @@ public:
 	virtual void update(uint32_t ms) {}
 };
 
-class LightProgram : public TLightProgram<PixelBuffer> {
+class LightProgram : public TLightProgram<CRGBBuffer> {
 public:
 	inline LightProgram(uint8_t modeCount = 1) __attribute__((always_inline))
 		: TLightProgram(modeCount) {}

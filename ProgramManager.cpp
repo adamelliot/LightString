@@ -37,7 +37,7 @@ void ProgramManager::pause(bool blackout, bool fade) {
 		} else {
 			// TODO: Hard fade to black instead of wipe
 			for (int i = 0; i < sectionCount; i++) {
-				PixelBuffer *pixelBuffer = lightSections[i].activeProgram->getPixelBuffer();
+				CRGBBuffer *pixelBuffer = lightSections[i].activeProgram->getPixelBuffer();
 				pixelBuffer->clear();
 			}
 		}
@@ -124,7 +124,7 @@ void ProgramManager::selectProgramForSection(LightSection &section, ProgramCode 
 
 	LightProgram *program = getProgramForSection(programCode, section);
 	section.activeProgram = program;
-	section.activeProgram->setPixelBuffer(&section.pixelBuffer);
+	section.activeProgram->setPixelBuffer(section.outputBuffer);
 
 	if (programEventHandler) {
 		programEventHandler(*section.activeProgram, PROGRAM_STARTED);
@@ -336,7 +336,7 @@ LightSection *ProgramManager::getLightSection(uint8_t index) {
 	return &lightSections[index];
 }
 
-uint16_t ProgramManager::addLightSection(CRGB *pixels, uint16_t length) {
+uint16_t ProgramManager::addLightSection(CRGBBuffer *pixelBuffer) {
 	if (sectionCount >= MAX_LIGHT_SECTIONS) {
 #ifdef VERBOSE
 		Serial.println(F("ERROR: Maximum amount of light sections already added."));
@@ -344,7 +344,7 @@ uint16_t ProgramManager::addLightSection(CRGB *pixels, uint16_t length) {
 		return 0xffff;
 	}
 
-	lightSections[sectionCount] = LightSection(pixels, length);
+	lightSections[sectionCount] = LightSection(pixelBuffer);
 	sectionCount++;
 	
 	return 1 << (sectionCount - 1);
@@ -409,13 +409,13 @@ void ProgramManager::finishProgramForSection(LightSection &section, uint32_t tim
 		break;
 
 		case WIPE:
-		section.pixelBuffer.clear();
+		section.outputBuffer->clear();
 		section.transitionState = FINISHED;
 		break;
 
 		case FADE_DOWN:
 		if (!this->isTransitioning()) {
-			section.pixelBuffer.clear();
+			section.outputBuffer->clear();
 			section.transitionState = FINISHED;
 			this->setBrightness(this->brightness);
 		} else {

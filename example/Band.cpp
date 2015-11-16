@@ -8,7 +8,7 @@ void Band::setupMode(uint8_t mode) {
 
 	colorIndex = 0;
 	indexStep = random8(6) + 1;
-	
+
 	start = (float)random8();
 	end = (float)random8();
 
