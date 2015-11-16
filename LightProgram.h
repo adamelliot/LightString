@@ -30,7 +30,7 @@ typedef enum {
 
 } EProgramMode;
 
-template <typename T = PixelBuffer>
+template <typename PIXEL = Pixel>
 class TLightProgram {
 protected:
 	uint8_t mode;
@@ -42,14 +42,14 @@ protected:
 	// Used by program manager to indicate if the program is running
 	bool active;
 
-	T *pixelBuffer;
+	TPixelBuffer<PIXEL> *pixelBuffer;
 
 public:
 	TLightProgram(uint8_t modeCount = 1) __attribute__((always_inline))
 		: modeCount(modeCount), layer(0), pixelBuffer(0) {}
 
-	void setPixelBuffer(T *pixelBuffer) { this->pixelBuffer = pixelBuffer; }
-	T *getPixelBuffer() { return pixelBuffer; }
+	void setPixelBuffer(TPixelBuffer<PIXEL> *pixelBuffer) { this->pixelBuffer = pixelBuffer; }
+	TPixelBuffer<PIXEL> *getPixelBuffer() { return pixelBuffer; }
 
 	uint8_t getMode() { return mode; }
 	uint8_t getModeCount() { return modeCount; }
@@ -84,7 +84,7 @@ public:
 	virtual void update(uint32_t ms) {}
 };
 
-class LightProgram : public TLightProgram<CRGBBuffer> {
+class LightProgram : public TLightProgram<CRGB> {
 public:
 	inline LightProgram(uint8_t modeCount = 1) __attribute__((always_inline))
 		: TLightProgram(modeCount) {}

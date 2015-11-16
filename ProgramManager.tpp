@@ -1,6 +1,7 @@
 #include "ProgramManager.h"
 
-ProgramManager::ProgramManager()
+PROGRAM_MANAGER_TEMPLATE
+PROGRAM_MANAGER_CLASS::ProgramManager()
 	: sectionCount(0), programListLength(0), programCount(0), programIndex(0),
 		maxProgramLength(-1), msPerFrame(20),
 		paused(false), brightness(255), targetBrightness(255), adjustedBrightness(255),
@@ -9,19 +10,8 @@ ProgramManager::ProgramManager()
 
 // ------------------------ Manager Control ------------------------
 
-void ProgramManager::setMaxProgramLength(uint32_t maxProgramLength) {
-	this->maxProgramLength = maxProgramLength;
-}
-
-int32_t ProgramManager::getMaxProgramLength() {
-	return this->maxProgramLength;
-}
-
-void ProgramManager::setMaxFPS(uint16_t targetFPS) {
-	msPerFrame = 1000 / targetFPS;
-}
-
-void ProgramManager::pause(bool blackout, bool fade) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::pause(bool blackout, bool fade) {
 	if (paused) return;
 
 	paused = true;
@@ -44,7 +34,8 @@ void ProgramManager::pause(bool blackout, bool fade) {
 	}
 }
 
-void ProgramManager::unpause() {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::unpause() {
 	if (!paused) return;
 
 	this->fadeUp();
@@ -56,11 +47,13 @@ void ProgramManager::unpause() {
 	}
 }
 
-void ProgramManager::togglePause() {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::togglePause() {
 	paused ? unpause() : pause();
 }
 
-void ProgramManager::nudge(int32_t data) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::nudge(int32_t data) {
 	for (int i = 0; i < sectionCount; i++) {
 		lightSections[i].activeProgram->nudge(data);
 	}
@@ -68,7 +61,8 @@ void ProgramManager::nudge(int32_t data) {
 
 // ------------------------ Program Management ------------------------
 
-LightProgram *ProgramManager::getProgram(ProgramCode programCode) {
+PROGRAM_MANAGER_TEMPLATE
+TLightProgram<PIXEL> *PROGRAM_MANAGER_CLASS::getProgram(ProgramCode programCode) {
 	int copy = 0;
 	for (int i = 0; i < programCount; i++) {
 		if (lightPrograms[i]->getProgramID() == programCode.programID) {
@@ -83,7 +77,8 @@ LightProgram *ProgramManager::getProgram(ProgramCode programCode) {
 	return NULL;
 }
 
-LightProgram *ProgramManager::getProgramForSection(ProgramCode programCode, LightSection &section) {
+PROGRAM_MANAGER_TEMPLATE
+TLightProgram<PIXEL> *PROGRAM_MANAGER_CLASS::getProgramForSection(ProgramCode programCode, LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> &section) {
 	// Program is supported
 	for (int i = 0; i < programCount; i++) {
 		if (section.supportedPrograms[i] == programCode.programID) {
@@ -109,7 +104,8 @@ LightProgram *ProgramManager::getProgramForSection(ProgramCode programCode, Ligh
 	return NULL;
 }
 
-void ProgramManager::selectProgramForSection(LightSection &section, ProgramCode programCode) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::selectProgramForSection(LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> &section, ProgramCode programCode) {
 #ifdef VERBOSE
 	Serial.print(F("Selecting Program: "));
 	Serial.print((programCode.programID << 8) | programCode.mode, HEX);
@@ -119,26 +115,30 @@ void ProgramManager::selectProgramForSection(LightSection &section, ProgramCode 
 #endif
 
 	if (programEventHandler) {
-		programEventHandler(*section.activeProgram, PROGRAM_FINISHED);
+		// programEventHandler(*section.activeProgram, PROGRAM_FINISHED);
 	}
 
-	LightProgram *program = getProgramForSection(programCode, section);
+	TLightProgram<PIXEL> *program = getProgramForSection(programCode, section);
 	section.activeProgram = program;
 	section.activeProgram->setPixelBuffer(section.outputBuffer);
 
 	if (programEventHandler) {
-		programEventHandler(*section.activeProgram, PROGRAM_STARTED);
+		// programEventHandler(*section.activeProgram, PROGRAM_STARTED);
 	}
 
 	section.activeProgram->setupMode(programCode.mode);
 	section.programStartedAt = millis();
 }
+
 /*
-void ProgramManager::selectProgramGroup(uint8_t programID) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::selectProgramGroup(uint8_t programID) {
 	
 }
 */
-void ProgramManager::selectProgramCode(ProgramCode programCode) {
+
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::selectProgramCode(ProgramCode programCode) {
 	for (int i = 0; i < sectionCount; i++) {
 		lightSections[i].programIndexOffset = 0;
 	}
@@ -162,7 +162,8 @@ void ProgramManager::selectProgramCode(ProgramCode programCode) {
 	}
 }
 
-void ProgramManager::selectProgram(uint8_t programID, uint8_t copyID) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::selectProgram(uint8_t programID, uint8_t copyID) {
 	ProgramCode programCode(programID, copyID);
 
 	for (int i = 0; i < programListLength; i++) {
@@ -179,7 +180,8 @@ void ProgramManager::selectProgram(uint8_t programID, uint8_t copyID) {
 	programIndex %= programListLength;
 }
 
-void ProgramManager::selectRandomProgram() {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::selectRandomProgram() {
 	programIndex = random(programListLength);
 	this->nextProgram();
 
@@ -187,7 +189,8 @@ void ProgramManager::selectRandomProgram() {
 	programIndex %= programListLength;
 }
 
-void ProgramManager::nextProgramForSection(LightSection &section) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::nextProgramForSection(LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> &section) {
 	ProgramCode programCode;
 
 	if (section.activeProgram->getNextProgramCode() == 0) {
@@ -205,7 +208,8 @@ void ProgramManager::nextProgramForSection(LightSection &section) {
 	this->selectProgramForSection(section, programCode);
 }
 
-void ProgramManager::normalizeProgramIndices() {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::normalizeProgramIndices() {
 	uint8_t minIndex = 0xff;
 
 	for (int i = 0; i < sectionCount; i++) {
@@ -221,7 +225,8 @@ void ProgramManager::normalizeProgramIndices() {
 	programIndex %= programListLength;
 }
 
-void ProgramManager::nextProgram() {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::nextProgram() {
 	this->normalizeProgramIndices();
 
 	programIndex++;
@@ -232,7 +237,8 @@ void ProgramManager::nextProgram() {
 	this->selectProgramCode(programList[index]);
 }
 
-void ProgramManager::prevProgram() {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::prevProgram() {
 	this->normalizeProgramIndices();
 	
 	if (programIndex == 0)
@@ -246,7 +252,8 @@ void ProgramManager::prevProgram() {
 	this->selectProgramCode(programList[index]);
 }
 
-void ProgramManager::addLightProgram(LightProgram &program, uint16_t sections, uint8_t modes[], uint8_t modeCount) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::addLightProgram(TLightProgram<PIXEL> &program, uint16_t sections, uint8_t modes[], uint8_t modeCount) {
 	uint8_t programID = program.getProgramID();
 
 	int copyID = 0;
@@ -258,7 +265,7 @@ void ProgramManager::addLightProgram(LightProgram &program, uint16_t sections, u
 
 	for (int i = 0; i < sectionCount; i++) {
 		if (((1 << i) | sections) == sections) {
-			LightSection &section = lightSections[i];
+			LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> &section = lightSections[i];
 			section.supportedPrograms[section.programCount++] = programID;
 		}
 	}
@@ -281,11 +288,13 @@ void ProgramManager::addLightProgram(LightProgram &program, uint16_t sections, u
 	}
 }
 
-void ProgramManager::addLightProgram(LightProgram &program, uint8_t modes[], uint8_t modeCount) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::addLightProgram(TLightProgram<PIXEL> &program, uint8_t modes[], uint8_t modeCount) {
 	addLightProgram(program, ALL_SECTIONS, modes, modeCount);
 }
 
-void ProgramManager::addLightProgram(LightProgram &program, EProgramMode programModes) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::addLightProgram(TLightProgram<PIXEL> &program, EProgramMode programModes) {
 	uint8_t modeCount = program.getModeCount();
 	uint8_t modes[MAX_MODES];
 	
@@ -298,7 +307,8 @@ void ProgramManager::addLightProgram(LightProgram &program, EProgramMode program
 	addLightProgram(program, ALL_SECTIONS, modes, modeCount);
 }
 
-void ProgramManager::addLightProgram(LightProgram &program, uint16_t sections) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::addLightProgram(TLightProgram<PIXEL> &program, uint16_t sections) {
 	uint8_t modeCount = program.getModeCount();
 	uint8_t modes[MAX_MODES];
 	
@@ -307,17 +317,22 @@ void ProgramManager::addLightProgram(LightProgram &program, uint16_t sections) {
 	addLightProgram(program, sections, modes, modeCount);
 }
 
-void ProgramManager::addLightProgram(LightProgram &program) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::addLightProgram(TLightProgram<PIXEL> &program) {
 	addLightProgram(program, ALL_SECTIONS);
 }
+
 /*
-void ProgramManager::addLightPrograms(LightProgram programs[], uint8_t count) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::addLightPrograms(TLightProgram<PIXEL> programs[], uint8_t count) {
 	for (int i = 0; i < count; i++) {
 		addLightProgram(programs[i]);
 	}
 }
 */
-void ProgramManager::randomizeProgramOrder() {
+
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::randomizeProgramOrder() {
 	for (int i = 0; i < programListLength; i++)
 		programOrder[i] = 0xff;
 
@@ -330,13 +345,15 @@ void ProgramManager::randomizeProgramOrder() {
 
 // -------------------- Adding Sections -------------------
 
-LightSection *ProgramManager::getLightSection(uint8_t index) {
+PROGRAM_MANAGER_TEMPLATE
+LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> *PROGRAM_MANAGER_CLASS::getLightSection(uint8_t index) {
 	if (index >= sectionCount) return NULL;
 
 	return &lightSections[index];
 }
 
-uint16_t ProgramManager::addLightSection(CRGBBuffer *pixelBuffer) {
+PROGRAM_MANAGER_TEMPLATE
+uint16_t PROGRAM_MANAGER_CLASS::addLightSection(CRGBBuffer &pixelBuffer) {
 	if (sectionCount >= MAX_LIGHT_SECTIONS) {
 #ifdef VERBOSE
 		Serial.println(F("ERROR: Maximum amount of light sections already added."));
@@ -344,7 +361,7 @@ uint16_t ProgramManager::addLightSection(CRGBBuffer *pixelBuffer) {
 		return 0xffff;
 	}
 
-	lightSections[sectionCount] = LightSection(pixelBuffer);
+	lightSections[sectionCount] = LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS>(&pixelBuffer);
 	sectionCount++;
 	
 	return 1 << (sectionCount - 1);
@@ -352,12 +369,14 @@ uint16_t ProgramManager::addLightSection(CRGBBuffer *pixelBuffer) {
 
 // -------------------- Brightness Control -------------------
 
-void ProgramManager::fadeDown() {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::fadeDown() {
 	targetBrightness = 0;
 	brightnessStep = -adjustedBrightness / kTransitionFrames;
 }
 
-void ProgramManager::fadeUp(bool forceZero) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::fadeUp(bool forceZero) {
 	if (forceZero) {
 		adjustedBrightness = 0;
 		FastLED.setBrightness(adjustedBrightness);
@@ -367,7 +386,8 @@ void ProgramManager::fadeUp(bool forceZero) {
 	brightnessStep = (brightness - adjustedBrightness) / kTransitionFrames;
 }
 
-void ProgramManager::setBrightness(uint8_t brightness) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::setBrightness(uint8_t brightness) {
 	this->brightness = brightness;
 	this->adjustedBrightness = brightness;
 	this->targetBrightness = brightness;
@@ -375,11 +395,13 @@ void ProgramManager::setBrightness(uint8_t brightness) {
 	FastLED.setBrightness(brightness);
 }
 
-bool ProgramManager::isTransitioning() {
+PROGRAM_MANAGER_TEMPLATE
+bool PROGRAM_MANAGER_CLASS::isTransitioning() {
 	return adjustedBrightness != targetBrightness;
 }
 
-void ProgramManager::transitionBrightness() {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::transitionBrightness() {
 	if (!this->isTransitioning()) return;
 
 	adjustedBrightness += brightnessStep;
@@ -393,7 +415,8 @@ void ProgramManager::transitionBrightness() {
 
 // -------------------- Primary Manager Loop -------------------
 
-void ProgramManager::finishProgramForSection(LightSection &section, uint32_t timeDelta) {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::finishProgramForSection(LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> &section, uint32_t timeDelta) {
 	if (section.transitionState == STARTING) {
 		if (section.activeProgram->getTransition() == FADE_DOWN) {
 			// Serial.println("Fade Down");
@@ -413,6 +436,9 @@ void ProgramManager::finishProgramForSection(LightSection &section, uint32_t tim
 		section.transitionState = FINISHED;
 		break;
 
+		case FREEZE_FADE:
+		// TODO: Implement
+
 		case FADE_DOWN:
 		if (!this->isTransitioning()) {
 			section.outputBuffer->clear();
@@ -425,7 +451,8 @@ void ProgramManager::finishProgramForSection(LightSection &section, uint32_t tim
 	}
 }
 
-void ProgramManager::loop() {
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::loop() {
 	uint32_t time = millis(), timeDelta = time - lastTime;
 	lastTime = time;
 
@@ -439,7 +466,7 @@ void ProgramManager::loop() {
 	this->transitionBrightness();
 
 	for (int i = 0; i < sectionCount; i++) {
-		LightProgram *program = lightSections[i].activeProgram;
+		TLightProgram<PIXEL> *program = lightSections[i].activeProgram;
 		uint32_t sectionTimeDelta = time - lightSections[i].programStartedAt;
 
 		if (program->isProgramFinished() || 

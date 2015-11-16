@@ -13,14 +13,14 @@ const uint32_t kProgramLength = 8000;
 // FastLED doesn't like when the pixels are on the stack...
 // CRGB leds[kTotalLEDs];
 CRGBBuffer ledBuffer(kTotalLEDs);
-// PixelBuffer backBuffer1(kTotalLEDs);
-// PixelBuffer backBuffer2(kTotalLEDs);
+PixelBuffer backBuffer1(kTotalLEDs);
+PixelBuffer backBuffer2(kTotalLEDs);
 
-ProgramManager programManager;
+ProgramManager<CRGB, 2> programManager;
 
-Band band1(CRGB::Lime);
-Band band2(CRGB::Orange);
-Band band3(CRGB(200, 40, 100));
+Band<CRGB> band1(CRGB(50, 50, 150));
+Band<CRGB> band2(CRGB::Orange);
+Band<CRGB> band3(CRGB(128, 40, 100));
 
 /*
 LightProgram programs[] = {
@@ -40,7 +40,7 @@ void setup() {
 	programManager.setMaxProgramLength(kProgramLength);
 	programManager.setMaxFPS(30);
 
-	programManager.addLightSection(&ledBuffer);
+	programManager.addLightSection(ledBuffer);
 	programManager.addLightProgram(band1);
 	programManager.addLightProgram(band2);
 	programManager.addLightProgram(band3);
