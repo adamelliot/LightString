@@ -58,7 +58,7 @@ void Band<PIXEL>::update(uint32_t ms) {
 
 	if (sx > ex) SWAP(sx, ex);
 
-	uint16_t len = min(ex - sx, 15);
+	uint16_t len = min(ex - sx, 30);
 	this->pixelBuffer->setPixels(sx, len, color);
 }
 
