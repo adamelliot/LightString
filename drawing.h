@@ -389,6 +389,17 @@ struct Pixel : CRGB {
 		return *this;
 	}
 */
+
+	// Overlay Modes
+
+	// Standard copy mode, but takes Alpha into account
+	inline Pixel applyCOPYTo(Pixel &other) __attribute__((always_inline)) {
+		return Pixel(other.lerp8((CRGB &)*this, this->a), other.a);
+	}
+
+	inline CRGB applyCOPYTo(CRGB &other) __attribute__((always_inline)) {
+		return other.lerp8((CRGB &)*this, this->a);
+	}
 };
 
 template <typename T>
@@ -397,7 +408,7 @@ struct TPixelBuffer {
 	uint16_t length;
 	bool shouldDelete;
 
-	inline TPixelBuffer() __attribute__((always_inline)) __attribute__((always_inline))
+	inline TPixelBuffer() __attribute__((always_inline))
 		: pixels(0), length(0), shouldDelete(false) {}
 
 	inline TPixelBuffer(T *pixels, uint16_t length) __attribute__((always_inline))

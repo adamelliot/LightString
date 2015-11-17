@@ -1,5 +1,3 @@
-#include "ProgramManager.h"
-
 PROGRAM_MANAGER_TEMPLATE
 PROGRAM_MANAGER_CLASS::ProgramManager()
 	: sectionCount(0), programListLength(0), programCount(0), programIndex(0),
@@ -346,7 +344,7 @@ void PROGRAM_MANAGER_CLASS::randomizeProgramOrder() {
 // -------------------- Adding Sections -------------------
 
 PROGRAM_MANAGER_TEMPLATE
-LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> *PROGRAM_MANAGER_CLASS::getLightSection(uint8_t index) {
+LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> *PROGRAM_MANAGER_CLASS::getLightSection(uint16_t sectionID) {
 	if (index >= sectionCount) return NULL;
 
 	return &lightSections[index];
@@ -365,6 +363,14 @@ uint16_t PROGRAM_MANAGER_CLASS::addLightSection(CRGBBuffer &pixelBuffer) {
 	sectionCount++;
 	
 	return 1 << (sectionCount - 1);
+}
+
+PROGRAM_MANAGER_TEMPLATE
+bool PROGRAM_MANAGER_CLASS::addBufferToLightSection(uint16_t sectionID, TPixelBuffer<PIXEL> &buffer) {
+	LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> *lightSection = getLightSection(sectionID);
+	if (!lightSection) return false;
+
+	return lightSection->addBuffer(&buffer);
 }
 
 // -------------------- Brightness Control -------------------

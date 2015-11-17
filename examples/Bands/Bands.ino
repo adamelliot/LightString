@@ -40,7 +40,10 @@ void setup() {
 	programManager.setMaxProgramLength(kProgramLength);
 	programManager.setMaxFPS(30);
 
-	programManager.addLightSection(ledBuffer);
+	uint16_t sectionID = programManager.addLightSection(ledBuffer);
+	programManager.addBufferToLightSection(sectionID, backBuffer1);
+	programManager.addBufferToLightSection(sectionID, backBuffer2);
+
 	programManager.addLightProgram(band1);
 	programManager.addLightProgram(band2);
 	programManager.addLightProgram(band3);

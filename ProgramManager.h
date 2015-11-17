@@ -51,7 +51,6 @@ struct ProgramCode {
 struct LightProgramGroup {
 	uint8_t programID;
 	// Pairs of codes and strip addreses
-	uint32_t *programCodes;
 };
 */
 
@@ -65,24 +64,60 @@ struct LightSection {
 	CRGBBuffer *outputBuffer;
 	// TODO: For transition this should likely be double
 	TPixelBuffer<PIXEL> *bufferPool[MAX_LAYERS];
+	uint8_t activeBuffers;
+	uint8_t bufferCount;
 
-	TLightProgram<PIXEL> *activeProgram;
+	TLightProgram<PIXEL> *activePrograms[MAX_LAYERS];
 
 	uint32_t programStartedAt;
 
 	ETransisionState transitionState;
 
-	inline LightSection() : programCount(0), programIndexOffset(0), outputBuffer(0),
-		activeProgram(0), programStartedAt(0), transitionState(NONE) {}
+	inline LightSection()
+		: programCount(0), programIndexOffset(0), outputBuffer(0),
+		activeBuffers(0), totalBuffers(0), programStartedAt(0), transitionState(NONE) {}
 
 	inline LightSection(CRGBBuffer *outputBuffer)
 		: programCount(0), programIndexOffset(0), outputBuffer(outputBuffer), 
-		activeProgram(0), programStartedAt(0), transitionState(NONE) {}
+		activeBuffers(0), totalBuffers(0), programStartedAt(0), transitionState(NONE) {}
+
+	TPixelBuffer<PIXEL> *lockBuffer() {
+		for (int i = 0; i < bufferCount; i++) {
+			uint8_t bit = 1 << i;
+			if ((activeBuffers & bit) != 0) {
+				activeBuffers |= bit;
+				return bufferPool[i];
+			}
+		}
+		
+		return NULL;
+	}
+
+	void releasBuffer(TPixelBuffer<PIXEL> *buffer) {
+		for (int i = 0; i < bufferCount; i++) {
+			if (bufferPool[i] == buffer) {
+				uint8_t bit = 1 << i;
+				activeBuffers &= ~bit;
+			}
+		}
+	}
+
+	bool addBuffer(TPixelBuffer<PIXEL> *buffer) {
+		if (!buffer.length == this->outputBuffer.length) {
+#ifdef VERBOSE
+			Serial.println(F("ERROR: Buffer added to pool needs to be the same size as the primary buffer."));
+#endif
+
+			return false;
+		}
+		
+		if (bufferCount >= (MAX_LAYERS * 2)) return false;
+		bufferPool[bufferCount++] = buffer;
+	}
 };
 
 #define PROGRAM_MANAGER_TEMPLATE template <typename PIXEL, size_t MAX_LAYERS, size_t MAX_MODES, size_t MAX_LIGHT_PROGRAMS, size_t MAX_LIGHT_SECTIONS>
 #define PROGRAM_MANAGER_CLASS ProgramManager<PIXEL, MAX_LAYERS, MAX_MODES, MAX_LIGHT_PROGRAMS, MAX_LIGHT_SECTIONS>
-
 
 // PROGRAM_MANAGER_TEMPLATE
 template <typename PIXEL, size_t MAX_LAYERS = 1, size_t MAX_MODES = 6, size_t MAX_LIGHT_PROGRAMS = 6, size_t MAX_LIGHT_SECTIONS = 1>
@@ -111,7 +146,7 @@ private:
 	int16_t brightnessStep;
 	
 	// Events
-	
+
 	ProgramEvent programEventHandler;
 
 	TLightProgram<PIXEL> *getProgram(ProgramCode programCode);
@@ -121,6 +156,8 @@ private:
 	// void selectProgramGroup(uint8_t programID);
 	void nextProgramForSection(LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> &section);
 	void normalizeProgramIndices();
+
+	LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> *getLightSection(uint16_t sectionID);
 
 public:
 
@@ -155,8 +192,8 @@ public:
 
 	// void addLightPrograms(LightProgram programs[], uint8_t count);
 
-	LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> *getLightSection(uint8_t);
 	uint16_t addLightSection(CRGBBuffer &pixelBuffer);
+	bool addBufferToLightSection(uint16_t sectionID, )
 
 	void fadeDown();
 	void fadeUp(bool forceZero = true);
