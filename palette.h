@@ -164,12 +164,12 @@ PALLETE_2(whiteSolidGradient, CRGB(64, 64, 64), CRGB(64, 64, 64));
 
 class PaletteManager {
 protected:
-  bool useEEPROM;
+	bool useEEPROM;
 	bool writePalettes;
-	
+
 	uint8_t staticPalettes;
 	uint8_t customPalettes;
-	
+
 	uint16_t staticOffset;
 	
 	uint8_t paletteIndex;
@@ -182,7 +182,7 @@ protected:
 	CRGBPalette readPalette(uint16_t offset);
 	
 public:
-	
+
 	PaletteManager();
 
 	void updateEEPROM();
@@ -193,6 +193,7 @@ public:
 	void setCustomPalettes(uint8_t customPalettes, bool reset = false);
 	
 	CRGB getColor(uint8_t index);
+	CRGBPalette getPalette() { return currentPalette; }
 
 	void add(CRGBPalette palette);
 	void setActive(CRGBPalette &palette);
