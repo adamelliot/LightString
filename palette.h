@@ -156,7 +156,6 @@ PALLETE_4(blueYellowBlackHardGradient, CRGB(0, 0, 0), CRGB(16, 16, 0), CRGB(255,
 PALLETE_2(whiteSolidGradient, CRGB(64, 64, 64), CRGB(64, 64, 64));
 */
 
-
 #define CHANNEL_SIZE 3
 #define CUSTOM_PALETTE_SIZE (1 + (CHANNEL_SIZE * 8))
 #define EEPROM_OFFSET 32

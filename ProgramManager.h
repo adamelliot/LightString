@@ -54,32 +54,38 @@ struct LightProgramGroup {
 };
 */
 
-template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_LAYERS = 1>
-struct LightSection {
+template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS>
+struct LightLayer {
 	uint8_t supportedPrograms[MAX_LIGHT_PROGRAMS];
 	uint8_t programCount;
-
 	int16_t programIndexOffset;
 
+	TLightProgram<PIXEL> *activeProgram;
+
+	uint32_t programStartedAt;
+	ETransisionState transitionState;
+
+	inline LightLayer()
+		: programCount(0), programIndexOffset(0),
+		programStartedAt(0), transitionState(NONE) {}
+};
+
+template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_LAYERS = 1>
+struct LightSection {
 	CRGBBuffer *outputBuffer;
+
 	// TODO: For transition this should likely be double
 	TPixelBuffer<PIXEL> *bufferPool[MAX_LAYERS];
 	uint8_t activeBuffers;
 	uint8_t bufferCount;
 
-	TLightProgram<PIXEL> *activePrograms[MAX_LAYERS];
-
-	uint32_t programStartedAt;
-
-	ETransisionState transitionState;
+	LightLayer<PIXEL, MAX_LIGHT_PROGRAMS> layers[MAX_LAYERS];
 
 	inline LightSection()
-		: programCount(0), programIndexOffset(0), outputBuffer(0),
-		activeBuffers(0), totalBuffers(0), programStartedAt(0), transitionState(NONE) {}
+		: outputBuffer(0), activeBuffers(0), totalBuffers(0) {}
 
 	inline LightSection(CRGBBuffer *outputBuffer)
-		: programCount(0), programIndexOffset(0), outputBuffer(outputBuffer), 
-		activeBuffers(0), totalBuffers(0), programStartedAt(0), transitionState(NONE) {}
+		: outputBuffer(outputBuffer), activeBuffers(0), totalBuffers(0) {}
 
 	TPixelBuffer<PIXEL> *lockBuffer() {
 		for (int i = 0; i < bufferCount; i++) {
@@ -93,7 +99,7 @@ struct LightSection {
 		return NULL;
 	}
 
-	void releasBuffer(TPixelBuffer<PIXEL> *buffer) {
+	void unlockBuffer(TPixelBuffer<PIXEL> *buffer) {
 		for (int i = 0; i < bufferCount; i++) {
 			if (bufferPool[i] == buffer) {
 				uint8_t bit = 1 << i;

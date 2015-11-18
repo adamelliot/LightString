@@ -198,6 +198,13 @@ struct MovingPoint8 : Point<uint16_t> {
 };
 
 
+enum {
+	BLEND_COPY = 0,
+	BLEND_ADD,
+	BLEND_INVERT 
+	
+} TBlendModes;
+
 /*
  * Pixel is based on CRGB, but adds alpha channel functionality so
  * layering PixelBuffers can properly create composites.
@@ -475,6 +482,7 @@ struct TPixelBuffer {
 	inline void drawSolidCircle(Point<float> pt, uint8_t radius, CRGB col) {
 		::drawSolidCircle(pixels, pt.x, pt.y, radius, col);
 	}
+
 };
 
 struct CRGBBuffer : TPixelBuffer<CRGB> {
@@ -486,6 +494,17 @@ struct CRGBBuffer : TPixelBuffer<CRGB> {
 
 	inline CRGBBuffer(const uint16_t length) : TPixelBuffer(length) {}
 
+	// Blending Functions
+
+	// TODO: Move this to the template
+	inline CRGBBuffer &applyCOPY(PixelBuffer &src) __attribute__((always_inline)) {
+		uint8_t len = min(this->length, src->length);
+		for (int i = 0; i < len; i++) {
+			src.pixels[i].applyCOPYTo(this->pixels[i]);
+		}
+
+		return *this;
+	}
 };
 
 struct PixelBuffer : TPixelBuffer<Pixel> {

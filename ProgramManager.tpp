@@ -76,20 +76,21 @@ TLightProgram<PIXEL> *PROGRAM_MANAGER_CLASS::getProgram(ProgramCode programCode)
 }
 
 PROGRAM_MANAGER_TEMPLATE
-TLightProgram<PIXEL> *PROGRAM_MANAGER_CLASS::getProgramForSection(ProgramCode programCode, LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> &section) {
+TLightProgram<PIXEL> *PROGRAM_MANAGER_CLASS::getProgramForLayer(ProgramCode programCode, LightLayer<PIXEL, MAX_LIGHT_PROGRAMS> &layer) {
 	// Program is supported
 	for (int i = 0; i < programCount; i++) {
-		if (section.supportedPrograms[i] == programCode.programID) {
+		if (layer.supportedPrograms[i] == programCode.programID) {
 			return this->getProgram(programCode);
 		}
 	}
 
 	// Program isn't supported so find the next program in the queue that is
 	for (int i = 0; i < programListLength; i++) {
+		// TODO: Should this use programIndexOffset?
 		programCode = programList[(i + 1 + programIndex) % programListLength];
 
 		for (int i = 0; i < programCount; i++) {
-			if (section.supportedPrograms[i] == programCode.programID) {
+			if (layer.supportedPrograms[i] == programCode.programID) {
 				return this->getProgram(programCode);
 			}
 		}
@@ -103,7 +104,7 @@ TLightProgram<PIXEL> *PROGRAM_MANAGER_CLASS::getProgramForSection(ProgramCode pr
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::selectProgramForSection(LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> &section, ProgramCode programCode) {
+void PROGRAM_MANAGER_CLASS::selectProgramForLayer(LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> &section, LightLayer<PIXEL, MAX_LIGHT_PROGRAMS> &layer, ProgramCode programCode) {
 #ifdef VERBOSE
 	Serial.print(F("Selecting Program: "));
 	Serial.print((programCode.programID << 8) | programCode.mode, HEX);
@@ -116,16 +117,20 @@ void PROGRAM_MANAGER_CLASS::selectProgramForSection(LightSection<PIXEL, MAX_LIGH
 		// programEventHandler(*section.activeProgram, PROGRAM_FINISHED);
 	}
 
-	TLightProgram<PIXEL> *program = getProgramForSection(programCode, section);
-	section.activeProgram = program;
-	section.activeProgram->setPixelBuffer(section.outputBuffer);
+	if (layer.activeProgram) {
+		section.unlockBuffer(layer.activeProgram->getPixelBuffer());
+	}
+
+	TLightProgram<PIXEL> *program = getProgramForLayer(programCode, layer);
+	layer.activeProgram = program;
+	layer.activeProgram->setPixelBuffer(section.lockBuffer());
 
 	if (programEventHandler) {
 		// programEventHandler(*section.activeProgram, PROGRAM_STARTED);
 	}
 
-	section.activeProgram->setupMode(programCode.mode);
-	section.programStartedAt = millis();
+	layer.activeProgram->setupMode(programCode.mode);
+	layer.programStartedAt = millis();
 }
 
 /*
@@ -136,9 +141,9 @@ void PROGRAM_MANAGER_CLASS::selectProgramGroup(uint8_t programID) {
 */
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::selectProgramCode(ProgramCode programCode) {
+void PROGRAM_MANAGER_CLASS::selectProgramCode(ProgramCode programCode, uint8_t layerID) {
 	for (int i = 0; i < sectionCount; i++) {
-		lightSections[i].programIndexOffset = 0;
+		lightSections[i].layer[layerID].programIndexOffset = 0;
 	}
 
 	for (int i = 0; i < programListLength; i++) {
@@ -156,12 +161,12 @@ void PROGRAM_MANAGER_CLASS::selectProgramCode(ProgramCode programCode) {
 
 	// Select programs for each section
 	for (int i = 0; i < sectionCount; i++) {
-		this->selectProgramForSection(lightSections[i], programCode);
+		this->selectProgramForLayer(lightSections[i], lightSections[i].layers[layerID], programCode);
 	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::selectProgram(uint8_t programID, uint8_t copyID) {
+void PROGRAM_MANAGER_CLASS::selectProgram(uint8_t programID, uint8_t copyID, uint8_t layerID) {
 	ProgramCode programCode(programID, copyID);
 
 	for (int i = 0; i < programListLength; i++) {
@@ -172,7 +177,7 @@ void PROGRAM_MANAGER_CLASS::selectProgram(uint8_t programID, uint8_t copyID) {
 		}
 	}
 
-	this->selectProgramCode(programCode);
+	this->selectProgramCode(programCode, layerID);
 
 	programIndex++;
 	programIndex %= programListLength;
@@ -191,19 +196,23 @@ PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::nextProgramForSection(LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> &section) {
 	ProgramCode programCode;
 
-	if (section.activeProgram->getNextProgramCode() == 0) {
-		uint8_t index = programOrder[(programIndex + section.programIndexOffset) % programListLength];
-		section.programIndexOffset++;
+	for (int i = 0; i < MAX_LAYERS; i++) {
+		LightLayer<PIXEL, MAX_LIGHT_PROGRAMS> &layer = section.layers[i];
+		
+		if (layer->activeProgram->getNextProgramCode() == 0) {
+			uint8_t index = programOrder[(programIndex + layer.programIndexOffset) % programListLength];
+			layer.programIndexOffset++;
 
-		programCode = programList[index];
-	} else {
-		uint16_t code = section.activeProgram->getNextProgramCode();
+			programCode = programList[index];
+		} else {
+			uint16_t code = layer->activeProgram->getNextProgramCode();
 
-		programCode.programID = (uint8_t)(code >> 8);
-		programCode.mode = ((uint8_t)code & 0xff);
+			programCode.programID = (uint8_t)(code >> 8);
+			programCode.mode = ((uint8_t)code & 0xff);
+		}
+
+		this->selectProgramForLayer(section, layer, programCode);
 	}
-
-	this->selectProgramForSection(section, programCode);
 }
 
 PROGRAM_MANAGER_TEMPLATE
@@ -211,12 +220,16 @@ void PROGRAM_MANAGER_CLASS::normalizeProgramIndices() {
 	uint8_t minIndex = 0xff;
 
 	for (int i = 0; i < sectionCount; i++) {
-		if (minIndex > lightSections[i].programIndexOffset)
-			minIndex = lightSections[i].programIndexOffset;
+		for (int j = 0; j < MAX_LAYERS; j++) {
+			if (minIndex > lightSections[i].layers[j].programIndexOffset)
+				minIndex = lightSections[i].layers[j].programIndexOffset;
+		}
 	}
 
 	for (int i = 0; i < sectionCount; i++) {
-		lightSections[i].programIndexOffset -= minIndex;
+		for (int j = 0; j < MAX_LAYERS; j++) {
+			lightSections[i].layers[j].programIndexOffset -= minIndex;
+		}
 	}
 
 	programIndex += minIndex;
@@ -227,32 +240,38 @@ PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::nextProgram() {
 	this->normalizeProgramIndices();
 
-	programIndex++;
-	programIndex %= programListLength;
+	for (int i = 0; i < MAX_LAYERS; i++) {
+		programIndex++;
+		programIndex %= programListLength;
 	
-	uint8_t index = programOrder[programIndex];
+		uint8_t index = programOrder[programIndex];
 
-	this->selectProgramCode(programList[index]);
+		this->selectProgramCode(programList[index]);
+	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::prevProgram() {
 	this->normalizeProgramIndices();
 	
-	if (programIndex == 0)
-		programIndex = programListLength - 1;
-	else
-		programIndex--;
-	programIndex %= programListLength;
+	for (int i = 0; i < MAX_LAYERS; i++) {
+		if (programIndex == 0)
+			programIndex = programListLength - 1;
+		else
+			programIndex--;
+		programIndex %= programListLength;
 
-	uint8_t index = programOrder[programIndex];
+		uint8_t index = programOrder[programIndex];
 
-	this->selectProgramCode(programList[index]);
+		this->selectProgramCode(programList[index]);
+	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::addLightProgram(TLightProgram<PIXEL> &program, uint16_t sections, uint8_t modes[], uint8_t modeCount) {
 	uint8_t programID = program.getProgramID();
+
+	*** CONTINUE HERE ***
 
 	int copyID = 0;
 	for (int i = 0; i < programCount; i++) {
