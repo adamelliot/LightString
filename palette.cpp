@@ -12,7 +12,7 @@ void printColor(CRGB col) {
 	Serial.print(col.g);
 	Serial.print(",");
 	Serial.print(col.b);
-	Serial.println(")");
+	Serial.print(")");
 }
 
 PaletteManager::PaletteManager()

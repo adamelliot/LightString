@@ -109,18 +109,18 @@ struct CRGBPalette {
 #define SOLID_AZURE									CRGBPalette(CRGB::Azure, CRGB::Azure)
 
 #define RAINBOW_GRADIENT 						CRGBPalette(CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Red)
-                            				
+
 #define BLUE_GREEN_GRADIENT 				CRGBPalette(CRGB::Blue, CRGB(0, 255, 64), CRGB::Blue)
 #define GREEN_GRADIENT 							CRGBPalette(CRGB::Lime, CRGB(0, 32, 0), CRGB::Lime)
 #define LIME_GRADIENT 							CRGBPalette(CRGB::Lime, CRGB::Green, CRGB::Lime)
 #define YELLOW_GRADIENT 						CRGBPalette(CRGB(255, 191, 63), CRGB(63, 47, 15), CRGB(255, 191, 63))
 #define WHITE_GRADIENT 							CRGBPalette(CRGB::White, CRGB::Black, CRGB::White)
-                            				
+
 #define RED_GREEN_GRADIENT 					CRGBPalette(CRGB::Red, CRGB::Green)
-                              			
+
 #define GREEN_BLUE_GRADIENT 				CRGBPalette(CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB(0, 255, 64))
 #define RED_ORGANGE_GRADIENT 				CRGBPalette(CRGB(128, 128, 128), CRGB(128, 31, 0), CRGB(128, 95, 0), CRGB(128, 31, 0), CRGB(128, 128, 128))
-                              			
+
 #define BLUE_WHITE_GRADIENT 				CRGBPalette(CRGB(0, 31, 255), CRGB(255, 255, 255), CRGB(0, 31, 255))
 #define BLUE_WHITISH_GRADIENT				CRGBPalette(CRGB(0, 31, 255), CRGB(191, 191, 191), CRGB(0, 31, 255))
 
