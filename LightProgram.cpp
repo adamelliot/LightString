@@ -2,10 +2,6 @@
 
 using namespace LightString;
 
-LightProgram::LightProgram(PixelBuffer *pixelBuffer)
-	: pixelBuffer(pixelBuffer), modeCount(1)
-{}
-
 void LightProgram::setPixelBuffer(PixelBuffer *pixelBuffer) {
 	this->pixelBuffer = pixelBuffer;
 }

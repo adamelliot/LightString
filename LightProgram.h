@@ -21,7 +21,7 @@ protected:
 	PixelBuffer *pixelBuffer;
 
 public:
-	LightProgram(PixelBuffer *pixelBuffer = 0);
+	LightProgram(uint8_t modeCount = 1) : modeCount(modeCount) {}
 
 	void setPixelBuffer(PixelBuffer *pixelBuffer);
 	PixelBuffer *getPixelBuffer();
