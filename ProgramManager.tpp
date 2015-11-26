@@ -1,3 +1,56 @@
+// -------------------------- Light Layer --------------------------
+
+LIGHT_LAYER_TEMPLATE
+TLightProgram<PIXEL> *LIGHT_LAYER_CLASS::getProgram(ProgramCode programCode) {
+	int copy = 0;
+	for (int i = 0; i < programCount; i++) {
+		if (lightPrograms[i]->getProgramID() == programCode.programID) {
+			if (copy == programCode.copyID) {
+				return lightPrograms[i];
+			} else {
+				copy++;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::selectProgram(ProgramCode programCode) {
+#ifdef VERBOSE
+	Serial.print(F("Selecting Program: "));
+	Serial.print((programCode.programID << 8) | programCode.mode, HEX);
+	Serial.print(F(" ("));
+	Serial.print(programCode.copyID, DEC);
+	Serial.println(F(")"));
+#endif
+
+	if (programEventHandler) {
+		// programEventHandler(*section.activeProgram, PROGRAM_FINISHED);
+	}
+
+	if (layer.activeProgram) {
+		section.unlockBuffer(layer.activeProgram->getPixelBuffer());
+	}
+
+	TLightProgram<PIXEL> *program = getProgramForLayer(programCode, layer);
+	layer.activeProgram = program;
+	layer.activeProgram->setPixelBuffer(section.lockBuffer());
+
+	if (programEventHandler) {
+		// programEventHandler(*section.activeProgram, PROGRAM_STARTED);
+	}
+
+	layer.activeProgram->setupMode(programCode.mode);
+	layer.programStartedAt = millis();
+}
+
+
+// ------------------------- Light Section -------------------------
+
+// ------------------------ Program Manager ------------------------
+
 PROGRAM_MANAGER_TEMPLATE
 PROGRAM_MANAGER_CLASS::ProgramManager()
 	: sectionCount(0), programListLength(0), programCount(0), programIndex(0),
@@ -58,7 +111,7 @@ void PROGRAM_MANAGER_CLASS::nudge(int32_t data) {
 }
 
 // ------------------------ Program Management ------------------------
-
+/*
 PROGRAM_MANAGER_TEMPLATE
 TLightProgram<PIXEL> *PROGRAM_MANAGER_CLASS::getProgram(ProgramCode programCode) {
 	int copy = 0;
@@ -101,7 +154,7 @@ TLightProgram<PIXEL> *PROGRAM_MANAGER_CLASS::getProgramForLayer(ProgramCode prog
 #endif
 
 	return NULL;
-}
+}*/
 
 PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::selectProgramForLayer(LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> &section, LightLayer<PIXEL, MAX_LIGHT_PROGRAMS> &layer, ProgramCode programCode) {
@@ -253,7 +306,7 @@ void PROGRAM_MANAGER_CLASS::nextProgram() {
 PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::prevProgram() {
 	this->normalizeProgramIndices();
-	
+
 	for (int i = 0; i < MAX_LAYERS; i++) {
 		if (programIndex == 0)
 			programIndex = programListLength - 1;

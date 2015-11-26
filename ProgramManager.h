@@ -54,23 +54,51 @@ struct LightProgramGroup {
 };
 */
 
-template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS>
+#define LIGHT_LAYER_TEMPLATE template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES>
+#define LIGHT_LAYER_CLASS ProgramManager<PIXEL, MAX_LIGHT_PROGRAMS, MAX_MODES>
+
+#define LIGHT_SECTION_TEMPLATE template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LAYERS>
+#define LIGHT_SECTION_CLASS ProgramManager<PIXEL, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LAYERS>
+
+#define PROGRAM_MANAGER_TEMPLATE template <typename PIXEL, size_t MAX_LAYERS, size_t MAX_MODES, size_t MAX_LIGHT_PROGRAMS, size_t MAX_LIGHT_SECTIONS>
+#define PROGRAM_MANAGER_CLASS ProgramManager<PIXEL, MAX_LAYERS, MAX_MODES, MAX_LIGHT_PROGRAMS, MAX_LIGHT_SECTIONS>
+
+template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_LAYERS>
+struct LightSection;
+
+template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_LAYERS>
 struct LightLayer {
-	uint8_t supportedPrograms[MAX_LIGHT_PROGRAMS];
+	
+	LightSection<
+
+	TLightProgram<PIXEL> *lightPrograms[MAX_LIGHT_PROGRAMS];
+	ProgramCode programList[MAX_LIGHT_PROGRAMS * MAX_MODES];
+	uint8_t programListLength;
 	uint8_t programCount;
-	int16_t programIndexOffset;
+	uint8_t programOrder[MAX_LIGHT_PROGRAMS * MAX_MODES]; // Order of the program list
+	uint8_t programIndex; // Index in the program order
+
+	// Program Manager Timing
+	int32_t maxProgramLength; // 0 or less means don't change based on time
+	uint32_t lastTime;
+	uint16_t msPerFrame;
 
 	TLightProgram<PIXEL> *activeProgram;
 
 	uint32_t programStartedAt;
 	ETransisionState transitionState;
+	
+public:
 
 	inline LightLayer()
 		: programCount(0), programIndexOffset(0),
 		programStartedAt(0), transitionState(NONE) {}
+		
+	TLightProgram<PIXEL> *getProgram(ProgramCode programCode);
 };
 
-template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_LAYERS = 1>
+
+template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_LAYERS>
 struct LightSection {
 	CRGBBuffer *outputBuffer;
 
@@ -79,7 +107,7 @@ struct LightSection {
 	uint8_t activeBuffers;
 	uint8_t bufferCount;
 
-	LightLayer<PIXEL, MAX_LIGHT_PROGRAMS> layers[MAX_LAYERS];
+	LightLayer<PIXEL, MAX_LIGHT_PROGRAMS, MAX_MODES> layers[MAX_LAYERS];
 
 	inline LightSection()
 		: outputBuffer(0), activeBuffers(0), totalBuffers(0) {}
@@ -122,9 +150,6 @@ struct LightSection {
 	}
 };
 
-#define PROGRAM_MANAGER_TEMPLATE template <typename PIXEL, size_t MAX_LAYERS, size_t MAX_MODES, size_t MAX_LIGHT_PROGRAMS, size_t MAX_LIGHT_SECTIONS>
-#define PROGRAM_MANAGER_CLASS ProgramManager<PIXEL, MAX_LAYERS, MAX_MODES, MAX_LIGHT_PROGRAMS, MAX_LIGHT_SECTIONS>
-
 // PROGRAM_MANAGER_TEMPLATE
 template <typename PIXEL, size_t MAX_LAYERS = 1, size_t MAX_MODES = 6, size_t MAX_LIGHT_PROGRAMS = 6, size_t MAX_LIGHT_SECTIONS = 1>
 class ProgramManager {
@@ -150,7 +175,7 @@ private:
 	uint8_t brightness;
 	int16_t targetBrightness, adjustedBrightness;
 	int16_t brightnessStep;
-	
+
 	// Events
 
 	ProgramEvent programEventHandler;
