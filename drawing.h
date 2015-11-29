@@ -203,7 +203,7 @@ enum {
 	BLEND_ADD,
 	BLEND_INVERT 
 	
-} TBlendModes;
+} EBlendModes;
 
 /*
  * Pixel is based on CRGB, but adds alpha channel functionality so
@@ -497,10 +497,10 @@ struct CRGBBuffer : TPixelBuffer<CRGB> {
 	// Blending Functions
 
 	// TODO: Move this to the template
-	inline CRGBBuffer &applyCOPY(PixelBuffer &src) __attribute__((always_inline)) {
-		uint8_t len = min(this->length, src->length);
+	inline CRGBBuffer &applyCOPY(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
+		uint8_t len = min(this->length, src.length);
 		for (int i = 0; i < len; i++) {
-			src.pixels[i].applyCOPYTo(this->pixels[i]);
+			pixels[i] = src.pixels[i].applyCOPYTo(this->pixels[i]);
 		}
 
 		return *this;

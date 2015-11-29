@@ -3,7 +3,7 @@
 
 #include "Band.h"
 
-const uint8_t kDataPin = 11;
+const uint8_t kDataPin = 7;
 const EOrder kColorOrder = GRB;
 const uint16_t kTotalLEDs = 144;
 
@@ -16,11 +16,12 @@ CRGBBuffer ledBuffer(kTotalLEDs);
 PixelBuffer backBuffer1(kTotalLEDs);
 PixelBuffer backBuffer2(kTotalLEDs);
 
-ProgramManager<CRGB, 2> programManager;
+ProgramManager<Pixel, 2> programManager;
 
-Band<CRGB> band1(CRGB(50, 50, 150));
-Band<CRGB> band2(CRGB::Orange);
-Band<CRGB> band3(CRGB(128, 40, 100));
+Band<Pixel> band1(Pixel(50, 50, 150, 128));
+Band<Pixel> band2(Pixel(CRGB::Orange, 64));
+Band<Pixel> band3(Pixel(128, 40, 100, 192));
+Band<Pixel> band4(Pixel(0, 40, 192, 128));
 
 /*
 LightProgram programs[] = {
@@ -30,30 +31,32 @@ LightProgram programs[] = {
 
 void setup() {
 	Serial.begin(9600);
-	delay(100);
+	delay(500);
 
 	FastLED.addLeds<WS2812B, kDataPin, kColorOrder>(ledBuffer.pixels, kTotalLEDs);
 	FastLED.setBrightness(255);
 
 	blink();
 	
-	programManager.setMaxProgramLength(kProgramLength);
-	programManager.setMaxFPS(30);
-
-	uint16_t sectionID = programManager.addLightSection(ledBuffer);
+	uint8_t sectionID = programManager.addLightSection(ledBuffer);
 	programManager.addBufferToLightSection(sectionID, backBuffer1);
 	programManager.addBufferToLightSection(sectionID, backBuffer2);
 
+	programManager.setMaxProgramLength(kProgramLength);
+	programManager.setMaxFPS(30);
+
 	programManager.addLightProgram(band1);
 	programManager.addLightProgram(band2);
-	programManager.addLightProgram(band3);
+	programManager.addLightProgram(band3, 1);
+	programManager.addLightProgram(band4, 1);
 
 	blink(CRGB::Lime, 8, 40);
 
-	programManager.selectRandomProgram();
+	programManager.startRandomProgram();
 }
 
 void loop() {
+	// Serial.println("loop");
 	programManager.loop();
 	FastLED.show();
 }
