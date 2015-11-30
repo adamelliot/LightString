@@ -81,7 +81,6 @@ struct LightLayer {
 
 	ProgramCode programList[MAX_LIGHT_PROGRAMS * MAX_MODES];
 	uint8_t programListLength;
-	uint8_t programOrder[MAX_LIGHT_PROGRAMS * MAX_MODES]; // Order of the program list
 	uint8_t programIndex; // Index in the program order
 
 	// Program Manager Timing

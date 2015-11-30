@@ -18,10 +18,10 @@ TLightProgram<PIXEL> *LIGHT_LAYER_CLASS::getProgram(ProgramCode &programCode) {
 
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::updateProgramIndex(ProgramCode &programCode) {
-	if (programList[programOrder[programIndex]] == programCode) return;
+	if (programList[programIndex] == programCode) return;
 
 	for (int i = 0; i < programListLength; i++) {
-		if (programList[programOrder[i]] == programCode) {
+		if (programList[i] == programCode) {
 			programIndex = i;
 			break;
 		}
@@ -105,8 +105,7 @@ bool LIGHT_LAYER_CLASS::nextProgram() {
 	programIndex++;
 	programIndex %= programListLength;
 
-	uint8_t index = programOrder[programIndex];
-	return startProgram(programList[index]);
+	return startProgram(programList[programIndex]);
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -117,8 +116,7 @@ bool LIGHT_LAYER_CLASS::prevProgram() {
 		programIndex--;
 	}
 
-	uint8_t index = programOrder[programIndex];
-	return startProgram(programList[index]);
+	return startProgram(programList[programIndex]);
 }
 
 // Shuffle from: http://benpfaff.org/writings/clc/shuffle.html
@@ -126,9 +124,9 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::randomizeProgramOrder() {
 	for (size_t i = 0; i < programListLength; i++) {
 		size_t j = i + random() / (0xffff / (programListLength - 1) + 1);
-		uint8_t t = programOrder[j];
-		programOrder[j] = programOrder[i];
-		programOrder[i] = t;
+		ProgramCode t = programList[j];
+		programList[j] = programList[i];
+		programList[i] = t;
 	}
 }
 
@@ -163,7 +161,7 @@ void LIGHT_LAYER_CLASS::addLightProgram(TLightProgram<PIXEL> &program, uint64_t 
 #endif
 
 			programList[programListLength] = ProgramCode(programID, copyID, mode);
-			programOrder[programListLength] = programListLength++;
+			programListLength++;
 		}
 	}
 }
