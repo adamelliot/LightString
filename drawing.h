@@ -198,12 +198,12 @@ struct MovingPoint8 : Point<uint16_t> {
 };
 
 
-enum {
+typedef enum {
 	BLEND_COPY = 0,
 	BLEND_ADD,
-	BLEND_INVERT 
+	BLEND_XOR
 	
-} EBlendModes;
+} EBlendMode;
 
 /*
  * Pixel is based on CRGB, but adds alpha channel functionality so
@@ -244,27 +244,6 @@ struct Pixel : CRGB {
 		hsv2rgb_rainbow(rhs, (CRGB &)(*this->raw));
 	}
 
-	/*
-	inline Pixel& setRGB(uint8_t nr, uint8_t ng, uint8_t nb) __attribute__((always_inline))
-	{
-		r = nr;
-		g = ng;
-		b = nb;
-		return *this;
-	}
-
-	inline Pixel& setHSV(uint8_t hue, uint8_t sat, uint8_t val) __attribute__((always_inline))
-	{
-		hsv2rgb_rainbow(CHSV(hue, sat, val), (CRGB &)(*(raw + 1)));
-		return *this;
-	}
-
-	inline Pixel& setHue (uint8_t hue) __attribute__((always_inline))
-	{
-		hsv2rgb_rainbow(CHSV(hue, 255, 255), (CRGB &)(*(raw + 1)));
-		return *this;
-	}
-*/
 	inline Pixel& operator= (const Pixel& rhs) __attribute__((always_inline)) {
 		a = rhs.a;
 		this->r = rhs.r;
@@ -272,23 +251,7 @@ struct Pixel : CRGB {
 		this->b = rhs.b;
 		return *this;
 	}
-/*
-	inline Pixel& operator= (const CRGB& rhs) __attribute__((always_inline)) {
-		a = 0xff;
-		r = rhs.r;
-		g = rhs.g;
-		b = rhs.b;
-	}
 
-	// add one RGB to another, saturating at 0xFF for each channel
-	inline Pixel& operator+= (const CRGB& rhs)
-	{
-		r = qadd8(r, rhs.r);
-		g = qadd8(g, rhs.g);
-		b = qadd8(b, rhs.b);
-		return *this;
-	}
-*/
 	inline Pixel& operator+= (const Pixel& rhs)
 	{
 		this->r = qadd8(r, rhs.r);
@@ -296,28 +259,7 @@ struct Pixel : CRGB {
 		this->b = qadd8(b, rhs.b);
 		return *this;
 	}
-	/*
-	// add a contstant to each channel, saturating at 0xFF
-	// this is NOT an operator+= overload because the compiler
-	// can't usefully decide when it's being passed a 32-bit
-	// constant (e.g. CRGB::Red) and an 8-bit one (CRGB::Blue)
-	inline Pixel& addToRGB (uint8_t d)
-	{
-		r = qadd8(r, d);
-		g = qadd8(g, d);
-		b = qadd8(b, d);
-		return *this;
-	}
 
-	// subtract one RGB from another, saturating at 0x00 for each channel
-	inline Pixel& operator-= (const CRGB& rhs)
-	{
-		r = qsub8( r, rhs.r);
-		g = qsub8( g, rhs.g);
-		b = qsub8( b, rhs.b);
-		return *this;
-	}
-*/
 	inline Pixel& operator-= (const Pixel& rhs)
 	{
 		this->r = qsub8(r, rhs.r);
@@ -325,77 +267,6 @@ struct Pixel : CRGB {
 		this->b = qsub8(b, rhs.b);
 		return *this;
 	}
-	/*
-	// subtract a constant from each channel, saturating at 0x00
-	// this is NOT an operator+= overload because the compiler
-	// can't usefully decide when it's being passed a 32-bit
-	// constant (e.g. CRGB::Red) and an 8-bit one (CRGB::Blue)
-	inline Pixel& subtractFromRGB(uint8_t d)
-	{
-		r = qsub8(r, d);
-		g = qsub8(g, d);
-		b = qsub8(b, d);
-		return *this;
-	}
-
-	// subtract a constant of '1' from each channel, saturating at 0x00
-	inline Pixel& operator-- ()  __attribute__((always_inline))
-	{
-		subtractFromRGB(1);
-		return *this;
-	}
-
-	// subtract a constant of '1' from each channel, saturating at 0x00
-	inline Pixel operator-- (int DUMMY_ARG)  __attribute__((always_inline))
-	{
-		Pixel retval(*this);
-		--(*this);
-		return retval;
-	}
-
-	// add a constant of '1' from each channel, saturating at 0xFF
-	inline Pixel& operator++ ()  __attribute__((always_inline))
-	{
-		addToRGB(1);
-		return *this;
-	}
-
-	// add a constant of '1' from each channel, saturating at 0xFF
-	inline Pixel operator++ (int DUMMY_ARG)  __attribute__((always_inline))
-	{
-		Pixel retval(*this);
-		++(*this);
-		return retval;
-	}
-
-	// divide each of the channels by a constant
-	inline Pixel& operator/= (uint8_t d )
-	{
-		r /= d;
-		g /= d;
-		b /= d;
-		return *this;
-	}
-
-	// right shift each of the channels by a constant
-	inline Pixel& operator>>= (uint8_t d)
-	{
-		r >>= d;
-		g >>= d;
-		b >>= d;
-		return *this;
-	}
-
-	// multiply each of the channels by a constant,
-	// saturating each channel at 0xFF
-	inline Pixel& operator*= (uint8_t d )
-	{
-		r = qmul8( r, d);
-		g = qmul8( g, d);
-		b = qmul8( b, d);
-		return *this;
-	}
-*/
 
 	// Overlay Modes
 
@@ -409,8 +280,16 @@ struct Pixel : CRGB {
 	}
 };
 
+
+// Place holder type for all generated TPixelBuffers
+struct IPixelBuffer {
+	virtual uint16_t getLength() = 0;
+	
+	virtual void clear() = 0;
+};
+
 template <typename T>
-struct TPixelBuffer {
+struct TPixelBuffer : public IPixelBuffer {
 	T *pixels;
 	uint16_t length;
 	bool shouldDelete;
@@ -429,6 +308,10 @@ struct TPixelBuffer {
 
 	inline ~TPixelBuffer() {
 		if (shouldDelete) delete pixels;
+	}
+	
+	uint16_t getLength() {
+		return length;
 	}
 
 	/*

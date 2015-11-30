@@ -1,7 +1,7 @@
 // -------------------------- Light Layer --------------------------
 
 LIGHT_LAYER_TEMPLATE
-TLightProgram<PIXEL> *LIGHT_LAYER_CLASS::getProgram(ProgramCode &programCode) {
+ILightProgram *LIGHT_LAYER_CLASS::getProgram(ProgramCode &programCode) {
 	int copy = 0;
 	for (int i = 0; i < programCount; i++) {
 		if (lightPrograms[i]->getProgramID() == programCode.programID) {
@@ -58,7 +58,7 @@ bool LIGHT_LAYER_CLASS::startProgram(ProgramCode &programCode) {
 	Serial.println(layerID);
 #endif
 
-	TLightProgram<PIXEL> *program = getProgram(programCode);
+	ILightProgram *program = getProgram(programCode);
 	if (!program) {
 		return false;
 	}
@@ -72,12 +72,17 @@ bool LIGHT_LAYER_CLASS::startProgram(ProgramCode &programCode) {
 		// programEventHandler(*section.activeProgram, playState);
 	}
 
-	if (this->activeProgram) {
+	if (this->activeProgram && !this->activeProgram->isFilterProgram()) {
 		this->section->unlockBuffer(this->activeProgram->getPixelBuffer());
 	}
 
 	this->activeProgram = program;
-	this->activeProgram->setPixelBuffer(this->section->lockBuffer());
+	
+	if (this->activeProgram->isFilterProgram()) {
+		this->activeProgram->setPixelBuffer(this->section->outputBuffer);
+	} else {
+		this->activeProgram->setPixelBuffer(this->section->lockBuffer());
+	}
 
 	playState = PROGRAM_STARTED;
 
@@ -132,7 +137,7 @@ void LIGHT_LAYER_CLASS::randomizeProgramOrder() {
 
 // TODO: This will only support up to 64 progrom modes currently, should really support 256
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::addLightProgram(TLightProgram<PIXEL> &program, uint64_t modeList) {
+void LIGHT_LAYER_CLASS::addLightProgram(ILightProgram &program, uint64_t modeList) {
 	uint8_t programID = program.getProgramID();
 
 	int copyID = 0;
@@ -167,7 +172,7 @@ void LIGHT_LAYER_CLASS::addLightProgram(TLightProgram<PIXEL> &program, uint64_t 
 }
 
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::addLightProgram(TLightProgram<PIXEL> &program) {
+void LIGHT_LAYER_CLASS::addLightProgram(ILightProgram &program) {
 	uint64_t modeList = 0;
 
 	for (int i = 0; i < program.getModeCount(); i++) {
@@ -364,21 +369,21 @@ void PROGRAM_MANAGER_CLASS::randomizeProgramOrder() {
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::addLightProgram(TLightProgram<PIXEL> &program, uint8_t layerID) {
+void PROGRAM_MANAGER_CLASS::addLightProgram(ILightProgram &program, uint8_t layerID) {
 	for (int i = 0; i < sectionCount; i++) {
 		sections[i].layers[layerID].addLightProgram(program);
 	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::addLightProgram(TLightProgram<PIXEL> &program, uint64_t modeList, uint8_t layerID) {
+void PROGRAM_MANAGER_CLASS::addLightProgram(ILightProgram &program, uint64_t modeList, uint8_t layerID) {
 	for (int i = 0; i < sectionCount; i++) {
 		sections[i].layers[layerID].addLightProgram(program, modeList);
 	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::addLightProgram(TLightProgram<PIXEL> &program, uint64_t modeList, uint8_t layerID, uint8_t sectionID) {
+void PROGRAM_MANAGER_CLASS::addLightProgram(ILightProgram &program, uint64_t modeList, uint8_t layerID, uint8_t sectionID) {
 	sections[sectionID].layers[layerID].addLightProgram(program, modeList);
 }
 
@@ -406,7 +411,7 @@ uint8_t PROGRAM_MANAGER_CLASS::addLightSection(CRGBBuffer &pixelBuffer) {
 }
 
 PROGRAM_MANAGER_TEMPLATE
-bool PROGRAM_MANAGER_CLASS::addBufferToLightSection(uint8_t sectionID, TPixelBuffer<PIXEL> &buffer) {
+bool PROGRAM_MANAGER_CLASS::addBufferToLightSection(uint8_t sectionID, IPixelBuffer &buffer) {
 	LIGHT_SECTION_CLASS *lightSection = getLightSection(sectionID);
 	if (!lightSection) return false;
 

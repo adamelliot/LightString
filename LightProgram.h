@@ -39,6 +39,8 @@ protected:
 	uint8_t mode;
 	uint8_t modeCount;
 
+	EBlendMode blendMode;
+
 public:
 	ILightProgram(uint8_t modeCount = 1) : modeCount(modeCount) {}
 	
@@ -48,6 +50,12 @@ public:
 	virtual void setupMode(uint8_t mode) {}
 	void setMode(uint8_t mode) { this->mode = mode; setupMode(mode); }
 	uint8_t getMode() { return mode; }
+	uint8_t getModeCount() { return modeCount; }
+	
+	virtual void setPixelBuffer(IPixelBuffer *pixelBuffer) {}
+	virtual IPixelBuffer *getPixelBuffer() { return NULL; }
+	
+	virtual bool isFilterProgram() { return false; }
 
 	// Program IDs are used to target effects from one program to another
 	// if that isn't needed this can be left as zero
@@ -74,7 +82,6 @@ public:
 	virtual void update(uint32_t ms) {}
 };
 
-
 template <typename PIXEL = Pixel>
 class TLightProgram : public ILightProgram {
 protected:
@@ -88,17 +95,27 @@ public:
 	TLightProgram(uint8_t modeCount = 1) __attribute__((always_inline))
 		: ILightProgram(modeCount), layer(0), pixelBuffer(0) {}
 
-	void setPixelBuffer(TPixelBuffer<PIXEL> *pixelBuffer) { this->pixelBuffer = pixelBuffer; }
-	TPixelBuffer<PIXEL> *getPixelBuffer() { return pixelBuffer; }
+	void setPixelBuffer(IPixelBuffer *pixelBuffer) {
+		this->pixelBuffer = (TPixelBuffer<PIXEL> *)pixelBuffer;
+	}
 
-	uint8_t getMode() { return mode; }
-	uint8_t getModeCount() { return modeCount; }
+	IPixelBuffer *getPixelBuffer() { return pixelBuffer; }
 };
 
 class LightProgram : public TLightProgram<CRGB> {
 public:
 	inline LightProgram(uint8_t modeCount = 1) __attribute__((always_inline))
 		: TLightProgram(modeCount) {}
+};
+
+// Filter programs don't get their own private buffer, but operate on the
+// output buffer.
+class FilterLightProgram : public TLightProgram<CRGB> {
+public:
+	inline FilterLightProgram(uint8_t modeCount = 1) __attribute__((always_inline))
+		: TLightProgram(modeCount) {}
+
+	bool isFilterProgram() { return true; } 
 };
 
 

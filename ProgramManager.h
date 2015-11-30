@@ -76,7 +76,7 @@ struct LightLayer {
 	// TODO: Implement with virtual interface to remove the MAX_LAYER depenance 
 	LIGHT_SECTION_CLASS *section;
 
-	TLightProgram<PIXEL> *lightPrograms[MAX_LIGHT_PROGRAMS];
+	ILightProgram *lightPrograms[MAX_LIGHT_PROGRAMS];
 	uint8_t programCount;
 
 	ProgramCode programList[MAX_LIGHT_PROGRAMS * MAX_MODES];
@@ -91,7 +91,7 @@ struct LightLayer {
 	uint32_t programStartedAt;
 	uint32_t pauseStartedAt;
 
-	TLightProgram<PIXEL> *activeProgram;
+	ILightProgram *activeProgram;
 
 	ProgramEvent programEventHandler;
 
@@ -101,7 +101,7 @@ struct LightLayer {
 	
 private:
 	
-	TLightProgram<PIXEL> *getProgram(ProgramCode &programCode);
+	ILightProgram *getProgram(ProgramCode &programCode);
 	void updateProgramIndex(ProgramCode &programCode);
 	
 public:
@@ -131,25 +131,28 @@ public:
 	
 	void randomizeProgramOrder();
 	
-	void addLightProgram(TLightProgram<PIXEL> &program, uint64_t modeList);
-	void addLightProgram(TLightProgram<PIXEL> &program);
+	void addLightProgram(ILightProgram &program, uint64_t modeList);
+	void addLightProgram(ILightProgram &program);
 	
 	void updateTranstion(uint32_t timeDelta);
 	void update();
 };
 
 LIGHT_SECTION_TEMPLATE
-struct LightSection {
-	CRGBBuffer *outputBuffer;
-
-	TPixelBuffer<PIXEL> *bufferPool[MAX_LAYERS];
+class LightSection {
+private:
+	
+	IPixelBuffer *bufferPool[MAX_LAYERS];
 	uint8_t activeBuffers;
 	uint8_t bufferCount;
+
+public:
+	CRGBBuffer *outputBuffer;
 
 	LIGHT_LAYER_CLASS layers[MAX_LAYERS];
 
 	inline LightSection()
-		: outputBuffer(0), activeBuffers(0), bufferCount(0)
+		: activeBuffers(0), bufferCount(0), outputBuffer(0)
 	{
 		for (int i = 0; i < MAX_LAYERS; i++) {
 			layers[i].layerID = i;
@@ -157,7 +160,7 @@ struct LightSection {
 		}
 	}
 
-	TPixelBuffer<PIXEL> *lockBuffer() {
+	IPixelBuffer *lockBuffer() {
 		// In the case of no buffer pool the output buffer is used.
 		// This only works if PIXEL is CRGB, and should otherwise throw an error
 		// outputBuffer
@@ -174,8 +177,8 @@ struct LightSection {
 		return NULL;
 	}
 
-	void unlockBuffer(TPixelBuffer<PIXEL> *buffer) {
-		if (buffer == (TPixelBuffer<PIXEL> *)outputBuffer) return;
+	void unlockBuffer(IPixelBuffer *buffer) {
+		if (buffer == (IPixelBuffer *)outputBuffer) return;
 
 		for (int i = 0; i < bufferCount; i++) {
 			if (bufferPool[i] == buffer) {
@@ -185,17 +188,19 @@ struct LightSection {
 		}
 	}
 
-	bool addBuffer(TPixelBuffer<PIXEL> *buffer) {
-		if (!buffer->length == this->outputBuffer->length) {
+	bool addBuffer(IPixelBuffer *buffer) {
+		if (!buffer->getLength() == this->outputBuffer->getLength()) {
 #ifdef VERBOSE
 			Serial.println(F("ERROR: Buffer added to pool needs to be the same size as the output buffer."));
 #endif
 
 			return false;
 		}
-		
+
 		if (bufferCount >= (MAX_LAYERS * 2)) return false;
 		bufferPool[bufferCount++] = buffer;
+
+		return true;
 	}
 
 	// Update all the layers and then compact them together into the outputBuffer
@@ -206,7 +211,9 @@ struct LightSection {
 
 		for (int i = 0; i < MAX_LAYERS; i++) {
 			layers[i].update();
-			outputBuffer->applyCOPY(*layers[i].activeProgram->getPixelBuffer());
+			if (!layers[i].activeProgram->isFilterProgram()) {
+				outputBuffer->applyCOPY(*((TPixelBuffer<PIXEL> *)layers[i].activeProgram->getPixelBuffer()));
+			}
 		}
 	}
 };
@@ -255,15 +262,15 @@ public:
 	void nextProgram(uint8_t layerID, uint8_t sectionID = 0);
 	void prevProgram();
 	void prevProgram(uint8_t layerID, uint8_t sectionID = 0);
-	
+
 	void randomizeProgramOrder();
 
-	void addLightProgram(TLightProgram<PIXEL> &program, uint8_t layerID = 0);
-	void addLightProgram(TLightProgram<PIXEL> &program, uint64_t modeList, uint8_t layerID);
-	void addLightProgram(TLightProgram<PIXEL> &program, uint64_t modeList, uint8_t layerID, uint8_t sectionID);
+	void addLightProgram(ILightProgram &program, uint8_t layerID = 0);
+	void addLightProgram(ILightProgram &program, uint64_t modeList, uint8_t layerID);
+	void addLightProgram(ILightProgram &program, uint64_t modeList, uint8_t layerID, uint8_t sectionID);
 
 	uint8_t addLightSection(CRGBBuffer &pixelBuffer);
-	bool addBufferToLightSection(uint8_t sectionID, TPixelBuffer<PIXEL> &buffer);
+	bool addBufferToLightSection(uint8_t sectionID, IPixelBuffer &buffer);
 
 	void fadeDown();
 	void fadeUp(bool forceZero = true);
