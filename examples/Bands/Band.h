@@ -38,6 +38,8 @@ void Band<PIXEL>::setupMode(uint8_t mode) {
 
 	deltaS = ((float)random8() - 127) / 100;
 	deltaE = ((float)random8() - 127) / 100;
+
+	this->startProgramAbove(0);
 }
 
 template <typename PIXEL>
@@ -58,7 +60,7 @@ void Band<PIXEL>::update(uint32_t ms) {
 
 	if (sx > ex) SWAP(sx, ex);
 
-	uint16_t len = min(ex - sx, 30);
+	uint16_t len = min(ex - sx, 60);
 	this->pixelBuffer->setPixels(sx, len, color);
 }
 

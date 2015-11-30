@@ -35,19 +35,6 @@ typedef enum {
 
 typedef void (* ProgramEvent)(LightProgram &lightProgram, EPlayState event);
 
-struct ProgramCode {
-	uint8_t programID; // Name of program
-	uint8_t copyID; // Which copy of the program
-	uint8_t mode; // Which mode is specified
-
-	inline ProgramCode(uint8_t programID = 0, uint8_t copyID = 0, uint8_t mode = 0) __attribute__((always_inline))
-		: programID(programID), copyID(copyID), mode(mode) {}
-
-	inline bool operator== (const ProgramCode &rhs) __attribute__((always_inline)) {
-		return this->programID == rhs.programID && this->copyID == rhs.copyID && this->mode == rhs.mode;
-	}
-};
-
 // TODO: Implement program grouping
 /*
 struct LightProgramGroup {
@@ -56,8 +43,8 @@ struct LightProgramGroup {
 };
 */
 
-#define LIGHT_LAYER_TEMPLATE template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LAYERS>
-#define LIGHT_LAYER_CLASS LightLayer<PIXEL, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LAYERS>
+#define LIGHT_LAYER_TEMPLATE template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES>
+#define LIGHT_LAYER_CLASS LightLayer<PIXEL, MAX_LIGHT_PROGRAMS, MAX_MODES>
 
 #define LIGHT_SECTION_TEMPLATE template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LAYERS>
 #define LIGHT_SECTION_CLASS LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LAYERS>
@@ -69,12 +56,12 @@ LIGHT_SECTION_TEMPLATE
 struct LightSection;
 
 LIGHT_LAYER_TEMPLATE
-struct LightLayer {
-
+class LightLayer : public ILightLayer {
+private:
 	uint8_t layerID;
 
 	// TODO: Implement with virtual interface to remove the MAX_LAYER depenance 
-	LIGHT_SECTION_CLASS *section;
+	ILightSection *section;
 
 	ILightProgram *lightPrograms[MAX_LIGHT_PROGRAMS];
 	uint8_t programCount;
@@ -99,8 +86,6 @@ struct LightLayer {
 	EPlayMode playMode;
 	ETransitionState transitionState;
 	
-private:
-	
 	ILightProgram *getProgram(ProgramCode &programCode);
 	void updateProgramIndex(ProgramCode &programCode);
 	
@@ -113,7 +98,15 @@ public:
 		transitionState(TRANSITION_DONE) {}
 		
 	bool isActive() { return playState != PROGRAM_STOPPED; }
+
+	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
+	uint8_t getLayerID() { return layerID; }
 	
+	void setLightSection(ILightSection *section) { this->section = section; }
+	ILightSection *getLightSection() { return section; }
+
+	ILightProgram *getActiveProgram() { return activeProgram; }
+
 	void setMaxProgramLength(uint32_t maxProgramLength) { this->maxProgramLength = maxProgramLength; }
 	uint32_t getMaxProgramLength() { return maxProgramLength; }
 
@@ -139,7 +132,7 @@ public:
 };
 
 LIGHT_SECTION_TEMPLATE
-class LightSection {
+class LightSection : public ILightSection {
 private:
 	
 	IPixelBuffer *bufferPool[MAX_LAYERS];
@@ -147,79 +140,34 @@ private:
 	uint8_t bufferCount;
 
 public:
-	CRGBBuffer *outputBuffer;
 
+	CRGBBuffer *outputBuffer;
 	LIGHT_LAYER_CLASS layers[MAX_LAYERS];
 
 	inline LightSection()
 		: activeBuffers(0), bufferCount(0), outputBuffer(0)
 	{
 		for (int i = 0; i < MAX_LAYERS; i++) {
-			layers[i].layerID = i;
-			layers[i].section = this;
+			layers[i].setLayerID(i);
+			layers[i].setLightSection(this);
 		}
 	}
+	
+	CRGBBuffer *getOutputBuffer() { return outputBuffer; }
 
-	IPixelBuffer *lockBuffer() {
-		// In the case of no buffer pool the output buffer is used.
-		// This only works if PIXEL is CRGB, and should otherwise throw an error
-		// outputBuffer
-		if (bufferCount == 0) return (TPixelBuffer<PIXEL> *)outputBuffer;
-		
-		for (int i = 0; i < bufferCount; i++) {
-			uint8_t bit = 1 << i;
-			if ((activeBuffers & bit) == 0) {
-				activeBuffers |= bit;
-				return bufferPool[i];
-			}
-		}
+	uint8_t getMaxLayers() { return MAX_LAYERS; }
+	ILightLayer *getLayer(uint8_t layerID) { return &layers[layerID]; }
 
-		return NULL;
-	}
-
-	void unlockBuffer(IPixelBuffer *buffer) {
-		if (buffer == (IPixelBuffer *)outputBuffer) return;
-
-		for (int i = 0; i < bufferCount; i++) {
-			if (bufferPool[i] == buffer) {
-				uint8_t bit = 1 << i;
-				activeBuffers &= ~bit;
-			}
-		}
-	}
-
-	bool addBuffer(IPixelBuffer *buffer) {
-		if (!buffer->getLength() == this->outputBuffer->getLength()) {
-#ifdef VERBOSE
-			Serial.println(F("ERROR: Buffer added to pool needs to be the same size as the output buffer."));
-#endif
-
-			return false;
-		}
-
-		if (bufferCount >= (MAX_LAYERS * 2)) return false;
-		bufferPool[bufferCount++] = buffer;
-
-		return true;
-	}
+	IPixelBuffer *lockBuffer();
+	void unlockBuffer(IPixelBuffer *buffer);
+	bool addBuffer(IPixelBuffer *buffer);
 
 	// Update all the layers and then compact them together into the outputBuffer
-	void update() {
-		if (bufferCount > 0) {
-			outputBuffer->clear();
-		}
-
-		for (int i = 0; i < MAX_LAYERS; i++) {
-			layers[i].update();
-			if (!layers[i].activeProgram->isFilterProgram()) {
-				outputBuffer->applyCOPY(*((TPixelBuffer<PIXEL> *)layers[i].activeProgram->getPixelBuffer()));
-			}
-		}
-	}
+	void update();
 };
 
 // PROGRAM_MANAGER_TEMPLATE
-template <typename PIXEL, size_t MAX_LAYERS = 1, size_t MAX_LIGHT_PROGRAMS = 6, size_t MAX_MODES = 6, size_t MAX_LIGHT_SECTIONS = 1>
+template <typename PIXEL, size_t MAX_LAYERS = 1, size_t MAX_LIGHT_PROGRAMS = 6, size_t MAX_MODES = 4, size_t MAX_LIGHT_SECTIONS = 1>
 class ProgramManager {
 private:
 	LIGHT_SECTION_CLASS sections[MAX_LIGHT_SECTIONS];

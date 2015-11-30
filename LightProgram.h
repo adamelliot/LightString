@@ -30,7 +30,52 @@ typedef enum {
 
 } EProgramMode;
 
+struct ProgramCode {
+	uint8_t programID; // Name of program
+	uint8_t copyID; // Which copy of the program
+	uint8_t mode; // Which mode is specified
+
+	inline ProgramCode(uint8_t programID = 0, uint8_t copyID = 0, uint8_t mode = 0) __attribute__((always_inline))
+		: programID(programID), copyID(copyID), mode(mode) {}
+
+	inline bool operator== (const ProgramCode &rhs) __attribute__((always_inline)) {
+		return this->programID == rhs.programID && this->copyID == rhs.copyID && this->mode == rhs.mode;
+	}
+};
+
 class ILightLayer;
+class ILightProgram;
+
+class ILightSection {
+public:
+
+	virtual CRGBBuffer *getOutputBuffer() = 0;
+
+	virtual uint8_t getMaxLayers() = 0;
+	virtual ILightLayer *getLayer(uint8_t layerID) = 0;
+
+	virtual IPixelBuffer *lockBuffer() = 0;
+	virtual void unlockBuffer(IPixelBuffer *buffer) = 0;
+	virtual bool addBuffer(IPixelBuffer *buffer) = 0;
+};
+
+class ILightLayer {
+public:
+	
+	virtual void setLayerID(uint8_t layerID) = 0;
+	virtual uint8_t getLayerID() = 0;
+	
+	virtual void setLightSection(ILightSection *section) = 0;
+	virtual ILightSection *getLightSection() = 0;
+	
+	virtual ILightProgram *getActiveProgram() = 0;
+
+	virtual bool startProgram(ProgramCode &programCode) = 0;
+	virtual bool startRandomProgram() = 0;
+	virtual bool nextProgram() = 0;
+	virtual bool prevProgram() = 0;
+
+};
 
 class ILightProgram {
 protected:
@@ -51,6 +96,23 @@ public:
 	void setMode(uint8_t mode) { this->mode = mode; setupMode(mode); }
 	uint8_t getMode() { return mode; }
 	uint8_t getModeCount() { return modeCount; }
+
+	void startProgramAbove(ProgramCode programCode) {
+		if (layer && layer->getLightSection()) {
+			ILightSection *section = layer->getLightSection();
+			uint8_t targetLayerID = layer->getLayerID() + 1;
+
+			if (targetLayerID < section->getMaxLayers()) {
+				ILightLayer *layer = section->getLayer(targetLayerID);
+				if (layer) {
+					layer->startProgram(programCode);
+				}
+			}
+		}
+	}
+	void startProgramAbove(uint8_t programID) {
+		startProgramAbove(ProgramCode(programID));
+	}
 	
 	virtual void setPixelBuffer(IPixelBuffer *pixelBuffer) {}
 	virtual IPixelBuffer *getPixelBuffer() { return NULL; }
@@ -60,8 +122,8 @@ public:
 	// Program IDs are used to target effects from one program to another
 	// if that isn't needed this can be left as zero
 	virtual uint8_t getProgramID() { return 0; }
-	
-	// TODO: Adjust this to work directly with ProgramCode
+
+	// TODO: This isn't hooked up in this iteration
 	virtual uint16_t getNextProgramCode() { return 0; /* Any program */ }
 
 	virtual EProgramTransition getTransition() { return FADE_DOWN; }

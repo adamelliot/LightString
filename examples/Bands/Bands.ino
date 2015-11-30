@@ -22,7 +22,7 @@ ProgramManager<Pixel, 3, 3, 1> programManager;
 Band<Pixel> band1(Pixel(50, 50, 150, 64));
 Band<Pixel> band2(Pixel(CRGB::Orange, 64));
 Band<Pixel> band3(Pixel(128, 40, 100, 64));
-Band<Pixel> band4(Pixel(0, 128, 192, 64));
+Band<Pixel> band4(Pixel(0, 192, 50, 64));
 Wave wave;
 
 /*

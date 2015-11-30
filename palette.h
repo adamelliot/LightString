@@ -96,8 +96,8 @@ struct CRGBPalette {
 		for (uint8_t i = 0; i < size; i++) {
 			colors[i].nscale8(scale);
 		}
-    
-    return *this;
+
+		return *this;
 	}
 };
 
