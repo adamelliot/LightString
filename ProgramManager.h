@@ -62,8 +62,8 @@ struct LightProgramGroup {
 #define LIGHT_SECTION_TEMPLATE template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LAYERS>
 #define LIGHT_SECTION_CLASS LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LAYERS>
 
-#define PROGRAM_MANAGER_TEMPLATE template <typename PIXEL, size_t MAX_LAYERS, size_t MAX_MODES, size_t MAX_LIGHT_PROGRAMS, size_t MAX_LIGHT_SECTIONS>
-#define PROGRAM_MANAGER_CLASS ProgramManager<PIXEL, MAX_LAYERS, MAX_MODES, MAX_LIGHT_PROGRAMS, MAX_LIGHT_SECTIONS>
+#define PROGRAM_MANAGER_TEMPLATE template <typename PIXEL, size_t MAX_LAYERS, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LIGHT_SECTIONS>
+#define PROGRAM_MANAGER_CLASS ProgramManager<PIXEL, MAX_LAYERS, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LIGHT_SECTIONS>
 
 LIGHT_SECTION_TEMPLATE
 struct LightSection;
@@ -213,22 +213,12 @@ struct LightSection {
 };
 
 // PROGRAM_MANAGER_TEMPLATE
-template <typename PIXEL, size_t MAX_LAYERS = 1, size_t MAX_MODES = 6, size_t MAX_LIGHT_PROGRAMS = 6, size_t MAX_LIGHT_SECTIONS = 1>
+template <typename PIXEL, size_t MAX_LAYERS = 1, size_t MAX_LIGHT_PROGRAMS = 6, size_t MAX_MODES = 6, size_t MAX_LIGHT_SECTIONS = 1>
 class ProgramManager {
 private:
 	LIGHT_SECTION_CLASS sections[MAX_LIGHT_SECTIONS];
 	uint8_t sectionCount;
-	/*
-	TLightProgram<PIXEL> *lightPrograms[MAX_LIGHT_PROGRAMS];
-	ProgramCode programList[MAX_LIGHT_PROGRAMS * MAX_MODES];
-	uint8_t programListLength;
-	uint8_t programCount;
-	uint8_t programOrder[MAX_LIGHT_PROGRAMS * MAX_MODES]; // Order of the program list
-	uint8_t programIndex; // Index in the program order
 
-	// Program Manager Timing
-	int32_t maxProgramLength; // 0 or less means don't change based on time
-*/
 	uint32_t lastTime;
 	uint16_t msPerFrame;
 	/*
@@ -238,10 +228,6 @@ private:
 	uint8_t brightness;
 	int16_t targetBrightness, adjustedBrightness;
 	int16_t brightnessStep;
-
-	// Events
-
-	ProgramEvent programEventHandler;
 
 	LIGHT_SECTION_CLASS *getLightSection(uint8_t sectionID);
 

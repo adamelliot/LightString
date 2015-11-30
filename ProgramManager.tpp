@@ -49,6 +49,7 @@ void LIGHT_LAYER_CLASS::unpause() {
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::startProgram(ProgramCode &programCode) {
 #ifdef VERBOSE
+	Serial.println(sizeof(*this));
 	Serial.print(F("Selecting Program: "));
 	Serial.print((programCode.programID << 8) | programCode.mode, HEX);
 	Serial.print(F(" ("));
@@ -85,9 +86,9 @@ bool LIGHT_LAYER_CLASS::startProgram(ProgramCode &programCode) {
 		// programEventHandler(*section.activeProgram, playState);
 	}
 
-	this->activeProgram->setupMode(programCode.mode);
+	this->activeProgram->setMode(programCode.mode);
 	this->programStartedAt = millis();
-	
+
 	playState = PROGRAM_PLAYING;
 
 	return true;
@@ -286,87 +287,6 @@ void PROGRAM_MANAGER_CLASS::nudge(int32_t data) {
 
 
 // ------------------------ Program Management ------------------------
-/*
-PROGRAM_MANAGER_TEMPLATE
-TLightProgram<PIXEL> *PROGRAM_MANAGER_CLASS::getProgram(ProgramCode programCode) {
-	int copy = 0;
-	for (int i = 0; i < programCount; i++) {
-		if (lightPrograms[i]->getProgramID() == programCode.programID) {
-			if (copy == programCode.copyID) {
-				return lightPrograms[i];
-			} else {
-				copy++;
-			}
-		}
-	}
-
-	return NULL;
-}
-*//*
-PROGRAM_MANAGER_TEMPLATE
-TLightProgram<PIXEL> *PROGRAM_MANAGER_CLASS::getProgramForLayer(ProgramCode programCode, LightLayer<PIXEL, MAX_LIGHT_PROGRAMS> &layer) {
-	// Program is supported
-	for (int i = 0; i < programCount; i++) {
-		if (layer.supportedPrograms[i] == programCode.programID) {
-			return this->getProgram(programCode);
-		}
-	}
-
-	// Program isn't supported so find the next program in the queue that is
-	for (int i = 0; i < programListLength; i++) {
-		// TODO: Should this use programIndexOffset?
-		programCode = programList[(i + 1 + programIndex) % programListLength];
-
-		for (int i = 0; i < programCount; i++) {
-			if (layer.supportedPrograms[i] == programCode.programID) {
-				return this->getProgram(programCode);
-			}
-		}
-	}
-
-#ifdef VERBOSE
-	Serial.println(F("ERROR: Could not find suitable program for section."));
-#endif
-
-	return NULL;
-}*/
-/*
-PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::selectProgramForLayer(LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> &section, LightLayer<PIXEL, MAX_LIGHT_PROGRAMS> &layer, ProgramCode programCode) {
-#ifdef VERBOSE
-	Serial.print(F("Selecting Program: "));
-	Serial.print((programCode.programID << 8) | programCode.mode, HEX);
-	Serial.print(F(" ("));
-	Serial.print(programCode.copyID, DEC);
-	Serial.println(F(")"));
-#endif
-
-	if (programEventHandler) {
-		// programEventHandler(*section.activeProgram, PROGRAM_FINISHED);
-	}
-
-	if (layer.activeProgram) {
-		section.unlockBuffer(layer.activeProgram->getPixelBuffer());
-	}
-
-	TLightProgram<PIXEL> *program = getProgramForLayer(programCode, layer);
-	layer.activeProgram = program;
-	layer.activeProgram->setPixelBuffer(section.lockBuffer());
-
-	if (programEventHandler) {
-		// programEventHandler(*section.activeProgram, PROGRAM_STARTED);
-	}
-
-	layer.activeProgram->setupMode(programCode.mode);
-	layer.programStartedAt = millis();
-}
-*/
-/*
-PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::selectProgramGroup(uint8_t programID) {
-	
-}
-*/
 
 PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::setMaxProgramLength(uint32_t maxProgramLength) {
@@ -407,51 +327,6 @@ PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::startRandomProgram(uint8_t sectionID, uint8_t layerID) {
 	sections[sectionID].layers[layerID].startRandomProgram();
 }
-
-/*
-PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::nextProgramForSection(LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_LAYERS> &section) {
-	ProgramCode programCode;
-
-	for (int i = 0; i < MAX_LAYERS; i++) {
-		LightLayer<PIXEL, MAX_LIGHT_PROGRAMS> &layer = section.layers[i];
-		
-		if (layer->activeProgram->getNextProgramCode() == 0) {
-			uint8_t index = programOrder[(programIndex + layer.programIndexOffset) % programListLength];
-			layer.programIndexOffset++;
-
-			programCode = programList[index];
-		} else {
-			uint16_t code = layer->activeProgram->getNextProgramCode();
-
-			programCode.programID = (uint8_t)(code >> 8);
-			programCode.mode = ((uint8_t)code & 0xff);
-		}
-
-		this->selectProgramForLayer(section, layer, programCode);
-	}
-}*/
-/*
-PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::normalizeProgramIndices() {
-	uint8_t minIndex = 0xff;
-
-	for (int i = 0; i < sectionCount; i++) {
-		for (int j = 0; j < MAX_LAYERS; j++) {
-			if (minIndex > lightSections[i].layers[j].programIndexOffset)
-				minIndex = lightSections[i].layers[j].programIndexOffset;
-		}
-	}
-
-	for (int i = 0; i < sectionCount; i++) {
-		for (int j = 0; j < MAX_LAYERS; j++) {
-			lightSections[i].layers[j].programIndexOffset -= minIndex;
-		}
-	}
-
-	programIndex += minIndex;
-	programIndex %= programListLength;
-}*/
 
 PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::nextProgram(uint8_t layerID, uint8_t sectionID) {

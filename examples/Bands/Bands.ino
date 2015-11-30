@@ -16,12 +16,12 @@ CRGBBuffer ledBuffer(kTotalLEDs);
 PixelBuffer backBuffer1(kTotalLEDs);
 PixelBuffer backBuffer2(kTotalLEDs);
 
-ProgramManager<Pixel, 2> programManager;
+ProgramManager<Pixel, 2, 6, 1> programManager;
 
-Band<Pixel> band1(Pixel(50, 50, 150, 128));
+Band<Pixel> band1(Pixel(50, 50, 150, 64));
 Band<Pixel> band2(Pixel(CRGB::Orange, 64));
-Band<Pixel> band3(Pixel(128, 40, 100, 192));
-Band<Pixel> band4(Pixel(0, 40, 192, 128));
+Band<Pixel> band3(Pixel(128, 40, 100, 64));
+Band<Pixel> band4(Pixel(0, 128, 192, 64));
 
 /*
 LightProgram programs[] = {
@@ -45,8 +45,8 @@ void setup() {
 	programManager.setMaxProgramLength(kProgramLength);
 	programManager.setMaxFPS(30);
 
-	programManager.addLightProgram(band1);
-	programManager.addLightProgram(band2);
+	programManager.addLightProgram(band1, 0);
+	programManager.addLightProgram(band2, 0);
 	programManager.addLightProgram(band3, 1);
 	programManager.addLightProgram(band4, 1);
 

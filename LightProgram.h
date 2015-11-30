@@ -30,37 +30,27 @@ typedef enum {
 
 } EProgramMode;
 
-template <typename PIXEL = Pixel>
-class TLightProgram {
+class ILightLayer;
+
+class ILightProgram {
 protected:
+	ILightLayer *layer;
+	
 	uint8_t mode;
 	uint8_t modeCount;
-	
-	// Set to which layer the program is being drawn on
-	uint8_t layer;
-
-	// Used by program manager to indicate if the program is running
-	bool active;
-
-	TPixelBuffer<PIXEL> *pixelBuffer;
 
 public:
-	TLightProgram(uint8_t modeCount = 1) __attribute__((always_inline))
-		: modeCount(modeCount), layer(0), pixelBuffer(0) {}
-
-	void setPixelBuffer(TPixelBuffer<PIXEL> *pixelBuffer) { this->pixelBuffer = pixelBuffer; }
-	TPixelBuffer<PIXEL> *getPixelBuffer() { return pixelBuffer; }
-
-	uint8_t getMode() { return mode; }
-	uint8_t getModeCount() { return modeCount; }
+	ILightProgram(uint8_t modeCount = 1) : modeCount(modeCount) {}
 	
-	inline void setActive(bool a) __attribute__((always_inline)) { active = a; }
-	inline bool isActive() __attribute__((always_inline)) { return active; }
+	void setLayer(ILightLayer *layer) { this->layer = layer; }
+	ILightLayer* getLayer() { return layer; }
 
-	virtual void setupMode(uint8_t mode) { this->mode = mode; }
+	virtual void setupMode(uint8_t mode) {}
+	void setMode(uint8_t mode) { this->mode = mode; setupMode(mode); }
+	uint8_t getMode() { return mode; }
 
-	// 0 indicates no program ID
-	// Top 1 bit is reserverd
+	// Program IDs are used to target effects from one program to another
+	// if that isn't needed this can be left as zero
 	virtual uint8_t getProgramID() { return 0; }
 	
 	// TODO: Adjust this to work directly with ProgramCode
@@ -82,6 +72,27 @@ public:
 	virtual void nudge(int32_t data) {}
 
 	virtual void update(uint32_t ms) {}
+};
+
+
+template <typename PIXEL = Pixel>
+class TLightProgram : public ILightProgram {
+protected:
+	
+	// Set to which layer the program is being drawn on
+	uint8_t layer;
+
+	TPixelBuffer<PIXEL> *pixelBuffer;
+
+public:
+	TLightProgram(uint8_t modeCount = 1) __attribute__((always_inline))
+		: ILightProgram(modeCount), layer(0), pixelBuffer(0) {}
+
+	void setPixelBuffer(TPixelBuffer<PIXEL> *pixelBuffer) { this->pixelBuffer = pixelBuffer; }
+	TPixelBuffer<PIXEL> *getPixelBuffer() { return pixelBuffer; }
+
+	uint8_t getMode() { return mode; }
+	uint8_t getModeCount() { return modeCount; }
 };
 
 class LightProgram : public TLightProgram<CRGB> {
