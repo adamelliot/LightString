@@ -74,6 +74,10 @@ public:
 	virtual bool startRandomProgram() = 0;
 	virtual bool nextProgram() = 0;
 	virtual bool prevProgram() = 0;
+	
+	virtual void stop();
+	virtual void pause();
+	virtual void unpause();
 
 };
 
@@ -93,26 +97,21 @@ public:
 	ILightLayer* getLayer() { return layer; }
 
 	virtual void setupMode(uint8_t mode) {}
+	virtual void programFinished() {}
+	
 	void setMode(uint8_t mode) { this->mode = mode; setupMode(mode); }
 	uint8_t getMode() { return mode; }
 	uint8_t getModeCount() { return modeCount; }
 
-	void startProgramAbove(ProgramCode programCode) {
-		if (layer && layer->getLightSection()) {
-			ILightSection *section = layer->getLightSection();
-			uint8_t targetLayerID = layer->getLayerID() + 1;
+	ILightLayer *layerAbove();
+	ILightLayer *layerBelow();
 
-			if (targetLayerID < section->getMaxLayers()) {
-				ILightLayer *layer = section->getLayer(targetLayerID);
-				if (layer) {
-					layer->startProgram(programCode);
-				}
-			}
-		}
-	}
-	void startProgramAbove(uint8_t programID) {
-		startProgramAbove(ProgramCode(programID));
-	}
+	void startProgramAbove(ProgramCode programCode);
+	void startProgramAbove(uint8_t programID, uint8_t copyID = 0, uint8_t mode = 0);
+
+	void startProgramBelow(ProgramCode programCode);
+	void startProgramBelow(uint8_t programID, uint8_t copyID = 0, uint8_t mode = 0);
+
 	
 	virtual void setPixelBuffer(IPixelBuffer *pixelBuffer) {}
 	virtual IPixelBuffer *getPixelBuffer() { return NULL; }

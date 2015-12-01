@@ -88,13 +88,14 @@ private:
 	
 	ILightProgram *getProgram(ProgramCode &programCode);
 	void updateProgramIndex(ProgramCode &programCode);
+	void finishProgram();
 	
 public:
 
 	inline LightLayer()
 		: programCount(0), programListLength(0), programIndex(0), maxProgramLength(0),
 		lastTime(0), programStartedAt(0), pauseStartedAt(0), activeProgram(0),
-		programEventHandler(0), playState(PROGRAM_FINISHED), playMode(PLAY_MODE_CONTINUOUS),
+		programEventHandler(0), playState(PROGRAM_STOPPED), playMode(PLAY_MODE_CONTINUOUS),
 		transitionState(TRANSITION_DONE) {}
 		
 	bool isActive() { return playState != PROGRAM_STOPPED; }
@@ -114,6 +115,7 @@ public:
 	ProgramEvent getProgramEventHandler() { return programEventHandler; }
 
 	// Play control
+	void stop();
 	void pause();
 	void unpause();
 
@@ -201,10 +203,10 @@ public:
 
 	// void nudge(int32_t);
 	
-	bool startProgram(ProgramCode &programCode, uint8_t sectionID, uint8_t layerID);
+	bool startProgram(ProgramCode &programCode, uint8_t layerID, uint8_t sectionID = 0);
 	bool startProgram(uint8_t programID, uint8_t layerID = 0);
 	void startRandomProgram(bool activateLayers = false);
-	void startRandomProgram(uint8_t sectionID, uint8_t layerID);
+	void startRandomProgram(uint8_t layerID, uint8_t sectionID);
 
 	void nextProgram();
 	void nextProgram(uint8_t layerID, uint8_t sectionID = 0);

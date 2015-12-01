@@ -29,6 +29,31 @@ void LIGHT_LAYER_CLASS::updateProgramIndex(ProgramCode &programCode) {
 }
 
 LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::finishProgram() {
+	if (!activeProgram) return;
+
+	playState = PROGRAM_FINISHED;
+
+	if (programEventHandler) {
+		// TODO: Implement callbacks
+		// programEventHandler(*section.activeProgram, playState);
+	}
+
+	activeProgram->programFinished();
+
+	if (!activeProgram->isFilterProgram()) {
+		section->unlockBuffer(activeProgram->getPixelBuffer());
+	}
+}
+
+LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::stop() {
+	if (playState == PROGRAM_STOPPED) return;
+	finishProgram();
+	playState = PROGRAM_STOPPED;
+}
+
+LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::pause() {
 	if (playState == PROGRAM_PAUSED || playState == PROGRAM_STOPPED) return;
 
@@ -49,7 +74,6 @@ void LIGHT_LAYER_CLASS::unpause() {
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::startProgram(ProgramCode &programCode) {
 #ifdef VERBOSE
-	Serial.println(sizeof(*this));
 	Serial.print(F("Selecting Program: "));
 	Serial.print((programCode.programID << 8) | programCode.mode, HEX);
 	Serial.print(F(" ("));
@@ -64,21 +88,12 @@ bool LIGHT_LAYER_CLASS::startProgram(ProgramCode &programCode) {
 		return false;
 	}
 
+	finishProgram();
 	updateProgramIndex(programCode);
 
-	playState = PROGRAM_FINISHED;
-	
-	if (programEventHandler) {
-		// TODO: Implement callbacks
-		// programEventHandler(*section.activeProgram, playState);
-	}
-
-	if (this->activeProgram && !this->activeProgram->isFilterProgram()) {
-		this->section->unlockBuffer(this->activeProgram->getPixelBuffer());
-	}
-
 	this->activeProgram = program;
-	
+	this->activeProgram->setLayer(this);
+
 	if (this->activeProgram->isFilterProgram()) {
 		this->activeProgram->setPixelBuffer(this->section->getOutputBuffer());
 	} else {
@@ -209,7 +224,20 @@ void LIGHT_LAYER_CLASS::updateTranstion(uint32_t timeDelta) {
 	}
 
 	if (transitionState == TRANSITION_DONE) {
-		nextProgram();
+		switch (playMode) {
+			case PLAY_MODE_CONTINUOUS:
+			nextProgram();
+			break;
+			
+			case PLAY_MODE_ONCE: // Once we're done
+			finishProgram();
+			playState = PROGRAM_STOPPED;
+			break;
+			
+			case PLAY_MODE_REPEAT:
+			startProgram(programList[programIndex]);
+			break;
+		}
 	}
 }
 
@@ -217,6 +245,8 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::update() {
 	uint32_t time = millis(), timeDelta = time - lastTime;
 	lastTime = time;
+
+	if (!activeProgram || playState == PROGRAM_STOPPED || playState == PROGRAM_PAUSED) return;
 
 	uint32_t programTimeDelta = time - programStartedAt;
 
@@ -293,7 +323,7 @@ void LIGHT_SECTION_CLASS::update() {
 
 	for (int i = 0; i < MAX_LAYERS; i++) {
 		layers[i].update();
-		if (!layers[i].getActiveProgram()->isFilterProgram()) {
+		if (layers[i].getActiveProgram() && !layers[i].getActiveProgram()->isFilterProgram()) {
 			outputBuffer->applyCOPY(*((TPixelBuffer<PIXEL> *)layers[i].getActiveProgram()->getPixelBuffer()));
 		}
 	}
@@ -369,7 +399,7 @@ void PROGRAM_MANAGER_CLASS::setMaxProgramLength(uint32_t maxProgramLength, uint8
 }
 
 PROGRAM_MANAGER_TEMPLATE
-bool PROGRAM_MANAGER_CLASS::startProgram(ProgramCode &programCode, uint8_t sectionID, uint8_t layerID) {
+bool PROGRAM_MANAGER_CLASS::startProgram(ProgramCode &programCode, uint8_t layerID, uint8_t sectionID) {
 	return sections[sectionID].layers[layerID].startProgram(programCode);
 }
 
@@ -390,7 +420,7 @@ void PROGRAM_MANAGER_CLASS::startRandomProgram(bool activateLayers) {
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::startRandomProgram(uint8_t sectionID, uint8_t layerID) {
+void PROGRAM_MANAGER_CLASS::startRandomProgram(uint8_t layerID, uint8_t sectionID) {
 	sections[sectionID].layers[layerID].startRandomProgram();
 }
 

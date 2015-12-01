@@ -23,7 +23,7 @@ Band<Pixel> band1(Pixel(50, 50, 150, 64));
 Band<Pixel> band2(Pixel(CRGB::Orange, 64));
 Band<Pixel> band3(Pixel(128, 40, 100, 64));
 Band<Pixel> band4(Pixel(0, 192, 50, 64));
-Wave wave;
+Wave wave1, wave2;
 
 /*
 LightProgram programs[] = {
@@ -44,18 +44,22 @@ void setup() {
 	programManager.addBufferToLightSection(sectionID, backBuffer1);
 	programManager.addBufferToLightSection(sectionID, backBuffer2);
 
-	programManager.setMaxProgramLength(kProgramLength);
 	programManager.setMaxFPS(30);
+
+	programManager.setMaxProgramLength(8000, 0);
+	programManager.setMaxProgramLength(5000, 1);
 
 	programManager.addLightProgram(band1, 0);
 	programManager.addLightProgram(band2, 0);
 	programManager.addLightProgram(band3, 1);
 	programManager.addLightProgram(band4, 1);
-	programManager.addLightProgram(wave, 2);
+	programManager.addLightProgram(wave1, 2);
+	// programManager.addLightProgram(wave2, 3);
 
 	blink(CRGB::Lime, 8, 40);
 
-	programManager.startRandomProgram();
+	programManager.startRandomProgram(0, 0);
+	programManager.startRandomProgram(1, 0);
 }
 
 void loop() {
