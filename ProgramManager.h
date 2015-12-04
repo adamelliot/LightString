@@ -33,7 +33,7 @@ typedef enum {
 
 } EPlayMode;
 
-typedef void (* ProgramEvent)(LightProgram &lightProgram, EPlayState event);
+typedef void (* ProgramEvent)(ILightProgram &lightProgram, EPlayState event);
 
 // TODO: Implement program grouping
 /*
@@ -85,10 +85,12 @@ private:
 	EPlayState playState;
 	EPlayMode playMode;
 	ETransitionState transitionState;
-	
+
 	ILightProgram *getProgram(ProgramCode &programCode);
 	void updateProgramIndex(ProgramCode &programCode);
 	void finishProgram();
+	
+	void setPlayState(EPlayState playState);
 	
 public:
 
@@ -192,6 +194,9 @@ public:
 	ProgramManager() : sectionCount(0), msPerFrame(20),
 		brightness(255), targetBrightness(255), adjustedBrightness(255),
 		brightnessStep(0) {}
+
+	void setProgramEventHandler(ProgramEvent programEventHandler);
+	void setProgramEventHandler(ProgramEvent programEventHandler, uint8_t layerID, uint8_t sectionID = 0);
 
 	void setMaxProgramLength(uint32_t maxProgramLength);
 	void setMaxProgramLength(uint32_t maxProgramLength, uint8_t layerID, uint8_t sectionID = 0);

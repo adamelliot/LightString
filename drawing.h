@@ -201,6 +201,7 @@ struct MovingPoint8 : Point<uint16_t> {
 typedef enum {
 	BLEND_COPY = 0,
 	BLEND_ADD,
+	BLEND_SUBTRACT, // This effect is broken
 	BLEND_XOR
 	
 } EBlendMode;
@@ -278,13 +279,51 @@ struct Pixel : CRGB {
 	inline CRGB applyCOPYTo(CRGB &other) __attribute__((always_inline)) {
 		return other.lerp8((CRGB &)*this, this->a);
 	}
+
+	inline Pixel applyADDTo(Pixel &other) __attribute__((always_inline)) {
+		Pixel ret = this->nscale8(this->a);
+		ret.a = other.a;
+		ret += other;
+		
+		return ret;
+	}
+
+	inline CRGB applyADDTo(CRGB &other) __attribute__((always_inline)) {
+		return other + (CRGB &)*this;
+	}
+
+	inline Pixel applySUBTRACTTo(Pixel &other) __attribute__((always_inline)) {
+		Pixel ret = this->nscale8(this->a);
+		ret.a = other.a;
+		ret -= other;
+		
+		return ret;
+	}
+
+	inline CRGB applySUBTRACTTo(CRGB &other) __attribute__((always_inline)) {
+		return other - (CRGB &)*this;
+	}
+
+	inline Pixel applyXORTo(Pixel &other) __attribute__((always_inline)) {
+		Pixel ret = this->nscale8(this->a);
+		ret.a = other.a;
+
+		ret.r ^= other.r;
+		ret.g ^= other.g;
+		ret.b ^= other.b;
+
+		return ret;
+	}
+
+	inline CRGB applyXORTo(CRGB &other) __attribute__((always_inline)) {
+		return CRGB(this->r ^ other.r, this->g ^ other.g, this->b ^ other.b);
+	}
 };
 
 
 // Place holder type for all generated TPixelBuffers
 struct IPixelBuffer {
 	virtual uint16_t getLength() = 0;
-	
 	virtual void clear() = 0;
 };
 
@@ -366,21 +405,7 @@ struct TPixelBuffer : public IPixelBuffer {
 		::drawSolidCircle(pixels, pt.x, pt.y, radius, col);
 	}
 
-};
-
-struct CRGBBuffer : TPixelBuffer<CRGB> {
-	inline CRGBBuffer() __attribute__((always_inline))
-		: TPixelBuffer<CRGB>() {}
-	
-	inline CRGBBuffer(CRGB *pixels, uint16_t length) __attribute__((always_inline))
-		: TPixelBuffer<CRGB>(pixels, length) {}
-
-	inline CRGBBuffer(const uint16_t length) : TPixelBuffer(length) {}
-
-	// Blending Functions
-
-	// TODO: Move this to the template
-	inline CRGBBuffer &applyCOPY(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
+	inline TPixelBuffer<T> &applyCOPY(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
 		uint8_t len = min(this->length, src.length);
 		for (int i = 0; i < len; i++) {
 			pixels[i] = src.pixels[i].applyCOPYTo(this->pixels[i]);
@@ -388,18 +413,48 @@ struct CRGBBuffer : TPixelBuffer<CRGB> {
 
 		return *this;
 	}
+
+	inline TPixelBuffer<T> &applyADD(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
+		uint8_t len = min(this->length, src.length);
+		for (int i = 0; i < len; i++) {
+			pixels[i] = src.pixels[i].applyADDTo(this->pixels[i]);
+		}
+
+		return *this;
+	}
+
+	inline TPixelBuffer<T> &applySUBTRACT(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
+		uint8_t len = min(this->length, src.length);
+		for (int i = 0; i < len; i++) {
+			pixels[i] = src.pixels[i].applySUBTRACTTo(this->pixels[i]);
+		}
+
+		return *this;
+	}
+
+	inline TPixelBuffer<T> &applyXOR(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
+		uint8_t len = min(this->length, src.length);
+		for (int i = 0; i < len; i++) {
+			pixels[i] = src.pixels[i].applyXORTo(this->pixels[i]);
+		}
+
+		return *this;
+	}
+
+	inline TPixelBuffer<T> &applyBlend(TPixelBuffer<Pixel> &src, EBlendMode blendMode)  __attribute__((always_inline)) {
+		switch (blendMode) {
+			case BLEND_COPY: return applyCOPY(src);
+			case BLEND_ADD: return applyADD(src);
+			case BLEND_SUBTRACT: return applySUBTRACT(src);
+			case BLEND_XOR: return applyXOR(src);
+		}
+
+		return *this;
+	}
 };
 
-struct PixelBuffer : TPixelBuffer<Pixel> {
-	inline PixelBuffer() __attribute__((always_inline))
-		: TPixelBuffer<Pixel>() {}
-
-	inline PixelBuffer(Pixel *pixels, uint16_t length) __attribute__((always_inline))
-		: TPixelBuffer<Pixel>(pixels, length) {}
-
-	inline PixelBuffer(const uint16_t length) : TPixelBuffer(length) {}
-
-};
+typedef TPixelBuffer<CRGB> CRGBBuffer;
+typedef TPixelBuffer<Pixel> PixelBuffer;
 
 };
 

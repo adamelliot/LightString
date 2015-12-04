@@ -75,9 +75,9 @@ public:
 	virtual bool nextProgram() = 0;
 	virtual bool prevProgram() = 0;
 	
-	virtual void stop();
-	virtual void pause();
-	virtual void unpause();
+	virtual void stop() = 0;
+	virtual void pause() = 0;
+	virtual void unpause() = 0;
 
 };
 
@@ -91,7 +91,7 @@ protected:
 	EBlendMode blendMode;
 
 public:
-	ILightProgram(uint8_t modeCount = 1) : modeCount(modeCount) {}
+	ILightProgram(uint8_t modeCount = 1) : modeCount(modeCount), blendMode(BLEND_COPY) {}
 	
 	void setLayer(ILightLayer *layer) { this->layer = layer; }
 	ILightLayer* getLayer() { return layer; }
@@ -102,6 +102,9 @@ public:
 	void setMode(uint8_t mode) { this->mode = mode; setupMode(mode); }
 	uint8_t getMode() { return mode; }
 	uint8_t getModeCount() { return modeCount; }
+
+	void setBlendMode(EBlendMode blendMode) { this->blendMode = blendMode; }
+	EBlendMode getBlendMode() { return blendMode; }
 
 	ILightLayer *layerAbove();
 	ILightLayer *layerBelow();
@@ -163,12 +166,6 @@ public:
 	IPixelBuffer *getPixelBuffer() { return pixelBuffer; }
 };
 
-class LightProgram : public TLightProgram<CRGB> {
-public:
-	inline LightProgram(uint8_t modeCount = 1) __attribute__((always_inline))
-		: TLightProgram(modeCount) {}
-};
-
 // Filter programs don't get their own private buffer, but operate on the
 // output buffer.
 class FilterLightProgram : public TLightProgram<CRGB> {
@@ -178,6 +175,9 @@ public:
 
 	bool isFilterProgram() { return true; } 
 };
+
+// Old style light programs are designed to write on CRGB buffers
+typedef FilterLightProgram LightProgram;
 
 
 };

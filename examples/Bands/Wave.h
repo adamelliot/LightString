@@ -25,7 +25,7 @@ public:
 
 		for (uint16_t i = 0; i < pixelBuffer->length; i++) {
 			uint8_t x = (i + shift) * 255 / len;
-			pixelBuffer->pixels[i].nscale8(sin8(x));
+			pixelBuffer->pixels[i].nscale8(map8(sin8(x), 0, 255));
 		}
 	}
 	

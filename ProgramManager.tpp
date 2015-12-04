@@ -32,13 +32,7 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::finishProgram() {
 	if (!activeProgram) return;
 
-	playState = PROGRAM_FINISHED;
-
-	if (programEventHandler) {
-		// TODO: Implement callbacks
-		// programEventHandler(*section.activeProgram, playState);
-	}
-
+	setPlayState(PROGRAM_FINISHED);
 	activeProgram->programFinished();
 
 	if (!activeProgram->isFilterProgram()) {
@@ -47,17 +41,28 @@ void LIGHT_LAYER_CLASS::finishProgram() {
 }
 
 LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::setPlayState(EPlayState playState) {
+	this->playState = playState;
+
+	if (programEventHandler) {
+		programEventHandler(*activeProgram, playState);
+	}
+}
+
+LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::stop() {
 	if (playState == PROGRAM_STOPPED) return;
 	finishProgram();
-	playState = PROGRAM_STOPPED;
+
+	setPlayState(PROGRAM_STOPPED);
 }
 
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::pause() {
 	if (playState == PROGRAM_PAUSED || playState == PROGRAM_STOPPED) return;
 
-	playState = PROGRAM_PAUSED;
+	setPlayState(PROGRAM_PAUSED);
+
 	pauseStartedAt = millis();
 }
 
@@ -65,7 +70,7 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::unpause() {
 	if (playState != PROGRAM_PAUSED) return;
 
-	playState = PROGRAM_PLAYING;
+	setPlayState(PROGRAM_PLAYING);
 	
 	uint32_t timeDelta = millis() - pauseStartedAt;
 	programStartedAt += timeDelta;
@@ -100,17 +105,12 @@ bool LIGHT_LAYER_CLASS::startProgram(ProgramCode &programCode) {
 		this->activeProgram->setPixelBuffer(this->section->lockBuffer());
 	}
 
-	playState = PROGRAM_STARTED;
-
-	if (programEventHandler) {
-		// TODO: Implement callbacks
-		// programEventHandler(*section.activeProgram, playState);
-	}
+	setPlayState(PROGRAM_STARTED);
 
 	this->activeProgram->setMode(programCode.mode);
 	this->programStartedAt = millis();
 
-	playState = PROGRAM_PLAYING;
+	setPlayState(PROGRAM_PLAYING);
 
 	return true;
 }
@@ -231,7 +231,7 @@ void LIGHT_LAYER_CLASS::updateTranstion(uint32_t timeDelta) {
 			
 			case PLAY_MODE_ONCE: // Once we're done
 			finishProgram();
-			playState = PROGRAM_STOPPED;
+			setPlayState(PROGRAM_STOPPED);
 			break;
 			
 			case PLAY_MODE_REPEAT:
@@ -247,7 +247,7 @@ void LIGHT_LAYER_CLASS::update() {
 	lastTime = time;
 
 	if (!activeProgram || playState == PROGRAM_STOPPED || playState == PROGRAM_PAUSED) return;
-
+	
 	uint32_t programTimeDelta = time - programStartedAt;
 
 	// NOTE: Should transition time adjust end time?
@@ -323,8 +323,11 @@ void LIGHT_SECTION_CLASS::update() {
 
 	for (int i = 0; i < MAX_LAYERS; i++) {
 		layers[i].update();
-		if (layers[i].getActiveProgram() && !layers[i].getActiveProgram()->isFilterProgram()) {
-			outputBuffer->applyCOPY(*((TPixelBuffer<PIXEL> *)layers[i].getActiveProgram()->getPixelBuffer()));
+		ILightProgram *program = layers[i].getActiveProgram();
+		
+		if (program && !program->isFilterProgram() && bufferCount > 0) {
+			TPixelBuffer<Pixel> *buffer = (TPixelBuffer<Pixel> *)program->getPixelBuffer();
+			outputBuffer->applyBlend(*buffer, program->getBlendMode());
 		}
 	}
 }
@@ -383,6 +386,20 @@ void PROGRAM_MANAGER_CLASS::nudge(int32_t data) {
 
 
 // ------------------------ Program Management ------------------------
+
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::setProgramEventHandler(ProgramEvent programEventHandler) {
+	for (int i = 0; i < sectionCount; i++) {
+		for (int j = 0; j < MAX_LAYERS; j++) {
+			sections[i].layers[j].setProgramEventHandler(programEventHandler);
+		}
+	}
+}
+
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::setProgramEventHandler(ProgramEvent programEventHandler, uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].setProgramEventHandler(programEventHandler);
+}
 
 PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::setMaxProgramLength(uint32_t maxProgramLength) {

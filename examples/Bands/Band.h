@@ -38,8 +38,10 @@ void Band<PIXEL>::setupMode(uint8_t mode) {
 
 	deltaS = ((float)random8() - 127) / 100;
 	deltaE = ((float)random8() - 127) / 100;
+	
+	this->setBlendMode(BLEND_ADD);
 
-	// this->startProgramAbove(0);
+	this->startProgramAbove(0);
 }
 
 template <typename PIXEL>
