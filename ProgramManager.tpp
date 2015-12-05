@@ -327,6 +327,8 @@ void LIGHT_SECTION_CLASS::update() {
 		
 		if (program && !program->isFilterProgram() && bufferCount > 0) {
 			TPixelBuffer<Pixel> *buffer = (TPixelBuffer<Pixel> *)program->getPixelBuffer();
+			// Serial.print("Blend: ");
+			// Serial.println(program->getBlendMode());
 			outputBuffer->applyBlend(*buffer, program->getBlendMode());
 		}
 	}

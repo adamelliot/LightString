@@ -78,7 +78,6 @@ public:
 	virtual void stop() = 0;
 	virtual void pause() = 0;
 	virtual void unpause() = 0;
-
 };
 
 class ILightProgram {

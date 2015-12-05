@@ -17,12 +17,12 @@ CRGBBuffer ledBuffer(kTotalLEDs);
 PixelBuffer backBuffer1(kTotalLEDs);
 PixelBuffer backBuffer2(kTotalLEDs);
 
-ProgramManager<Pixel, 4, 3, 1> programManager;
+ProgramManager<RGBA, 4, 3, 1> programManager;
 
-Band<Pixel> band1(Pixel(50, 50, 150, 64));
-Band<Pixel> band2(Pixel(CRGB::Orange, 64));
-Band<Pixel> band3(Pixel(128, 40, 100, 64));
-Band<Pixel> band4(Pixel(0, 192, 50, 64));
+Band<RGBA> band1(RGBA(50, 50, 150, 64));
+Band<RGBA> band2(RGBA(255, 128, 0, 64));
+Band<RGBA> band3(RGBA(128, 40, 100, 64));
+Band<RGBA> band4(RGBA(0, 192, 50, 64));
 Wave wave1, wave2;
 
 void setup() {

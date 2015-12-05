@@ -1,9 +1,48 @@
-#include "EEPROM.h"
 #include "palette.h"
 
 using namespace LightString;
 
-PaletteManager Palettes;
+PaletteManager<20, CRGB> Palettes;
+
+namespace LightString {
+
+	CRGBPalette SOLID_RED										= CRGBPalette(CRGB::Red, CRGB::Red);
+	CRGBPalette SOLID_GREEN									= CRGBPalette(CRGB::Lime, CRGB::Lime);
+	CRGBPalette SOLID_BLUE									= CRGBPalette(CRGB::Blue, CRGB::Blue);
+	CRGBPalette SOLID_AQUA									= CRGBPalette(CRGB::Aqua, CRGB::Aqua);
+	CRGBPalette SOLID_AZURE									= CRGBPalette(CRGB::Azure, CRGB::Azure);
+
+	CRGBPalette RAINBOW_GRADIENT 						= CRGBPalette(CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Red);
+
+	CRGBPalette BLUE_GREEN_GRADIENT 				= CRGBPalette(CRGB::Blue, CRGB(0, 255, 64), CRGB::Blue);
+	CRGBPalette GREEN_GRADIENT 							= CRGBPalette(CRGB::Lime, CRGB(0, 32, 0), CRGB::Lime);
+	CRGBPalette LIME_GRADIENT 							= CRGBPalette(CRGB::Lime, CRGB::Green, CRGB::Lime);
+	CRGBPalette YELLOW_GRADIENT 						= CRGBPalette(CRGB(255, 191, 63), CRGB(63, 47, 15), CRGB(255, 191, 63));
+	CRGBPalette WHITE_GRADIENT 							= CRGBPalette(CRGB::White, CRGB::Black, CRGB::White);
+
+	CRGBPalette RED_GREEN_GRADIENT 					= CRGBPalette(CRGB::Red, CRGB::Green);
+
+	CRGBPalette GREEN_BLUE_GRADIENT 				= CRGBPalette(CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB(0, 255, 64));
+	CRGBPalette RED_ORGANGE_GRADIENT 				= CRGBPalette(CRGB(128, 128, 128), CRGB(128, 31, 0), CRGB(128, 95, 0), CRGB(128, 31, 0), CRGB(128, 128, 128));
+
+	CRGBPalette BLUE_WHITE_GRADIENT 				= CRGBPalette(CRGB(0, 31, 255), CRGB(255, 255, 255), CRGB(0, 31, 255));
+	CRGBPalette BLUE_WHITISH_GRADIENT				= CRGBPalette(CRGB(0, 31, 255), CRGB(191, 191, 191), CRGB(0, 31, 255));
+
+	CRGBPalette BLUE_WHITE_YELLOW_GRADIENT 	= CRGBPalette(CRGB(0, 95, 255), CRGB(255, 255, 0), CRGB::White, CRGB(0, 31, 255));
+
+	CRGBPalette BLUE_YELLOW_BLACK_GRADIENT 	= CRGBPalette(CRGB(0, 95, 255), CRGB(255, 255, 0), CRGB::White, CRGB::Black, CRGB(0, 31, 255));
+	CRGBPalette RED_WHITE_BLACK_GRADIENT 		= CRGBPalette(CRGB(255, 0, 31), CRGB(255, 0, 0), CRGB::White, CRGB::Black, CRGB(255, 0, 31));
+
+	CRGBPalette RED_WHITE_GRADIENT 					= CRGBPalette(CRGB(255, 31, 0), CRGB(255, 0, 0), CRGB(255, 255, 255), CRGB(255, 31, 0));
+	CRGBPalette GREEN_WHITE_GRADIENT 				= CRGBPalette(CRGB(0, 255, 31), CRGB(0, 255, 0), CRGB(255, 255, 255), CRGB(0, 255, 31));
+	CRGBPalette RED_WHITISH_GRADIENT 				= CRGBPalette(CRGB(255, 31, 0), CRGB(255, 0, 0), CRGB(191, 191, 191), CRGB(255, 31, 0));
+
+	CRGBPalette CYAN_PINK_GRADIENT 					= CRGBPalette(CRGB(0, 255, 255), CRGB(255, 0, 96), CRGB(0, 255, 255));
+	CRGBPalette BLUE_YELLOW_GRADIENT 				= CRGBPalette(CRGB(0, 95, 255), CRGB(255, 255, 0), CRGB(0, 31, 255));
+	CRGBPalette GREEN_YELLOW_GRADIENT 			= CRGBPalette(CRGB(31, 255, 31), CRGB(255, 191, 63), CRGB(31, 255, 31));
+	CRGBPalette RAINBOW_BLACK_GRADIENT 			= CRGBPalette(CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Black, CRGB::Red);
+
+};
 
 void printColor(CRGB col) {
 	Serial.print("(");
@@ -15,116 +54,3 @@ void printColor(CRGB col) {
 	Serial.print(")");
 }
 
-PaletteManager::PaletteManager()
-	: writePalettes(false), customPalettes(0), staticOffset(0), currentPalette(CRGBPalette())
-{
-	staticPalettes = EEPROM.read(0);
-
-	if (staticPalettes == 255) staticPalettes = 0;
-
-	if (staticPalettes > 0) {
-		paletteIndex = 0;
-		loadPalette(0);
-	}
-}
-
-void PaletteManager::updateEEPROM() {
-	staticPalettes = 0;
-	writePalettes = true;
-}
-
-void PaletteManager::writePalette(uint16_t offset, CRGBPalette &palette) {
-	uint8_t len = palette.size * CHANNEL_SIZE;
-	uint8_t *colors = (uint8_t *)palette.colors;
-
-	offset += EEPROM_OFFSET;
-	
-	EEPROM.write(offset++, len);
-	
-	for (int i = 0; i < len; i++) {
-		EEPROM.write(offset++, colors[i]);
-	}
-}
-
-CRGBPalette PaletteManager::readPalette(uint16_t offset) {
-	uint8_t len;
-	uint8_t colors[MAX_PALETTE_COLORS * sizeof(CRGB)];
-
-	offset += EEPROM_OFFSET;
-	len = EEPROM.read(offset++);
-
-	for (int i = 0; i < len; i++) {
-		colors[i] = EEPROM.read(offset++);
-	}
-
-	CRGBPalette newPalette = CRGBPalette((len / 3), (CRGB *)colors);
-
-	return newPalette;
-}
-
-void PaletteManager::loadPalette(uint8_t index) {
-	uint16_t offset = EEPROM_OFFSET;
-
-	for (int i = 0; i < index; i++) {
-		uint8_t len = EEPROM.read(offset);
-		offset += len + 1;
-	}
-
-	currentPalette = readPalette(offset - EEPROM_OFFSET);
-}
-
-uint8_t PaletteManager::paletteCount() {
-	return staticPalettes + customPalettes;
-}
-
-void PaletteManager::setCustomPalettes(uint8_t customPalettes, bool reset) {
-	this->customPalettes = customPalettes;
-
-	if (reset) {
-		// TODO: Write simple palettes for each custom one
-	}
-}
-
-CRGB PaletteManager::getColor(uint8_t index) {
-	return currentPalette[index];
-}
-
-void PaletteManager::randomizeOrder() {
-	paletteIndex = random(paletteCount());
-	loadPalette(paletteIndex);
-}
-
-void PaletteManager::add(CRGBPalette palette) {
-	if (!writePalettes) return;
-	
-	writePalette(staticOffset, palette);
-	staticOffset += 1 + (palette.size * CHANNEL_SIZE);
-
-	if (staticPalettes == 0) {
-		currentPalette = palette;
-	}
-
-	staticPalettes++;
-	EEPROM.write(0, staticPalettes);
-}
-
-void PaletteManager::setActive(CRGBPalette &palette) {
-	currentPalette = palette;
-}
-
-void PaletteManager::next() {
-	paletteIndex++;
-	paletteIndex %= paletteCount();
-
-	loadPalette(paletteIndex);
-}
-
-void PaletteManager::previous() {
-	if (paletteIndex == 0) {
-		paletteIndex = paletteCount() - 1;
-	} else {
-		paletteIndex--;
-	}
-	
-	loadPalette(paletteIndex);
-}

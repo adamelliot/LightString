@@ -2,39 +2,42 @@
 #define _PALETTE_H_
 
 #include <Arduino.h>
-#include <EEPROM.h>
 #include <FastLED.h>
 
-#define PALETTE_SIZE 256
+const uint16_t kPaletteSize = 256;
 
 void printColor(CRGB col);
 
-#define MAX_PALETTE_COLORS 6
+#define MAX_PALETTE_COLORS 7
 
 #define LOG(MSG, VAL) {Serial.print(F(MSG " ")); Serial.println(VAL); }
 #define LOG2(MSG, V1, V2) {Serial.print(F(MSG " ")); Serial.print(V1); Serial.print(F(", ")); Serial.println(V2); }
 
 namespace LightString {
-
-struct CRGBPalette {
-	uint8_t size;
-	CRGB colors[MAX_PALETTE_COLORS];
-
-	inline CRGB operator[] (uint16_t index) __attribute__((always_inline))
-	{
-		uint16_t totalColors = PALETTE_SIZE;
 	
-		uint16_t indexSections = index * (size - 1);
-		uint8_t section = indexSections / totalColors;
-		uint32_t weight = indexSections % totalColors;
+struct IPalette {
+private:
+public:
+};
 
-		CRGB col = colors[section];
+template<typename PIXEL>
+struct TPalette : IPalette {
+	uint8_t size;
+	PIXEL colors[MAX_PALETTE_COLORS];
+
+	inline PIXEL operator[] (uint8_t index) __attribute__((always_inline))
+	{
+		uint16_t indexSections = index * (size - 1);
+		uint8_t section = indexSections / kPaletteSize;
+		uint32_t weight = indexSections % kPaletteSize;
+
+		PIXEL col = colors[section];
 
 		return col.lerp8(colors[section + 1], weight);
 	}
 
 	/*
-	inline CRGB operator[] (uint16_t index) const __attribute__((always_inline))
+	inline PIXEL operator[] (uint16_t index) const __attribute__((always_inline))
 	{
 		uint16_t totalColors = PALETTE_SIZE;
 	
@@ -42,20 +45,20 @@ struct CRGBPalette {
 		uint8_t section = indexSections / totalColors;
 		uint32_t weight = indexSections % totalColors;
 
-		CRGB col = colors[section];
+		PIXEL col = colors[section];
 		return col.lerp8(colors[section + 1], weight);
 	}*/
 
-	inline CRGBPalette() : size(3) {
+	inline TPalette() : size(3) {
 		colors[0] = CRGB::Red;
-		colors[1] = CRGB::Green;
-		colors[2] = CRGB::Blue;
+		colors[1] = CRGB::Red;
+		colors[2] = CRGB::Red;
 	}
 
-	inline CRGBPalette(uint8_t len, const CRGB newColors[], bool mirrored = false)
+	inline TPalette(uint8_t len, const PIXEL newColors[], bool mirrored = false)
 		: size(mirrored ? ((len << 1) - 1) : len)
 	{
-		memcpy8(colors, newColors, len * sizeof(CRGB));
+		memcpy8(colors, newColors, len * sizeof(PIXEL));
 
 		if (mirrored) {
 			uint8_t end = size - 1;
@@ -65,33 +68,39 @@ struct CRGBPalette {
 		}
 	}
 	
-	inline CRGBPalette(CRGB col0) : size(1)
+	inline TPalette(PIXEL col0) : size(1)
 	{ colors[0] = col0; }
 
-	inline CRGBPalette(CRGB col0, CRGB col1) : size(2)
+	inline TPalette(PIXEL col0, PIXEL col1) : size(2)
 	{ colors[0] = col0; colors[1] = col1; }
 
-	inline CRGBPalette(CRGB col0, CRGB col1, CRGB col2) : size(3)
+	inline TPalette(PIXEL col0, PIXEL col1, PIXEL col2) : size(3)
 	{ colors[0] = col0; colors[1] = col1; colors[2] = col2; }
 
-	inline CRGBPalette(CRGB col0, CRGB col1, CRGB col2, CRGB col3) : size(4)
+	inline TPalette(PIXEL col0, PIXEL col1, PIXEL col2, PIXEL col3) : size(4)
 	{ colors[0] = col0; colors[1] = col1; colors[2] = col2; colors[3] = col3; }
 
-	inline CRGBPalette(CRGB col0, CRGB col1, CRGB col2, CRGB col3, CRGB col4) : size(5)
+	inline TPalette(PIXEL col0, PIXEL col1, PIXEL col2, PIXEL col3, PIXEL col4) : size(5)
 	{ colors[0] = col0; colors[1] = col1; colors[2] = col2; colors[3] = col3; colors[4] = col4; }
+	
+	inline TPalette(PIXEL col0, PIXEL col1, PIXEL col2, PIXEL col3, PIXEL col4, PIXEL col5) : size(6)
+	{ colors[0] = col0; colors[1] = col1; colors[2] = col2; colors[3] = col3; colors[4] = col4; colors[5] = col5; }
 
-	inline CRGBPalette& operator= (const CRGBPalette& rhs) __attribute__((always_inline))
+	inline TPalette(PIXEL col0, PIXEL col1, PIXEL col2, PIXEL col3, PIXEL col4, PIXEL col5, PIXEL col6) : size(7)
+	{ colors[0] = col0; colors[1] = col1; colors[2] = col2; colors[3] = col3; colors[4] = col4; colors[5] = col5; colors[6] = col6; }
+
+	inline TPalette& operator= (const TPalette<PIXEL>& rhs) __attribute__((always_inline))
 	{
 		if (size != rhs.size) {
 			size = rhs.size;
 		}
 
-		memcpy8(colors, rhs.colors, size * sizeof(CRGB));
+		memcpy8(colors, rhs.colors, size * sizeof(PIXEL));
 
     return *this;
 	}
 	
-	inline CRGBPalette& nscale8(uint8_t scale)
+	inline TPalette& nscale8(uint8_t scale)
 	{
 		for (uint8_t i = 0; i < size; i++) {
 			colors[i].nscale8(scale);
@@ -101,42 +110,43 @@ struct CRGBPalette {
 	}
 };
 
-#define SOLID_RED										CRGBPalette(CRGB::Red, CRGB::Red)
-#define SOLID_GREEN									CRGBPalette(CRGB::Lime, CRGB::Lime)
-#define SOLID_BLUE									CRGBPalette(CRGB::Blue, CRGB::Blue)
-#define SOLID_AQUA									CRGBPalette(CRGB::Aqua, CRGB::Aqua)
-#define SOLID_AZURE									CRGBPalette(CRGB::Azure, CRGB::Azure)
+typedef TPalette<CRGB> CRGBPalette;
 
-#define RAINBOW_GRADIENT 						CRGBPalette(CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Red)
+extern CRGBPalette SOLID_RED										;
+extern CRGBPalette SOLID_GREEN									;
+extern CRGBPalette SOLID_BLUE									;
+extern CRGBPalette SOLID_AQUA									;
+extern CRGBPalette SOLID_AZURE									;
 
-#define BLUE_GREEN_GRADIENT 				CRGBPalette(CRGB::Blue, CRGB(0, 255, 64), CRGB::Blue)
-#define GREEN_GRADIENT 							CRGBPalette(CRGB::Lime, CRGB(0, 32, 0), CRGB::Lime)
-#define LIME_GRADIENT 							CRGBPalette(CRGB::Lime, CRGB::Green, CRGB::Lime)
-#define YELLOW_GRADIENT 						CRGBPalette(CRGB(255, 191, 63), CRGB(63, 47, 15), CRGB(255, 191, 63))
-#define WHITE_GRADIENT 							CRGBPalette(CRGB::White, CRGB::Black, CRGB::White)
+extern CRGBPalette RAINBOW_GRADIENT 						;
 
-#define RED_GREEN_GRADIENT 					CRGBPalette(CRGB::Red, CRGB::Green)
+extern CRGBPalette BLUE_GREEN_GRADIENT 				;
+extern CRGBPalette GREEN_GRADIENT 							;
+extern CRGBPalette LIME_GRADIENT 							;
+extern CRGBPalette YELLOW_GRADIENT 						;
+extern CRGBPalette WHITE_GRADIENT 							;
 
-#define GREEN_BLUE_GRADIENT 				CRGBPalette(CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB(0, 255, 64))
-#define RED_ORGANGE_GRADIENT 				CRGBPalette(CRGB(128, 128, 128), CRGB(128, 31, 0), CRGB(128, 95, 0), CRGB(128, 31, 0), CRGB(128, 128, 128))
+extern CRGBPalette RED_GREEN_GRADIENT 					;
 
-#define BLUE_WHITE_GRADIENT 				CRGBPalette(CRGB(0, 31, 255), CRGB(255, 255, 255), CRGB(0, 31, 255))
-#define BLUE_WHITISH_GRADIENT				CRGBPalette(CRGB(0, 31, 255), CRGB(191, 191, 191), CRGB(0, 31, 255))
+extern CRGBPalette GREEN_BLUE_GRADIENT 				;
+extern CRGBPalette RED_ORGANGE_GRADIENT 				;
 
-#define BLUE_WHITE_YELLOW_GRADIENT 	CRGBPalette(CRGB(0, 95, 255), CRGB(255, 255, 0), CRGB::White, CRGB(0, 31, 255))
+extern CRGBPalette BLUE_WHITE_GRADIENT 				;
+extern CRGBPalette BLUE_WHITISH_GRADIENT				;
 
+extern CRGBPalette BLUE_WHITE_YELLOW_GRADIENT 	;
 
-#define BLUE_YELLOW_BLACK_GRADIENT 	CRGBPalette(CRGB(0, 95, 255), CRGB(255, 255, 0), CRGB::White, CRGB::Black, CRGB(0, 31, 255))
-#define RED_WHITE_BLACK_GRADIENT 		CRGBPalette(CRGB(255, 0, 31), CRGB(255, 0, 0), CRGB::White, CRGB::Black, CRGB(255, 0, 31))
+extern CRGBPalette BLUE_YELLOW_BLACK_GRADIENT 	;
+extern CRGBPalette RED_WHITE_BLACK_GRADIENT 		;
 
-#define RED_WHITE_GRADIENT 					CRGBPalette(CRGB(255, 31, 0), CRGB(255, 0, 0), CRGB(255, 255, 255), CRGB(255, 31, 0))
-#define GREEN_WHITE_GRADIENT 				CRGBPalette(CRGB(0, 255, 31), CRGB(0, 255, 0), CRGB(255, 255, 255), CRGB(0, 255, 31))
-#define RED_WHITISH_GRADIENT 				CRGBPalette(CRGB(255, 31, 0), CRGB(255, 0, 0), CRGB(191, 191, 191), CRGB(255, 31, 0))
+extern CRGBPalette RED_WHITE_GRADIENT 					;
+extern CRGBPalette GREEN_WHITE_GRADIENT 				;
+extern CRGBPalette RED_WHITISH_GRADIENT 				;
 
-#define CYAN_PINK_GRADIENT 					CRGBPalette(CRGB(0, 255, 255), CRGB(255, 0, 96), CRGB(0, 255, 255))
-#define BLUE_YELLOW_GRADIENT 				CRGBPalette(CRGB(0, 95, 255), CRGB(255, 255, 0), CRGB(0, 31, 255))
-#define GREEN_YELLOW_GRADIENT 			CRGBPalette(CRGB(31, 255, 31), CRGB(255, 191, 63), CRGB(31, 255, 31))
-#define RAINBOW_BLACK_GRADIENT 			CRGBPalette(CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Black, CRGB::Red)
+extern CRGBPalette CYAN_PINK_GRADIENT 					;
+extern CRGBPalette BLUE_YELLOW_GRADIENT 				;
+extern CRGBPalette GREEN_YELLOW_GRADIENT 			;
+extern CRGBPalette RAINBOW_BLACK_GRADIENT 			;
 
 // Palettes
 
@@ -159,55 +169,37 @@ PALLETE_4(blueYellowBlackHardGradient, CRGB(0, 0, 0), CRGB(16, 16, 0), CRGB(255,
 PALLETE_2(whiteSolidGradient, CRGB(64, 64, 64), CRGB(64, 64, 64));
 */
 
-#define CHANNEL_SIZE 3
-#define CUSTOM_PALETTE_SIZE (1 + (CHANNEL_SIZE * 8))
-#define EEPROM_OFFSET 32
 
+template<size_t MAX_PALETTES, typename PIXEL>
 class PaletteManager {
 protected:
-	bool useEEPROM;
-	bool writePalettes;
-
-	uint8_t staticPalettes;
-	uint8_t customPalettes;
-
-	uint16_t staticOffset;
-	
+	TPalette<PIXEL> *palettes[MAX_PALETTES];
+	uint8_t paletteCount;
 	uint8_t paletteIndex;
-//	uint8_t *paletteOrder;
 
-	CRGBPalette currentPalette;
-
-	void resetCustomPalettes();
-	void writePalette(uint16_t offset, CRGBPalette &palette);
-	CRGBPalette readPalette(uint16_t offset);
-	
 public:
 
-	PaletteManager();
+	PaletteManager() : paletteCount(0), paletteIndex(0) {}
 
-	void updateEEPROM();
 	void randomizeOrder();
+	uint8_t getPaletteCount() { return paletteCount; }
 
-	uint8_t paletteCount();
+	PIXEL getColor(uint8_t index) { return (*palettes[paletteIndex])[index]; }
+	inline TPalette<PIXEL> getPalette() { return *palettes[paletteIndex]; }
 
-	void setCustomPalettes(uint8_t customPalettes, bool reset = false);
-	
-	CRGB getColor(uint8_t index);
-	CRGBPalette getPalette() { return currentPalette; }
+	void loadPalette(uint8_t index) { paletteIndex = index; }
 
-	void add(CRGBPalette palette);
-	void setActive(CRGBPalette &palette);
-	CRGBPalette &getActive() { return currentPalette; }
-
-	void loadPalette(uint8_t index);
+	void add(TPalette<PIXEL> &palette);
 	
 	void next();
 	void previous();
 };
 
+#include "palette.hpp"
+
 };
 
-extern LightString::PaletteManager Palettes;
+extern LightString::PaletteManager<20, CRGB> Palettes;
+
 
 #endif

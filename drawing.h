@@ -206,46 +206,65 @@ typedef enum {
 	
 } EBlendMode;
 
+
+struct RGB : CRGB {
+	inline RGB() __attribute__((always_inline)) {}
+	inline RGB(uint8_t r, uint8_t g, uint8_t b) __attribute__((always_inline)) 
+		: CRGB(r, g, b) {}
+
+	// Can't set full alpha through this construtor so 3 channel notation works
+	inline RGB(uint32_t colorcode) __attribute__((always_inline)) 
+		: CRGB(colorcode) {}
+
+	inline RGB(const RGB &rhs) __attribute__((always_inline))
+		: CRGB(rhs.r, rhs.g, rhs.b) {}
+
+	inline RGB(const CRGB &rhs) __attribute__((always_inline))
+		: CRGB(rhs.r, rhs.g, rhs.b) {}
+
+	inline RGB(const CHSV &rhs) __attribute__((always_inline))
+		: CRGB(rhs) {}
+};
+
 /*
- * Pixel is based on CRGB, but adds alpha channel functionality so
+ * RGBA is based on RGB, but adds alpha channel functionality so
  * layering PixelBuffers can properly create composites.
- * Pixel and CRGB can both be used as templates for PixelBuffer
  *
- * NOTE: Alpha is generally preserved on the local pixel during operations
+ * NOTE: Alpha is preserved on the receive pixel during operations
  */
-struct Pixel : CRGB {
+struct RGBA : RGB {
 	union {
 		uint8_t a;
 		uint8_t alpha;
 	};
 
-	inline Pixel() __attribute__((always_inline)) {}
-	inline Pixel(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xff) __attribute__((always_inline)) 
-		: CRGB(r, g, b), a(a) {}
+	inline RGBA() __attribute__((always_inline)) {}
+	inline RGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xff) __attribute__((always_inline)) 
+		: RGB(r, g, b), a(a) {}
 
 	// Can't set full alpha through this construtor so 3 channel notation works
-	inline Pixel(uint32_t colorcode) __attribute__((always_inline)) 
-		: CRGB(colorcode), a(0xff)
+	inline RGBA(uint32_t colorcode) __attribute__((always_inline)) 
+		: RGB(colorcode), a(0xff)
 	{
 		if ((colorcode >> 24) != 0) a = (colorcode >> 24) & 0xff;
 	}
 
-	inline Pixel(uint32_t colorcode, uint8_t a) __attribute__((always_inline)) 
-		: CRGB(colorcode), a(a) {}
+	inline RGBA(uint32_t colorcode, uint8_t a) __attribute__((always_inline)) 
+		: RGB(colorcode), a(a) {}
 
-	inline Pixel(const Pixel &rhs) __attribute__((always_inline))
-		: CRGB(rhs.r, rhs.g, rhs.b), a(rhs.a) {}
+	inline RGBA(const RGBA &rhs) __attribute__((always_inline))
+		: RGB(rhs.r, rhs.g, rhs.b), a(rhs.a) {}
 
-	inline Pixel(const CRGB &rhs) __attribute__((always_inline))
-		: CRGB(rhs.r, rhs.g, rhs.b), a(0xff) {}
+	inline RGBA(const CRGB &rhs) __attribute__((always_inline))
+		: RGB(rhs.r, rhs.g, rhs.b), a(0xff) {}
 
-	inline Pixel(const CHSV &rhs) __attribute__((always_inline))
+	inline RGBA(const CHSV &rhs) __attribute__((always_inline))
 		: a(0xff)
 	{
 		hsv2rgb_rainbow(rhs, (CRGB &)(*this->raw));
 	}
 
-	inline Pixel& operator= (const Pixel& rhs) __attribute__((always_inline)) {
+	inline RGBA& operator= (const RGBA& rhs) __attribute__((always_inline)) {
 		a = rhs.a;
 		this->r = rhs.r;
 		this->g = rhs.g;
@@ -253,7 +272,7 @@ struct Pixel : CRGB {
 		return *this;
 	}
 
-	inline Pixel& operator+= (const Pixel& rhs)
+	inline RGBA& operator+= (const RGBA& rhs)
 	{
 		this->r = qadd8(r, rhs.r);
 		this->g = qadd8(g, rhs.g);
@@ -261,39 +280,63 @@ struct Pixel : CRGB {
 		return *this;
 	}
 
-	inline Pixel& operator-= (const Pixel& rhs)
+	inline RGBA& operator-= (const RGBA& rhs)
 	{
 		this->r = qsub8(r, rhs.r);
 		this->g = qsub8(g, rhs.g);
 		this->b = qsub8(b, rhs.b);
 		return *this;
 	}
+	
+  inline RGBA lerp8(RGBA &other, fract8 frac)
+  {
+    RGBA ret;
+
+    ret.r = lerp8by8(r, other.r, frac);
+    ret.g = lerp8by8(g, other.g, frac);
+    ret.b = lerp8by8(b, other.b, frac);
+    ret.a = lerp8by8(a, other.a, frac);
+
+    return ret;
+  }
+
+  inline RGBA lerp8(CRGB &other, fract8 frac)
+  {
+    RGBA ret;
+
+    ret.r = lerp8by8(r, other.r, frac);
+    ret.g = lerp8by8(g, other.g, frac);
+    ret.b = lerp8by8(b, other.b, frac);
+    ret.a = a;
+
+    return ret;
+  }
 
 	// Overlay Modes
 
 	// Standard copy mode, but takes Alpha into account
-	inline Pixel applyCOPYTo(Pixel &other) __attribute__((always_inline)) {
-		return Pixel(other.lerp8((CRGB &)*this, this->a), other.a);
+	inline RGBA applyCOPYTo(RGBA &other) __attribute__((always_inline)) {
+		return RGBA(other.lerp8((CRGB &)*this, this->a), other.a);
 	}
 
 	inline CRGB applyCOPYTo(CRGB &other) __attribute__((always_inline)) {
 		return other.lerp8((CRGB &)*this, this->a);
 	}
 
-	inline Pixel applyADDTo(Pixel &other) __attribute__((always_inline)) {
-		Pixel ret = this->nscale8(this->a);
-		ret.a = other.a;
+	inline RGBA applyADDTo(RGBA &other) __attribute__((always_inline)) {
+		RGBA ret = this->nscale8(this->a);
+		ret.a = this->a;
 		ret += other;
 		
 		return ret;
 	}
 
-	inline CRGB applyADDTo(CRGB &other) __attribute__((always_inline)) {
+	inline RGBA applyADDTo(CRGB &other) __attribute__((always_inline)) {
 		return other + (CRGB &)*this;
 	}
 
-	inline Pixel applySUBTRACTTo(Pixel &other) __attribute__((always_inline)) {
-		Pixel ret = this->nscale8(this->a);
+	inline RGBA applySUBTRACTTo(RGBA &other) __attribute__((always_inline)) {
+		RGBA ret = this->nscale8(this->a);
 		ret.a = other.a;
 		ret -= other;
 		
@@ -304,8 +347,8 @@ struct Pixel : CRGB {
 		return other - (CRGB &)*this;
 	}
 
-	inline Pixel applyXORTo(Pixel &other) __attribute__((always_inline)) {
-		Pixel ret = this->nscale8(this->a);
+	inline RGBA applyXORTo(RGBA &other) __attribute__((always_inline)) {
+		RGBA ret = this->nscale8(this->a);
 		ret.a = other.a;
 
 		ret.r ^= other.r;
@@ -320,6 +363,7 @@ struct Pixel : CRGB {
 	}
 };
 
+typedef struct RGBA Pixel;
 
 // Place holder type for all generated TPixelBuffers
 struct IPixelBuffer {
@@ -406,8 +450,8 @@ struct TPixelBuffer : public IPixelBuffer {
 	}
 
 	inline TPixelBuffer<T> &applyCOPY(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
-		uint8_t len = min(this->length, src.length);
-		for (int i = 0; i < len; i++) {
+		uint16_t len = min(this->length, src.length);
+		for (uint16_t i = 0; i < len; i++) {
 			pixels[i] = src.pixels[i].applyCOPYTo(this->pixels[i]);
 		}
 
@@ -415,8 +459,8 @@ struct TPixelBuffer : public IPixelBuffer {
 	}
 
 	inline TPixelBuffer<T> &applyADD(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
-		uint8_t len = min(this->length, src.length);
-		for (int i = 0; i < len; i++) {
+		uint16_t len = min(this->length, src.length);
+		for (uint16_t i = 0; i < len; i++) {
 			pixels[i] = src.pixels[i].applyADDTo(this->pixels[i]);
 		}
 
@@ -424,8 +468,8 @@ struct TPixelBuffer : public IPixelBuffer {
 	}
 
 	inline TPixelBuffer<T> &applySUBTRACT(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
-		uint8_t len = min(this->length, src.length);
-		for (int i = 0; i < len; i++) {
+		uint16_t len = min(this->length, src.length);
+		for (uint16_t i = 0; i < len; i++) {
 			pixels[i] = src.pixels[i].applySUBTRACTTo(this->pixels[i]);
 		}
 
@@ -433,8 +477,8 @@ struct TPixelBuffer : public IPixelBuffer {
 	}
 
 	inline TPixelBuffer<T> &applyXOR(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
-		uint8_t len = min(this->length, src.length);
-		for (int i = 0; i < len; i++) {
+		uint16_t len = min(this->length, src.length);
+		for (uint16_t i = 0; i < len; i++) {
 			pixels[i] = src.pixels[i].applyXORTo(this->pixels[i]);
 		}
 
@@ -454,7 +498,7 @@ struct TPixelBuffer : public IPixelBuffer {
 };
 
 typedef TPixelBuffer<CRGB> CRGBBuffer;
-typedef TPixelBuffer<Pixel> PixelBuffer;
+typedef TPixelBuffer<RGBA> PixelBuffer;
 
 };
 
