@@ -10,6 +10,7 @@ using namespace LightString;
 
 namespace LightString {
 	
+const uint32_t kDefualtTransitionLength = 1000;
 const uint8_t kTransitionFrames = 30;
 
 typedef enum {
@@ -78,6 +79,11 @@ private:
 	uint32_t programStartedAt;
 	uint32_t pauseStartedAt;
 
+	uint32_t transitionLength;
+	uint32_t transitionStartedAt;
+	
+	uint8_t opacity;
+
 	ILightProgram *activeProgram;
 
 	ProgramEvent programEventHandler;
@@ -89,17 +95,18 @@ private:
 	ILightProgram *getProgram(ProgramCode &programCode);
 	void updateProgramIndex(ProgramCode &programCode);
 	void finishProgram();
-	
+
 	void setPlayState(EPlayState playState);
-	
+
 public:
 
 	inline LightLayer()
 		: programCount(0), programListLength(0), programIndex(0), maxProgramLength(0),
-		lastTime(0), programStartedAt(0), pauseStartedAt(0), activeProgram(0),
+		lastTime(0), programStartedAt(0), pauseStartedAt(0), transitionLength(kDefualtTransitionLength),
+		transitionStartedAt(0), opacity(255), activeProgram(0),
 		programEventHandler(0), playState(PROGRAM_STOPPED), playMode(PLAY_MODE_CONTINUOUS),
 		transitionState(TRANSITION_DONE) {}
-		
+
 	bool isActive() { return playState != PROGRAM_STOPPED; }
 
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
@@ -109,6 +116,8 @@ public:
 	ILightSection *getLightSection() { return section; }
 
 	ILightProgram *getActiveProgram() { return activeProgram; }
+	
+	inline uint8_t getOpacity() { return opacity; }
 
 	void setMaxProgramLength(uint32_t maxProgramLength) { this->maxProgramLength = maxProgramLength; }
 	uint32_t getMaxProgramLength() { return maxProgramLength; }
@@ -204,9 +213,6 @@ public:
 	void setMaxFPS(uint16_t targetFPS) { msPerFrame = 1000 / targetFPS; }
 	void pause(bool blackout = true, bool fade = true);
 	void unpause();
-	void togglePause();
-
-	// void nudge(int32_t);
 	
 	bool startProgram(ProgramCode &programCode, uint8_t layerID, uint8_t sectionID = 0);
 	bool startProgram(uint8_t programID, uint8_t layerID = 0);

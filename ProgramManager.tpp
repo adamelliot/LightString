@@ -74,6 +74,7 @@ void LIGHT_LAYER_CLASS::unpause() {
 	
 	uint32_t timeDelta = millis() - pauseStartedAt;
 	programStartedAt += timeDelta;
+	transitionStartedAt += timeDelta;
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -95,6 +96,8 @@ bool LIGHT_LAYER_CLASS::startProgram(ProgramCode &programCode) {
 
 	finishProgram();
 	updateProgramIndex(programCode);
+
+	this->opacity = 255;
 
 	this->activeProgram = program;
 	this->activeProgram->setLayer(this);
@@ -202,25 +205,40 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::updateTranstion(uint32_t timeDelta) {
 	if (transitionState == TRANSITION_STARTING) {
 		transitionState = TRANSITION_RUNNING;
+		transitionStartedAt = millis();
 	}
+	
+	uint32_t timeElapsed = millis() - transitionStartedAt;
+	uint32_t ratio = timeElapsed * 256 / transitionLength;
+	if (ratio > 255) ratio = 255;
+	
+	bool clear = false;
 
 	switch (activeProgram->getTransition()) {
-		case OVERWRITE:
-		transitionState = TRANSITION_DONE;
+		case TRANSITION_OVERWRITE:
 		break;
 
-		case WIPE:
-		activeProgram->getPixelBuffer()->clear();
-		transitionState = TRANSITION_DONE;
+		case TRANSITION_WIPE:
+		clear = true;
 		break;
 
-		case FREEZE_FADE:
-		// TODO: Implement
-
-		case FADE_DOWN:
-		// TODO: Implement
-		transitionState = TRANSITION_DONE;
+		case TRANSITION_FREEZE_FADE:
+		opacity = 255 - ratio;
+		clear = true;
 		break;
+
+		case TRANSITION_FADE_DOWN:
+		activeProgram->update(timeDelta);
+		opacity = 255 - ratio;
+		clear = true;
+		break;
+	}
+
+	if (timeElapsed >= transitionLength) {
+		transitionState = TRANSITION_DONE;
+		if (clear) {
+			activeProgram->getPixelBuffer()->clear();
+		}
 	}
 
 	if (transitionState == TRANSITION_DONE) {
@@ -327,6 +345,15 @@ void LIGHT_SECTION_CLASS::update() {
 		
 		if (program && !program->isFilterProgram() && bufferCount > 0) {
 			TPixelBuffer<RGBA> *buffer = (TPixelBuffer<RGBA> *)program->getPixelBuffer();
+			// TODO: Fix this so it's not destructive
+			if (layers[i].getOpacity() < 255) {
+				Serial.println(layers[i].getOpacity());
+				
+				for (uint16_t j = 0; j < buffer->getLength(); j++) {
+					buffer->pixels[j].a = scale8(buffer->pixels[j].a, layers[i].getOpacity());
+				}
+			}
+			
 			// Serial.print("Blend: ");
 			// Serial.println(program->getBlendMode());
 			outputBuffer->applyBlend(*buffer, program->getBlendMode());
@@ -338,15 +365,28 @@ void LIGHT_SECTION_CLASS::update() {
 
 PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::pause(bool blackout, bool fade) {
+	if (blackout) {
+		if (fade) {
+			fadeDown();
+		} else {
+			setBrightness(0);
+		}
+	}
 
+	for (int i = 0; i < sectionCount; i++) {
+		for (int j = 0; j < MAX_LAYERS; j++) {
+			sections[i].layers[j].pause();
+		}
+	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::unpause() {
-}
-
-PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::togglePause() {
+	for (int i = 0; i < sectionCount; i++) {
+		for (int j = 0; j < MAX_LAYERS; j++) {
+			sections[i].layers[j].unpause();
+		}
+	}
 }
 
 // ------------------------ Program Management ------------------------

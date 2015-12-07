@@ -8,10 +8,10 @@ using namespace LightString;
 namespace LightString {
 	
 typedef enum {
-	OVERWRITE = 0, // Starts playing new program over existing data
-	WIPE, // Clears data and starts new program immediately
-	FADE_DOWN, // Forces all lights to fade while playing
-	FREEZE_FADE // Forces just the section to freeze, then fade down
+	TRANSITION_OVERWRITE = 0, // Starts playing new program over existing data
+	TRANSITION_WIPE, // Clears data and starts new program immediately
+	TRANSITION_FADE_DOWN, // Forces all lights to fade while playing
+	TRANSITION_FREEZE_FADE // Forces just the section to freeze, then fade down
 } EProgramTransition;
 
 typedef enum {
@@ -130,7 +130,7 @@ public:
 	// TODO: This isn't hooked up in this iteration
 	virtual uint16_t getNextProgramCode() { return 0; /* Any program */ }
 
-	virtual EProgramTransition getTransition() { return FADE_DOWN; }
+	virtual EProgramTransition getTransition() { return TRANSITION_FADE_DOWN; }
 
 	// If false the program can only be activated by getNextProgramCode()
 	virtual bool hideFromProgramList() { return false; }
