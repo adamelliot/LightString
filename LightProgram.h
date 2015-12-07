@@ -127,8 +127,7 @@ public:
 	// if that isn't needed this can be left as zero
 	virtual uint8_t getProgramID() { return 0; }
 
-	// TODO: This isn't hooked up in this iteration
-	virtual uint16_t getNextProgramCode() { return 0; /* Any program */ }
+	virtual ProgramCode getNextProgramCode() { return ProgramCode(0xff, 0xff, 0xff); /* Any program */ }
 
 	virtual EProgramTransition getTransition() { return TRANSITION_FADE_DOWN; }
 

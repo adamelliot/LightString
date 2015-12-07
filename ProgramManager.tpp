@@ -244,9 +244,16 @@ void LIGHT_LAYER_CLASS::updateTranstion(uint32_t timeDelta) {
 	if (transitionState == TRANSITION_DONE) {
 		switch (playMode) {
 			case PLAY_MODE_CONTINUOUS:
-			nextProgram();
+			{
+				ProgramCode code = activeProgram->getNextProgramCode();
+				if (code == ProgramCode(0xff, 0xff, 0xff)) {
+					nextProgram();
+				} else {
+					startProgram(code);
+				}
+			}
 			break;
-			
+
 			case PLAY_MODE_ONCE: // Once we're done
 			finishProgram();
 			setPlayState(PROGRAM_STOPPED);
@@ -347,8 +354,6 @@ void LIGHT_SECTION_CLASS::update() {
 			TPixelBuffer<RGBA> *buffer = (TPixelBuffer<RGBA> *)program->getPixelBuffer();
 			// TODO: Fix this so it's not destructive
 			if (layers[i].getOpacity() < 255) {
-				Serial.println(layers[i].getOpacity());
-				
 				for (uint16_t j = 0; j < buffer->getLength(); j++) {
 					buffer->pixels[j].a = scale8(buffer->pixels[j].a, layers[i].getOpacity());
 				}
