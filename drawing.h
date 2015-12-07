@@ -238,7 +238,8 @@ struct RGBA : RGB {
 		uint8_t alpha;
 	};
 
-	inline RGBA() __attribute__((always_inline)) {}
+	inline RGBA()  __attribute__((always_inline))
+		: RGB(0, 0, 0), a(0) {}
 	inline RGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xff) __attribute__((always_inline)) 
 		: RGB(r, g, b), a(a) {}
 

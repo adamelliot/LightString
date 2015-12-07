@@ -142,9 +142,9 @@ bool LIGHT_LAYER_CLASS::prevProgram() {
 
 // Shuffle from: http://benpfaff.org/writings/clc/shuffle.html
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::randomizeProgramOrder() {
+void LIGHT_LAYER_CLASS::shufflePrograms() {
 	for (size_t i = 0; i < programListLength; i++) {
-		size_t j = i + random() / (0xffff / (programListLength - 1) + 1);
+		size_t j = i + random() / (0xffffffff / (programListLength - 1) + 1);
 		ProgramCode t = programList[j];
 		programList[j] = programList[i];
 		programList[i] = t;
@@ -472,10 +472,10 @@ void PROGRAM_MANAGER_CLASS::prevProgram() {
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::randomizeProgramOrder() {
+void PROGRAM_MANAGER_CLASS::shufflePrograms() {
 	for (int i = 0; i < sectionCount; i++) {
 		for (int j = 0; j < MAX_LAYERS; j++) {
-			sections[i].layers[j].randomizeProgramOrder();
+			sections[i].layers[j].shufflePrograms();
 		}
 	}
 }

@@ -126,7 +126,7 @@ public:
 	bool nextProgram();
 	bool prevProgram();
 	
-	void randomizeProgramOrder();
+	void shufflePrograms();
 	
 	void addLightProgram(ILightProgram &program, uint64_t modeList);
 	void addLightProgram(ILightProgram &program);
@@ -218,7 +218,7 @@ public:
 	void prevProgram();
 	void prevProgram(uint8_t layerID, uint8_t sectionID = 0);
 
-	void randomizeProgramOrder();
+	void shufflePrograms();
 
 	void addLightProgram(ILightProgram &program, uint8_t layerID = 0);
 	void addLightProgram(ILightProgram &program, uint64_t modeList, uint8_t layerID);

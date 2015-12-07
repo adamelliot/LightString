@@ -3,6 +3,7 @@
 using namespace LightString;
 
 PaletteManager<20, CRGB> Palettes;
+SwatchManager<10, LightString::RGBA> Swatches;
 
 namespace LightString {
 

@@ -3,12 +3,13 @@
 
 #include <Arduino.h>
 #include <FastLED.h>
+#include "drawing.h"
 
 const uint16_t kPaletteSize = 256;
 
 void printColor(CRGB col);
 
-#define MAX_PALETTE_COLORS 7
+#define MAX_PALETTE_COLORS 12
 
 #define LOG(MSG, VAL) {Serial.print(F(MSG " ")); Serial.println(VAL); }
 #define LOG2(MSG, V1, V2) {Serial.print(F(MSG " ")); Serial.print(V1); Serial.print(F(", ")); Serial.println(V2); }
@@ -169,6 +170,27 @@ PALLETE_4(blueYellowBlackHardGradient, CRGB(0, 0, 0), CRGB(16, 16, 0), CRGB(255,
 PALLETE_2(whiteSolidGradient, CRGB(64, 64, 64), CRGB(64, 64, 64));
 */
 
+template<size_t MAX_SWATCHES, typename PIXEL>
+class SwatchManager {
+protected:
+	PIXEL swatches[MAX_SWATCHES];
+	uint8_t swatchCount;
+	uint8_t swatchIndex;
+
+public:
+
+	SwatchManager() : swatchCount(0), swatchIndex(0) {}
+
+	void shuffle();
+	uint8_t getSwatchCount() { return swatchCount; }
+
+	PIXEL getColor() { return swatches[swatchIndex]; }
+	TPalette<PIXEL> generatePalette(uint8_t colorStops, uint8_t padding = 1, bool mirrored = true);
+	void add(PIXEL color);
+	
+	PIXEL next();
+	PIXEL previous();
+};
 
 template<size_t MAX_PALETTES, typename PIXEL>
 class PaletteManager {
@@ -181,7 +203,7 @@ public:
 
 	PaletteManager() : paletteCount(0), paletteIndex(0) {}
 
-	void randomizeOrder();
+	void shuffle();
 	uint8_t getPaletteCount() { return paletteCount; }
 
 	PIXEL getColor(uint8_t index) { return (*palettes[paletteIndex])[index]; }
@@ -199,7 +221,7 @@ public:
 
 };
 
+extern LightString::SwatchManager<10, LightString::RGBA> Swatches;
 extern LightString::PaletteManager<20, CRGB> Palettes;
-
 
 #endif

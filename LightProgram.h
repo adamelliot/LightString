@@ -114,6 +114,7 @@ public:
 	void startProgramBelow(ProgramCode programCode);
 	void startProgramBelow(uint8_t programID, uint8_t copyID = 0, uint8_t mode = 0);
 
+	virtual size_t getSize() { return sizeof(*this); }
 	
 	virtual void setPixelBuffer(IPixelBuffer *pixelBuffer) {}
 	virtual IPixelBuffer *getPixelBuffer() { return NULL; }
@@ -163,6 +164,8 @@ public:
 	}
 
 	IPixelBuffer *getPixelBuffer() { return pixelBuffer; }
+
+	size_t getSize() { return sizeof(*this); }
 };
 
 // Filter programs don't get their own private buffer, but operate on the
