@@ -53,8 +53,6 @@ PIXEL SwatchManager<MAX_SWATCHES, PIXEL>::next() {
 	swatchIndex++;
 	swatchIndex %= swatchCount;
 
-	Serial.println(swatchIndex);
-
 	return swatches[swatchIndex];
 }
 

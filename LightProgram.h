@@ -49,7 +49,7 @@ class ILightProgram;
 class ILightSection {
 public:
 
-	virtual CRGBBuffer *getOutputBuffer() = 0;
+	virtual TPixelBuffer<RGB> *getOutputBuffer() = 0;
 
 	virtual uint8_t getMaxLayers() = 0;
 	virtual ILightLayer *getLayer(uint8_t layerID) = 0;
@@ -97,6 +97,8 @@ public:
 
 	virtual void setupMode(uint8_t mode) {}
 	virtual void programFinished() {}
+	
+	// virtual void setPalette(IPalette *palette) {}
 	
 	void setMode(uint8_t mode) { this->mode = mode; setupMode(mode); }
 	uint8_t getMode() { return mode; }
@@ -170,7 +172,7 @@ public:
 
 // Filter programs don't get their own private buffer, but operate on the
 // output buffer.
-class FilterLightProgram : public TLightProgram<CRGB> {
+class FilterLightProgram : public TLightProgram<RGB> {
 public:
 	inline FilterLightProgram(uint8_t modeCount = 1) __attribute__((always_inline))
 		: TLightProgram(modeCount) {}

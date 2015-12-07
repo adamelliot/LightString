@@ -205,9 +205,9 @@ void pixelBuffer::drawText(uint8_t x, uint8_t y, uint8_t textX, uint8_t textY, u
 			for (; (textX < letterWidth) && (totalWidth < width); textX++) {
 				memcpy_P(buffer, letters15 + offset + (letterHeight * textX), letterHeight);
 			
-				setPixelWithColorIndexAt(x + totalWidth, 0, 0xff);
+				set<RGBA>WithColorIndexAt(x + totalWidth, 0, 0xff);
 				drawColumn(x + totalWidth, y + 1, letterHeight, buffer);
-				setPixelWithColorIndexAt(x + totalWidth, 14, 0xff);
+				set<RGBA>WithColorIndexAt(x + totalWidth, 14, 0xff);
 	//			drawColumn(x + totalWidth + 1, y, letterHeight, buffer);
 				totalWidth++;
 			}

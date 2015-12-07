@@ -450,7 +450,7 @@ struct TPixelBuffer : public IPixelBuffer {
 		::drawSolidCircle(pixels, pt.x, pt.y, radius, col);
 	}
 
-	inline TPixelBuffer<T> &applyCOPY(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
+	inline TPixelBuffer<T> &applyCOPY(TPixelBuffer<RGBA> &src) __attribute__((always_inline)) {
 		uint16_t len = min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
 			pixels[i] = src.pixels[i].applyCOPYTo(this->pixels[i]);
@@ -459,7 +459,7 @@ struct TPixelBuffer : public IPixelBuffer {
 		return *this;
 	}
 
-	inline TPixelBuffer<T> &applyADD(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
+	inline TPixelBuffer<T> &applyADD(TPixelBuffer<RGBA> &src) __attribute__((always_inline)) {
 		uint16_t len = min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
 			pixels[i] = src.pixels[i].applyADDTo(this->pixels[i]);
@@ -468,7 +468,7 @@ struct TPixelBuffer : public IPixelBuffer {
 		return *this;
 	}
 
-	inline TPixelBuffer<T> &applySUBTRACT(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
+	inline TPixelBuffer<T> &applySUBTRACT(TPixelBuffer<RGBA> &src) __attribute__((always_inline)) {
 		uint16_t len = min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
 			pixels[i] = src.pixels[i].applySUBTRACTTo(this->pixels[i]);
@@ -477,7 +477,7 @@ struct TPixelBuffer : public IPixelBuffer {
 		return *this;
 	}
 
-	inline TPixelBuffer<T> &applyXOR(TPixelBuffer<Pixel> &src) __attribute__((always_inline)) {
+	inline TPixelBuffer<T> &applyXOR(TPixelBuffer<RGBA> &src) __attribute__((always_inline)) {
 		uint16_t len = min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
 			pixels[i] = src.pixels[i].applyXORTo(this->pixels[i]);
@@ -486,7 +486,7 @@ struct TPixelBuffer : public IPixelBuffer {
 		return *this;
 	}
 
-	inline TPixelBuffer<T> &applyBlend(TPixelBuffer<Pixel> &src, EBlendMode blendMode)  __attribute__((always_inline)) {
+	inline TPixelBuffer<T> &applyBlend(TPixelBuffer<RGBA> &src, EBlendMode blendMode)  __attribute__((always_inline)) {
 		switch (blendMode) {
 			case BLEND_COPY: return applyCOPY(src);
 			case BLEND_ADD: return applyADD(src);
@@ -498,8 +498,8 @@ struct TPixelBuffer : public IPixelBuffer {
 	}
 };
 
-typedef TPixelBuffer<CRGB> CRGBBuffer;
-typedef TPixelBuffer<RGBA> PixelBuffer;
+typedef TPixelBuffer<RGB> RGBBuffer;
+typedef TPixelBuffer<RGBA> RGBABuffer;
 
 };
 

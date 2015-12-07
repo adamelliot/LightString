@@ -326,7 +326,7 @@ void LIGHT_SECTION_CLASS::update() {
 		ILightProgram *program = layers[i].getActiveProgram();
 		
 		if (program && !program->isFilterProgram() && bufferCount > 0) {
-			TPixelBuffer<Pixel> *buffer = (TPixelBuffer<Pixel> *)program->getPixelBuffer();
+			TPixelBuffer<RGBA> *buffer = (TPixelBuffer<RGBA> *)program->getPixelBuffer();
 			// Serial.print("Blend: ");
 			// Serial.println(program->getBlendMode());
 			outputBuffer->applyBlend(*buffer, program->getBlendMode());
@@ -338,54 +338,16 @@ void LIGHT_SECTION_CLASS::update() {
 
 PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::pause(bool blackout, bool fade) {
-/*	if (paused) return;
 
-	paused = true;
-	pauseStartedAt = millis();
-
-#ifdef VERBOSE
-	Serial.println(F("Pause"));
-#endif
-
-	if (blackout) {
-		if (fade) {
-			this->fadeDown();
-		} else {
-			// TODO: Hard fade to black instead of wipe
-			for (int i = 0; i < sectionCount; i++) {
-				CRGBBuffer *pixelBuffer = lightSections[i].activeProgram->getPixelBuffer();
-				pixelBuffer->clear();
-			}
-		}
-	}*/
 }
 
 PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::unpause() {
-/*	if (!paused) return;
-
-	this->fadeUp();
-
-	paused = false;
-	uint32_t timeDelta = millis() - pauseStartedAt;
-	for (int i = 0; i < sectionCount; i++) {
-		lightSections[i].programStartedAt += timeDelta;
-	}*/
 }
 
 PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::togglePause() {
-//	paused ? unpause() : pause();
 }
-
-/*
-PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::nudge(int32_t data) {
-	for (int i = 0; i < sectionCount; i++) {
-		lightSections[i].activeProgram->nudge(data);
-	}
-}*/
-
 
 // ------------------------ Program Management ------------------------
 
@@ -509,7 +471,7 @@ LIGHT_SECTION_CLASS *PROGRAM_MANAGER_CLASS::getLightSection(uint8_t sectionID) {
 }
 
 PROGRAM_MANAGER_TEMPLATE
-uint8_t PROGRAM_MANAGER_CLASS::addLightSection(CRGBBuffer &pixelBuffer) {
+uint8_t PROGRAM_MANAGER_CLASS::addLightSection(TPixelBuffer<RGB> &pixelBuffer) {
 	if (sectionCount >= MAX_LIGHT_SECTIONS) {
 #ifdef VERBOSE
 		Serial.println(F("ERROR: Maximum amount of light sections already added."));

@@ -145,7 +145,7 @@ private:
 
 public:
 
-	CRGBBuffer *outputBuffer;
+	TPixelBuffer<RGB> *outputBuffer;
 	LIGHT_LAYER_CLASS layers[MAX_LAYERS];
 
 	inline LightSection()
@@ -157,7 +157,7 @@ public:
 		}
 	}
 	
-	CRGBBuffer *getOutputBuffer() { return outputBuffer; }
+	TPixelBuffer<RGB> *getOutputBuffer() { return outputBuffer; }
 
 	uint8_t getMaxLayers() { return MAX_LAYERS; }
 	ILightLayer *getLayer(uint8_t layerID) { return &layers[layerID]; }
@@ -224,7 +224,7 @@ public:
 	void addLightProgram(ILightProgram &program, uint64_t modeList, uint8_t layerID);
 	void addLightProgram(ILightProgram &program, uint64_t modeList, uint8_t layerID, uint8_t sectionID);
 
-	uint8_t addLightSection(CRGBBuffer &pixelBuffer);
+	uint8_t addLightSection(TPixelBuffer<RGB> &pixelBuffer);
 	bool addBufferToLightSection(uint8_t sectionID, IPixelBuffer &buffer);
 
 	void fadeDown();

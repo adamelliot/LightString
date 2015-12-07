@@ -11,11 +11,9 @@ const uint16_t kTotalLEDs = 144;
 // How long each program should run (in ms), set to 0 for unlimitied
 const uint32_t kProgramLength = 8000;
 
-// FastLED doesn't like when the pixels are on the stack...
-// CRGB leds[kTotalLEDs];
-CRGBBuffer ledBuffer(kTotalLEDs);
-PixelBuffer backBuffer1(kTotalLEDs);
-PixelBuffer backBuffer2(kTotalLEDs);
+TPixelBuffer<RGB> ledBuffer(kTotalLEDs);
+TPixelBuffer<RGBA> backBuffer1(kTotalLEDs);
+TPixelBuffer<RGBA> backBuffer2(kTotalLEDs);
 
 ProgramManager<RGBA, 4, 3, 1> programManager;
 
