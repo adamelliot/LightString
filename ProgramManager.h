@@ -92,8 +92,8 @@ private:
 	EPlayMode playMode;
 	ETransitionState transitionState;
 
-	ILightProgram *getProgram(ProgramCode &programCode);
-	void updateProgramIndex(ProgramCode &programCode);
+	ILightProgram *getProgram(ProgramCode programCode);
+	void updateProgramIndex(ProgramCode programCode);
 	void finishProgram();
 
 	void setPlayState(EPlayState playState);
@@ -114,23 +114,27 @@ public:
 	
 	void setLightSection(ILightSection *section) { this->section = section; }
 	ILightSection *getLightSection() { return section; }
-
 	ILightProgram *getActiveProgram() { return activeProgram; }
 	
 	inline uint8_t getOpacity() { return opacity; }
+	void setPalette(IPalette *palette) { if (activeProgram) activeProgram->setPalette(palette); }
 
 	void setMaxProgramLength(uint32_t maxProgramLength) { this->maxProgramLength = maxProgramLength; }
 	uint32_t getMaxProgramLength() { return maxProgramLength; }
 
 	void setProgramEventHandler(ProgramEvent programEventHandler) { this->programEventHandler = programEventHandler; }
 	ProgramEvent getProgramEventHandler() { return programEventHandler; }
+	
+	void setPlayMode(EPlayMode playMode) { this->playMode = playMode; }
+	uint32_t getPlayMode() { return playMode; }
 
 	// Play control
+	void play(); // Starts from a stopped state, or unpauses.
 	void stop();
 	void pause();
 	void unpause();
 
-	bool startProgram(ProgramCode &programCode);
+	bool startProgram(ProgramCode programCode);
 	bool startRandomProgram();
 	bool nextProgram();
 	bool prevProgram();
@@ -209,15 +213,25 @@ public:
 
 	void setMaxProgramLength(uint32_t maxProgramLength);
 	void setMaxProgramLength(uint32_t maxProgramLength, uint8_t layerID, uint8_t sectionID = 0);
+	
+	void setPlayMode(EPlayMode playMode);
+	void setPlayMode(EPlayMode playMode, uint8_t layerID, uint8_t sectionID = 0);
 
 	void setMaxFPS(uint16_t targetFPS) { msPerFrame = 1000 / targetFPS; }
 	void pause(bool blackout = true, bool fade = true);
 	void unpause();
-	
-	bool startProgram(ProgramCode &programCode, uint8_t layerID, uint8_t sectionID = 0);
+
+	bool startProgram(ProgramCode programCode, uint8_t layerID, uint8_t sectionID = 0);
 	bool startProgram(uint8_t programID, uint8_t layerID = 0);
-	void startRandomProgram(bool activateLayers = false);
-	void startRandomProgram(uint8_t layerID, uint8_t sectionID);
+
+	// Only starts on active layers
+	void startRandomProgram();
+	void startRandomProgramOnAllLayers();
+	void startRandomProgram(uint8_t layerID, uint8_t sectionID = 0);
+
+	// Start the current program
+	void play();
+	void play(uint8_t layerID, uint8_t sectionID = 0);
 
 	void nextProgram();
 	void nextProgram(uint8_t layerID, uint8_t sectionID = 0);

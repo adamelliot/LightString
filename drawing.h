@@ -278,6 +278,7 @@ struct RGBA : RGB {
 		this->r = qadd8(r, rhs.r);
 		this->g = qadd8(g, rhs.g);
 		this->b = qadd8(b, rhs.b);
+		this->a = qadd8(a, rhs.a);
 		return *this;
 	}
 
@@ -286,6 +287,7 @@ struct RGBA : RGB {
 		this->r = qsub8(r, rhs.r);
 		this->g = qsub8(g, rhs.g);
 		this->b = qsub8(b, rhs.b);
+		this->a = qsub8(a, rhs.a);
 		return *this;
 	}
 	
@@ -317,7 +319,9 @@ struct RGBA : RGB {
 
 	// Standard copy mode, but takes Alpha into account
 	inline RGBA applyCOPYTo(RGBA &other) __attribute__((always_inline)) {
-		return RGBA(other.lerp8((CRGB &)*this, this->a), other.a);
+		RGBA adj = other.lerp8(*this, this->a);
+		adj.a = other.a;
+		return adj;
 	}
 
 	inline CRGB applyCOPYTo(CRGB &other) __attribute__((always_inline)) {
@@ -332,8 +336,9 @@ struct RGBA : RGB {
 		return ret;
 	}
 
-	inline RGBA applyADDTo(CRGB &other) __attribute__((always_inline)) {
-		return other + (CRGB &)*this;
+	inline CRGB applyADDTo(CRGB &other) __attribute__((always_inline)) {
+		RGBA adj = this->nscale8(this->a);
+		return other + (CRGB &)adj;
 	}
 
 	inline RGBA applySUBTRACTTo(RGBA &other) __attribute__((always_inline)) {
@@ -360,7 +365,8 @@ struct RGBA : RGB {
 	}
 
 	inline CRGB applyXORTo(CRGB &other) __attribute__((always_inline)) {
-		return CRGB(this->r ^ other.r, this->g ^ other.g, this->b ^ other.b);
+		RGBA adj = this->nscale8(this->a);
+		return CRGB(adj.r ^ other.r, adj.g ^ other.g, adj.b ^ other.b);
 	}
 };
 
@@ -397,12 +403,11 @@ struct TPixelBuffer : public IPixelBuffer {
 	uint16_t getLength() {
 		return length;
 	}
-
 	/*
-	inline T& operator[] (uint16_t i) __attribute__((always_inline)) {
-		return pixels[i];
-	}*/
-
+	inline T& operator[] (uint16_t index) __attribute__((always_inline)) {
+		return pixels[index];
+	}
+*/
 	inline void setPixel(uint16_t index, T col) __attribute__((always_inline)) {
 		pixels[index] = col;
 	}
@@ -422,12 +427,16 @@ struct TPixelBuffer : public IPixelBuffer {
 		memset8((void*)pixels, 0, sizeof(T) * length);
 	}
 
-	inline void showColor(T col) __attribute__((always_inline)) {
-		fill_solid(pixels, length, col);
+	inline void fillColor(T col) __attribute__((always_inline)) {
+		for( int i = 0; i < length; i++) {
+			pixels[i] = col;
+		}
 	}
 
 	inline void fade(uint8_t fadeRate) __attribute__((always_inline)) {
-		nscale8(pixels, length, fadeRate);
+		for (uint16_t i = 0; i < this->length; i++) {
+			pixels[i].nscale8(fadeRate);
+		}
 	}
 	
 	inline void drawRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col) {

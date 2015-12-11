@@ -7,7 +7,7 @@
 
 const uint16_t kPaletteSize = 256;
 
-void printColor(CRGB col);
+void printColor(LightString::RGBA col);
 
 #define MAX_PALETTE_COLORS 12
 
@@ -26,6 +26,13 @@ struct TPalette : IPalette {
 	uint8_t size;
 	PIXEL colors[MAX_PALETTE_COLORS];
 
+	TPalette(const TPalette<PIXEL> &rhs) {
+		for (int i = 0; i < rhs.size; i++) {
+			this->colors[i] = rhs.colors[i];
+		}
+		this->size = rhs.size;
+	}
+
 	inline PIXEL operator[] (uint8_t index) __attribute__((always_inline))
 	{
 		uint16_t indexSections = index * (size - 1);
@@ -34,7 +41,23 @@ struct TPalette : IPalette {
 
 		PIXEL col = colors[section];
 
-		return col.lerp8(colors[section + 1], weight);
+		return col.lerp8(colors[(section + 1) % size], weight);
+	}
+	
+	TPalette<PIXEL>& operator= (const TPalette<RGB> &rhs) {
+		for (int i = 0; i < rhs.size; i++) {
+			this->colors[i] = rhs.colors[i];
+		}
+		this->size = rhs.size;
+		return *this;
+	}
+
+	TPalette<PIXEL>& operator= (const TPalette<RGBA> &rhs) {
+		for (int i = 0; i < rhs.size; i++) {
+			this->colors[i] = rhs.colors[i];
+		}
+		this->size = rhs.size;
+		return *this;
 	}
 
 	/*
@@ -89,8 +112,8 @@ struct TPalette : IPalette {
 
 	inline TPalette(PIXEL col0, PIXEL col1, PIXEL col2, PIXEL col3, PIXEL col4, PIXEL col5, PIXEL col6) : size(7)
 	{ colors[0] = col0; colors[1] = col1; colors[2] = col2; colors[3] = col3; colors[4] = col4; colors[5] = col5; colors[6] = col6; }
-
-	inline TPalette& operator= (const TPalette<PIXEL>& rhs) __attribute__((always_inline))
+	/*
+	inline TPalette& operator= (const TPalette<PIXEL>& rhs)
 	{
 		if (size != rhs.size) {
 			size = rhs.size;
@@ -99,7 +122,7 @@ struct TPalette : IPalette {
 		memcpy8(colors, rhs.colors, size * sizeof(PIXEL));
 
     return *this;
-	}
+	}*/
 	
 	inline TPalette& nscale8(uint8_t scale)
 	{
@@ -111,43 +134,43 @@ struct TPalette : IPalette {
 	}
 };
 
-typedef TPalette<CRGB> CRGBPalette;
+typedef TPalette<RGB> CRGBPalette;
 
-extern CRGBPalette SOLID_RED										;
-extern CRGBPalette SOLID_GREEN									;
-extern CRGBPalette SOLID_BLUE									;
-extern CRGBPalette SOLID_AQUA									;
-extern CRGBPalette SOLID_AZURE									;
+extern TPalette<RGBA> SOLID_RED										;
+extern TPalette<RGBA> SOLID_GREEN									;
+extern TPalette<RGBA> SOLID_BLUE									;
+extern TPalette<RGBA> SOLID_AQUA									;
+extern TPalette<RGBA> SOLID_AZURE									;
 
-extern CRGBPalette RAINBOW_GRADIENT 						;
+extern TPalette<RGBA> RAINBOW_GRADIENT 						;
 
-extern CRGBPalette BLUE_GREEN_GRADIENT 				;
-extern CRGBPalette GREEN_GRADIENT 							;
-extern CRGBPalette LIME_GRADIENT 							;
-extern CRGBPalette YELLOW_GRADIENT 						;
-extern CRGBPalette WHITE_GRADIENT 							;
+extern TPalette<RGBA> BLUE_GREEN_GRADIENT 				;
+extern TPalette<RGBA> GREEN_GRADIENT 							;
+extern TPalette<RGBA> LIME_GRADIENT 							;
+extern TPalette<RGBA> YELLOW_GRADIENT 						;
+extern TPalette<RGBA> WHITE_GRADIENT 							;
 
-extern CRGBPalette RED_GREEN_GRADIENT 					;
+extern TPalette<RGBA> RED_GREEN_GRADIENT 					;
 
-extern CRGBPalette GREEN_BLUE_GRADIENT 				;
-extern CRGBPalette RED_ORGANGE_GRADIENT 				;
+extern TPalette<RGBA> GREEN_BLUE_GRADIENT 				;
+extern TPalette<RGBA> RED_ORGANGE_GRADIENT 				;
 
-extern CRGBPalette BLUE_WHITE_GRADIENT 				;
-extern CRGBPalette BLUE_WHITISH_GRADIENT				;
+extern TPalette<RGBA> BLUE_WHITE_GRADIENT 				;
+extern TPalette<RGBA> BLUE_WHITISH_GRADIENT				;
 
-extern CRGBPalette BLUE_WHITE_YELLOW_GRADIENT 	;
+extern TPalette<RGBA> BLUE_WHITE_YELLOW_GRADIENT 	;
 
-extern CRGBPalette BLUE_YELLOW_BLACK_GRADIENT 	;
-extern CRGBPalette RED_WHITE_BLACK_GRADIENT 		;
+extern TPalette<RGBA> BLUE_YELLOW_BLACK_GRADIENT 	;
+extern TPalette<RGBA> RED_WHITE_BLACK_GRADIENT 		;
 
-extern CRGBPalette RED_WHITE_GRADIENT 					;
-extern CRGBPalette GREEN_WHITE_GRADIENT 				;
-extern CRGBPalette RED_WHITISH_GRADIENT 				;
+extern TPalette<RGBA> RED_WHITE_GRADIENT 					;
+extern TPalette<RGBA> GREEN_WHITE_GRADIENT 				;
+extern TPalette<RGBA> RED_WHITISH_GRADIENT 				;
 
-extern CRGBPalette CYAN_PINK_GRADIENT 					;
-extern CRGBPalette BLUE_YELLOW_GRADIENT 				;
-extern CRGBPalette GREEN_YELLOW_GRADIENT 			;
-extern CRGBPalette RAINBOW_BLACK_GRADIENT 			;
+extern TPalette<RGBA> CYAN_PINK_GRADIENT 					;
+extern TPalette<RGBA> BLUE_YELLOW_GRADIENT 				;
+extern TPalette<RGBA> GREEN_YELLOW_GRADIENT 			;
+extern TPalette<RGBA> RAINBOW_BLACK_GRADIENT 			;
 
 // Palettes
 
@@ -179,7 +202,10 @@ protected:
 
 public:
 
-	SwatchManager() : swatchCount(0), swatchIndex(0) {}
+	SwatchManager() : swatchCount(0), swatchIndex(0) {
+		swatchCount = 0;
+		swatchIndex = 0;
+	}
 
 	void shuffle();
 	uint8_t getSwatchCount() { return swatchCount; }
@@ -217,11 +243,11 @@ public:
 	void previous();
 };
 
-#include "palette.hpp"
+#include "palette.tpp"
 
 };
 
 extern LightString::SwatchManager<10, LightString::RGBA> Swatches;
-extern LightString::PaletteManager<20, CRGB> Palettes;
+extern LightString::PaletteManager<20, LightString::RGBA> Palettes;
 
 #endif

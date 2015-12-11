@@ -1,7 +1,7 @@
 // -------------------------- Light Layer --------------------------
 
 LIGHT_LAYER_TEMPLATE
-ILightProgram *LIGHT_LAYER_CLASS::getProgram(ProgramCode &programCode) {
+ILightProgram *LIGHT_LAYER_CLASS::getProgram(ProgramCode programCode) {
 	int copy = 0;
 	for (int i = 0; i < programCount; i++) {
 		if (lightPrograms[i]->getProgramID() == programCode.programID) {
@@ -17,7 +17,7 @@ ILightProgram *LIGHT_LAYER_CLASS::getProgram(ProgramCode &programCode) {
 }
 
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::updateProgramIndex(ProgramCode &programCode) {
+void LIGHT_LAYER_CLASS::updateProgramIndex(ProgramCode programCode) {
 	if (programList[programIndex] == programCode) return;
 
 	for (int i = 0; i < programListLength; i++) {
@@ -50,6 +50,17 @@ void LIGHT_LAYER_CLASS::setPlayState(EPlayState playState) {
 }
 
 LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::play() {
+	if (playState == PROGRAM_PLAYING) return;
+	if (playState == PROGRAM_PAUSED) {
+		unpause();
+		return;
+	}
+
+	startProgram(programList[programIndex]);
+}
+
+LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::stop() {
 	if (playState == PROGRAM_STOPPED) return;
 	finishProgram();
@@ -78,7 +89,7 @@ void LIGHT_LAYER_CLASS::unpause() {
 }
 
 LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::startProgram(ProgramCode &programCode) {
+bool LIGHT_LAYER_CLASS::startProgram(ProgramCode programCode) {
 #ifdef VERBOSE
 	Serial.print(F("Selecting Program: "));
 	Serial.print((programCode.programID << 8) | programCode.mode, HEX);
@@ -112,6 +123,7 @@ bool LIGHT_LAYER_CLASS::startProgram(ProgramCode &programCode) {
 
 	this->activeProgram->setMode(programCode.mode);
 	this->programStartedAt = millis();
+	this->transitionState = TRANSITION_DONE;
 
 	setPlayState(PROGRAM_PLAYING);
 
@@ -147,7 +159,7 @@ bool LIGHT_LAYER_CLASS::prevProgram() {
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::shufflePrograms() {
 	for (size_t i = 0; i < programListLength; i++) {
-		size_t j = i + random() / (0xffffffff / (programListLength - 1) + 1);
+		size_t j = (i + random() / (0xffffffff / (programListLength - 1) + 1)) % programListLength;
 		ProgramCode t = programList[j];
 		programList[j] = programList[i];
 		programList[i] = t;
@@ -425,7 +437,21 @@ void PROGRAM_MANAGER_CLASS::setMaxProgramLength(uint32_t maxProgramLength, uint8
 }
 
 PROGRAM_MANAGER_TEMPLATE
-bool PROGRAM_MANAGER_CLASS::startProgram(ProgramCode &programCode, uint8_t layerID, uint8_t sectionID) {
+void PROGRAM_MANAGER_CLASS::setPlayMode(EPlayMode playMode) {
+	for (int i = 0; i < sectionCount; i++) {
+		for (int j = 0; j < MAX_LAYERS; j++) {
+			sections[i].layers[j].setPlayMode(playMode);
+		}
+	}
+}
+
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::setPlayMode(EPlayMode playMode, uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].setPlayMode(playMode);
+}
+
+PROGRAM_MANAGER_TEMPLATE
+bool PROGRAM_MANAGER_CLASS::startProgram(ProgramCode programCode, uint8_t layerID, uint8_t sectionID) {
 	return sections[sectionID].layers[layerID].startProgram(programCode);
 }
 
@@ -435,10 +461,10 @@ bool PROGRAM_MANAGER_CLASS::startProgram(uint8_t programID, uint8_t layerID) {
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::startRandomProgram(bool activateLayers) {
+void PROGRAM_MANAGER_CLASS::startRandomProgram() {
 	for (int i = 0; i < sectionCount; i++) {
 		for (int j = 0; j < MAX_LAYERS; j++) {
-			if (sections[i].layers[j].isActive() || activateLayers) {
+			if (sections[i].layers[j].isActive()) {
 				sections[i].layers[j].startRandomProgram();
 			}
 		}
@@ -446,8 +472,32 @@ void PROGRAM_MANAGER_CLASS::startRandomProgram(bool activateLayers) {
 }
 
 PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::startRandomProgramOnAllLayers() {
+	for (int i = 0; i < sectionCount; i++) {
+		for (int j = 0; j < MAX_LAYERS; j++) {
+			sections[i].layers[j].startRandomProgram();
+		}
+	}
+}
+
+PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::startRandomProgram(uint8_t layerID, uint8_t sectionID) {
 	sections[sectionID].layers[layerID].startRandomProgram();
+}
+
+
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::play() {
+	for (int i = 0; i < sectionCount; i++) {
+		for (int j = 0; j < MAX_LAYERS; j++) {
+			sections[i].layers[j].play();
+		}
+	}
+}
+
+PROGRAM_MANAGER_TEMPLATE
+void PROGRAM_MANAGER_CLASS::play(uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].play();
 }
 
 PROGRAM_MANAGER_TEMPLATE

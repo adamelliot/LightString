@@ -43,6 +43,8 @@ struct ProgramCode {
 	}
 };
 
+class IPalette;
+
 class ILightLayer;
 class ILightProgram;
 
@@ -65,12 +67,14 @@ public:
 	virtual void setLayerID(uint8_t layerID) = 0;
 	virtual uint8_t getLayerID() = 0;
 	
+	virtual void setPalette(IPalette *) {}
+	
 	virtual void setLightSection(ILightSection *section) = 0;
 	virtual ILightSection *getLightSection() = 0;
 	
 	virtual ILightProgram *getActiveProgram() = 0;
 
-	virtual bool startProgram(ProgramCode &programCode) = 0;
+	virtual bool startProgram(ProgramCode programCode) = 0;
 	virtual bool startRandomProgram() = 0;
 	virtual bool nextProgram() = 0;
 	virtual bool prevProgram() = 0;
@@ -116,11 +120,13 @@ public:
 	void startProgramBelow(ProgramCode programCode);
 	void startProgramBelow(uint8_t programID, uint8_t copyID = 0, uint8_t mode = 0);
 
+	virtual void setPalette(IPalette *palette) {}
+
 	virtual size_t getSize() { return sizeof(*this); }
-	
+
 	virtual void setPixelBuffer(IPixelBuffer *pixelBuffer) {}
 	virtual IPixelBuffer *getPixelBuffer() { return NULL; }
-	
+
 	virtual bool isFilterProgram() { return false; }
 
 	// Program IDs are used to target effects from one program to another
