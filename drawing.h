@@ -229,8 +229,6 @@ struct RGB : CRGB {
 /*
  * RGBA is based on RGB, but adds alpha channel functionality so
  * layering PixelBuffers can properly create composites.
- *
- * NOTE: Alpha is preserved on the receive pixel during operations
  */
 struct RGBA : RGB {
 	union {
@@ -279,6 +277,14 @@ struct RGBA : RGB {
 		this->g = qadd8(g, rhs.g);
 		this->b = qadd8(b, rhs.b);
 		this->a = qadd8(a, rhs.a);
+		return *this;
+	}
+
+	inline RGBA& operator&= (const RGBA& rhs)
+	{
+		this->r = qadd8(r, ((uint16_t)rhs.r * (uint16_t)(rhs.a)) >> 8);
+		this->g = qadd8(g, ((uint16_t)rhs.g * (uint16_t)(rhs.a)) >> 8);
+		this->b = qadd8(b, ((uint16_t)rhs.b * (uint16_t)(rhs.a)) >> 8);
 		return *this;
 	}
 
@@ -403,13 +409,27 @@ struct TPixelBuffer : public IPixelBuffer {
 	uint16_t getLength() {
 		return length;
 	}
-	/*
+
 	inline T& operator[] (uint16_t index) __attribute__((always_inline)) {
 		return pixels[index];
 	}
-*/
+
 	inline void setPixel(uint16_t index, T col) __attribute__((always_inline)) {
 		pixels[index] = col;
+	}
+	
+	inline void setPixelAA(float index, T col) __attribute__((always_inline)) {
+		uint16_t base = (uint16_t)index;
+		uint8_t ratio = (uint8_t)(fmod(index, 1) * 255);
+		if (ratio == 0) {
+			setPixel(base, col);
+			return;
+		}
+
+		pixels[base] = pixels[base].lerp8(col, 255 - ratio);
+		if ((base + 1) < length) {
+			pixels[base + 1] = pixels[base + 1].lerp8(col, ratio);
+		}
 	}
 
 	inline void setPixels(uint16_t index, uint8_t length, T col) __attribute__((always_inline)) {

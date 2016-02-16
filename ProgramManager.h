@@ -10,7 +10,7 @@ using namespace LightString;
 
 namespace LightString {
 	
-const uint32_t kDefualtTransitionLength = 1000;
+const uint32_t kDefaultTransitionLength = 1000;
 const uint8_t kTransitionFrames = 30;
 
 typedef enum {
@@ -102,7 +102,7 @@ public:
 
 	inline LightLayer()
 		: programCount(0), programListLength(0), programIndex(0), maxProgramLength(0),
-		lastTime(0), programStartedAt(0), pauseStartedAt(0), transitionLength(kDefualtTransitionLength),
+		lastTime(0), programStartedAt(0), pauseStartedAt(0), transitionLength(kDefaultTransitionLength),
 		transitionStartedAt(0), opacity(255), activeProgram(0),
 		programEventHandler(0), playState(PROGRAM_STOPPED), playMode(PLAY_MODE_CONTINUOUS),
 		transitionState(TRANSITION_DONE) {}
@@ -144,7 +144,7 @@ public:
 	void addLightProgram(ILightProgram &program, uint64_t modeList);
 	void addLightProgram(ILightProgram &program);
 	
-	void updateTranstion(uint32_t timeDelta);
+	void updateTransition(uint32_t timeDelta);
 	void update();
 };
 
@@ -217,7 +217,10 @@ public:
 	void setPlayMode(EPlayMode playMode);
 	void setPlayMode(EPlayMode playMode, uint8_t layerID, uint8_t sectionID = 0);
 
-	void setMaxFPS(uint16_t targetFPS) { msPerFrame = 1000 / targetFPS; }
+	void setMaxFPS(uint16_t targetFPS) { 
+		msPerFrame = (targetFPS == 0) ? 0 : 1000 / targetFPS; 
+	}
+	
 	void pause(bool blackout = true, bool fade = true);
 	void unpause();
 
@@ -253,7 +256,7 @@ public:
 	bool isTransitioning();
 	void transitionBrightness();
 
-	void loop();
+	bool loop();
 };
 
 #include "ProgramManager.tpp"

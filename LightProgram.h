@@ -26,7 +26,9 @@ typedef enum {
 	MODE_8  = 1 << 8,
 	MODE_9  = 1 << 9,
 	MODE_10 = 1 << 10,
-	MODE_11 = 1 << 11
+	MODE_11 = 1 << 11,
+
+	ANY_MODE = 0xff
 
 } EProgramMode;
 
@@ -114,11 +116,11 @@ public:
 	ILightLayer *layerAbove();
 	ILightLayer *layerBelow();
 
-	void startProgramAbove(ProgramCode programCode);
-	void startProgramAbove(uint8_t programID, uint8_t copyID = 0, uint8_t mode = 0);
+	bool startProgramAbove(ProgramCode programCode);
+	bool startProgramAbove(uint8_t programID, uint8_t copyID = 0, uint8_t mode = 0);
 
-	void startProgramBelow(ProgramCode programCode);
-	void startProgramBelow(uint8_t programID, uint8_t copyID = 0, uint8_t mode = 0);
+	bool startProgramBelow(ProgramCode programCode);
+	bool startProgramBelow(uint8_t programID, uint8_t copyID = 0, uint8_t mode = 0);
 
 	virtual void setPalette(IPalette *palette) {}
 

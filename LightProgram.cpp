@@ -26,24 +26,26 @@ ILightLayer *ILightProgram::layerBelow() {
 	return NULL;
 }
 
-void ILightProgram::startProgramAbove(ProgramCode programCode) {
+bool ILightProgram::startProgramAbove(ProgramCode programCode) {
 	ILightLayer *targetLayer = layerAbove();
 	if (targetLayer) {
-		targetLayer->startProgram(programCode);
+		return targetLayer->startProgram(programCode);
 	}
+	return false;
 }
 
-void ILightProgram::startProgramAbove(uint8_t programID, uint8_t copyID, uint8_t mode) {
-	startProgramAbove(ProgramCode(programID, copyID, mode));
+bool ILightProgram::startProgramAbove(uint8_t programID, uint8_t copyID, uint8_t mode) {
+	return startProgramAbove(ProgramCode(programID, copyID, mode));
 }
 
-void ILightProgram::startProgramBelow(ProgramCode programCode) {
+bool ILightProgram::startProgramBelow(ProgramCode programCode) {
 	ILightLayer *targetLayer = layerBelow();
 	if (targetLayer) {
-		targetLayer->startProgram(programCode);
+		return targetLayer->startProgram(programCode);
 	}
+	return false;
 }
 
-void ILightProgram::startProgramBelow(uint8_t programID, uint8_t copyID, uint8_t mode) {
-	startProgramBelow(ProgramCode(programID, copyID, mode));
+bool ILightProgram::startProgramBelow(uint8_t programID, uint8_t copyID, uint8_t mode) {
+	return startProgramBelow(ProgramCode(programID, copyID, mode));
 }

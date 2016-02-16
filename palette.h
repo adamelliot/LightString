@@ -136,41 +136,37 @@ struct TPalette : IPalette {
 
 typedef TPalette<RGB> CRGBPalette;
 
-extern TPalette<RGBA> SOLID_RED										;
-extern TPalette<RGBA> SOLID_GREEN									;
-extern TPalette<RGBA> SOLID_BLUE									;
-extern TPalette<RGBA> SOLID_AQUA									;
-extern TPalette<RGBA> SOLID_AZURE									;
+//TPalette<RGBA> &testPalette() {
+//	static TPalette<RGBA> pal(CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB(0, 255, 64));
+//	return pal;
+//}
 
-extern TPalette<RGBA> RAINBOW_GRADIENT 						;
-
-extern TPalette<RGBA> BLUE_GREEN_GRADIENT 				;
-extern TPalette<RGBA> GREEN_GRADIENT 							;
-extern TPalette<RGBA> LIME_GRADIENT 							;
-extern TPalette<RGBA> YELLOW_GRADIENT 						;
-extern TPalette<RGBA> WHITE_GRADIENT 							;
-
-extern TPalette<RGBA> RED_GREEN_GRADIENT 					;
-
-extern TPalette<RGBA> GREEN_BLUE_GRADIENT 				;
-extern TPalette<RGBA> RED_ORGANGE_GRADIENT 				;
-
-extern TPalette<RGBA> BLUE_WHITE_GRADIENT 				;
-extern TPalette<RGBA> BLUE_WHITISH_GRADIENT				;
-
-extern TPalette<RGBA> BLUE_WHITE_YELLOW_GRADIENT 	;
-
-extern TPalette<RGBA> BLUE_YELLOW_BLACK_GRADIENT 	;
-extern TPalette<RGBA> RED_WHITE_BLACK_GRADIENT 		;
-
-extern TPalette<RGBA> RED_WHITE_GRADIENT 					;
-extern TPalette<RGBA> GREEN_WHITE_GRADIENT 				;
-extern TPalette<RGBA> RED_WHITISH_GRADIENT 				;
-
-extern TPalette<RGBA> CYAN_PINK_GRADIENT 					;
-extern TPalette<RGBA> BLUE_YELLOW_GRADIENT 				;
-extern TPalette<RGBA> GREEN_YELLOW_GRADIENT 			;
-extern TPalette<RGBA> RAINBOW_BLACK_GRADIENT 			;
+extern TPalette<RGBA> PROGMEM SOLID_RED										;
+extern TPalette<RGBA> PROGMEM SOLID_GREEN									;
+extern TPalette<RGBA> PROGMEM SOLID_BLUE									;
+extern TPalette<RGBA> PROGMEM SOLID_AQUA									;
+extern TPalette<RGBA> PROGMEM SOLID_AZURE									;
+extern TPalette<RGBA> PROGMEM RAINBOW_GRADIENT 						;
+extern TPalette<RGBA> PROGMEM BLUE_GREEN_GRADIENT 				;
+extern TPalette<RGBA> PROGMEM GREEN_GRADIENT 							;
+extern TPalette<RGBA> PROGMEM LIME_GRADIENT 							;
+extern TPalette<RGBA> PROGMEM YELLOW_GRADIENT 						;
+extern TPalette<RGBA> PROGMEM WHITE_GRADIENT 							;
+extern TPalette<RGBA> PROGMEM RED_GREEN_GRADIENT 					;
+extern TPalette<RGBA> PROGMEM GREEN_BLUE_GRADIENT 				;
+extern TPalette<RGBA> PROGMEM RED_ORGANGE_GRADIENT 				;
+extern TPalette<RGBA> PROGMEM BLUE_WHITE_GRADIENT 				;
+extern TPalette<RGBA> PROGMEM BLUE_WHITISH_GRADIENT				;
+extern TPalette<RGBA> PROGMEM BLUE_WHITE_YELLOW_GRADIENT 	;
+extern TPalette<RGBA> PROGMEM BLUE_YELLOW_BLACK_GRADIENT 	;
+extern TPalette<RGBA> PROGMEM RED_WHITE_BLACK_GRADIENT 		;
+extern TPalette<RGBA> PROGMEM RED_WHITE_GRADIENT 					;
+extern TPalette<RGBA> PROGMEM GREEN_WHITE_GRADIENT 				;
+extern TPalette<RGBA> PROGMEM RED_WHITISH_GRADIENT 				;
+extern TPalette<RGBA> PROGMEM CYAN_PINK_GRADIENT 					;
+extern TPalette<RGBA> PROGMEM BLUE_YELLOW_GRADIENT 				;
+extern TPalette<RGBA> PROGMEM GREEN_YELLOW_GRADIENT 			;
+extern TPalette<RGBA> PROGMEM RAINBOW_BLACK_GRADIENT 			;
 
 // Palettes
 

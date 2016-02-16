@@ -91,18 +91,34 @@ void LIGHT_LAYER_CLASS::unpause() {
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::startProgram(ProgramCode programCode) {
 #ifdef VERBOSE
-	Serial.print(F("Selecting Program: "));
-	Serial.print((programCode.programID << 8) | programCode.mode, HEX);
-	Serial.print(F(" ("));
-	Serial.print(programCode.copyID, DEC);
-	Serial.print(F(") Layer: "));
+	Serial.print(F("Starting Program: 0x"));
+	Serial.print(programCode.programID, HEX);
+	Serial.print(F("\tMode: "));
+	if (programCode.mode == ANY_MODE) {
+		Serial.print(F("R"));
+	} else {
+		Serial.print(programCode.mode);
+	}
+
+	if (programCode.copyID > 0) {
+		Serial.print(F("\tC: "));
+		Serial.print(programCode.copyID, DEC);
+	}
+	Serial.print(F("\tLayer: "));
 	Serial.println(layerID);
 #endif
+
+	bool randomMode = programCode.mode == 0xff;
+	if (randomMode) programCode.mode = 0;
 
 	ILightProgram *program = getProgram(programCode);
 	if (!program) {
 		Serial.println("Program not found.");
 		return false;
+	}
+	
+	if (randomMode) {
+		programCode.mode = random8(program->getModeCount());
 	}
 
 	finishProgram();
@@ -214,12 +230,12 @@ void LIGHT_LAYER_CLASS::addLightProgram(ILightProgram &program) {
 }
 
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::updateTranstion(uint32_t timeDelta) {
+void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 	if (transitionState == TRANSITION_STARTING) {
 		transitionState = TRANSITION_RUNNING;
 		transitionStartedAt = millis();
 	}
-	
+
 	uint32_t timeElapsed = millis() - transitionStartedAt;
 	uint32_t ratio = timeElapsed * 256 / transitionLength;
 	if (ratio > 255) ratio = 255;
@@ -228,9 +244,11 @@ void LIGHT_LAYER_CLASS::updateTranstion(uint32_t timeDelta) {
 
 	switch (activeProgram->getTransition()) {
 		case TRANSITION_OVERWRITE:
+		timeElapsed = transitionLength;
 		break;
 
 		case TRANSITION_WIPE:
+		timeElapsed = transitionLength;
 		clear = true;
 		break;
 
@@ -284,7 +302,7 @@ void LIGHT_LAYER_CLASS::update() {
 	lastTime = time;
 
 	if (!activeProgram || playState == PROGRAM_STOPPED || playState == PROGRAM_PAUSED) return;
-	
+
 	uint32_t programTimeDelta = time - programStartedAt;
 
 	// NOTE: Should transition time adjust end time?
@@ -298,7 +316,7 @@ void LIGHT_LAYER_CLASS::update() {
 	}
 
 	if (transitionState != TRANSITION_DONE) {
-		updateTranstion(timeDelta);
+		updateTransition(timeDelta);
 	} else {
 		activeProgram->update(timeDelta);
 	}
@@ -636,20 +654,21 @@ void PROGRAM_MANAGER_CLASS::transitionBrightness() {
 // -------------------- Primary Manager Loop -------------------
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::loop() {
+bool PROGRAM_MANAGER_CLASS::loop() {
 	uint32_t time = millis(), timeDelta = time - lastTime;
-	lastTime = time;
 
 	// TODO: Frame rate limiting isn't working quite right
 	if (timeDelta < msPerFrame) {
-		delay(msPerFrame - timeDelta);
-		
-		// return;
+		// delay(msPerFrame - timeDelta);
+		return false;
 	}
+	lastTime = time;
 
 	this->transitionBrightness();
 
 	for (int i = 0; i < sectionCount; i++) {
 		sections[i].update();
 	}
+	
+	return true;
 }
