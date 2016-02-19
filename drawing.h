@@ -224,6 +224,15 @@ struct RGB : CRGB {
 
 	inline RGB(const CHSV &rhs) __attribute__((always_inline))
 		: CRGB(rhs) {}
+	
+	RGB& shiftHue(uint8_t by) {
+		if (by == 0) return *this;
+		
+		CHSV hsv = rgb2hsv_approximate(*this);
+		hsv.hue += by;
+		hsv2rgb_rainbow(hsv, *this);
+		return *this;
+	}
 };
 
 /*
@@ -320,7 +329,15 @@ struct RGBA : RGB {
 
     return ret;
   }
-
+	/*
+	RGBA& shiftHue(uint8_t by) {
+		if (by == 0) return *this;
+		
+		CHSV hsv = rgb2hsv_approximate(*(CRGB *)this);
+		hsv.hue += by;
+		hsv2rgb_rainbow(hsv, *(CRGB *)this);
+		return *this;
+	}*/
 	// Overlay Modes
 
 	// Standard copy mode, but takes Alpha into account
