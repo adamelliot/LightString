@@ -118,9 +118,12 @@ public:
 
 	bool startProgramAbove(ProgramCode programCode);
 	bool startProgramAbove(uint8_t programID, uint8_t copyID = 0, uint8_t mode = 0);
-
+	
 	bool startProgramBelow(ProgramCode programCode);
 	bool startProgramBelow(uint8_t programID, uint8_t copyID = 0, uint8_t mode = 0);
+
+	bool startProgramOnLayer(uint8_t layerID, ProgramCode programCode);
+	bool startProgramOnLayer(uint8_t layerID, uint8_t programID, uint8_t copyID = 0, uint8_t mode = 0);
 
 	virtual void setPalette(IPalette *palette) {}
 

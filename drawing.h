@@ -318,7 +318,7 @@ struct RGBA : RGB {
     return ret;
   }
 
-  inline RGBA lerp8(CRGB &other, fract8 frac)
+  inline RGBA lerp8(CRGB other, fract8 frac)
   {
     RGBA ret;
 

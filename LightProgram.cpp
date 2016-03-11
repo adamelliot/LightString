@@ -49,3 +49,20 @@ bool ILightProgram::startProgramBelow(ProgramCode programCode) {
 bool ILightProgram::startProgramBelow(uint8_t programID, uint8_t copyID, uint8_t mode) {
 	return startProgramBelow(ProgramCode(programID, copyID, mode));
 }
+
+bool ILightProgram::startProgramOnLayer(uint8_t layerID, ProgramCode programCode) {
+	if (layer && layer->getLightSection()) {
+		ILightSection *section = layer->getLightSection();
+		ILightLayer *layer = section->getLayer(layerID);
+		
+		if (!layer) return false;
+		return layer->startProgram(programCode);
+	}
+
+	return false;
+}
+
+bool ILightProgram::startProgramOnLayer(uint8_t layerID, uint8_t programID, uint8_t copyID, uint8_t mode) {
+	return startProgramOnLayer(layerID, ProgramCode(programID, copyID, mode));
+}
+

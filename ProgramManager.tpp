@@ -113,10 +113,13 @@ bool LIGHT_LAYER_CLASS::startProgram(ProgramCode programCode) {
 
 	ILightProgram *program = getProgram(programCode);
 	if (!program) {
-		Serial.println("Program not found.");
+		Serial.print("Program not found: 0x");
+		Serial.print(programCode.programID, HEX);
+		Serial.print(" on Layer: ");
+		Serial.println(layerID);
 		return false;
 	}
-	
+
 	if (randomMode) {
 		programCode.mode = random8(program->getModeCount());
 	}
