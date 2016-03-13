@@ -142,7 +142,9 @@ bool LIGHT_LAYER_CLASS::startProgram(ProgramCode programCode) {
 
 	this->activeProgram->setMode(programCode.mode);
 	this->programStartedAt = millis();
-	this->transitionState = TRANSITION_DONE;
+	this->transitionState = TRANSITION_STARTING;
+
+	runningBeginTransition = true;
 
 	setPlayState(PROGRAM_PLAYING);
 
@@ -245,7 +247,10 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 	
 	bool clear = false;
 
-	switch (activeProgram->getTransition()) {
+	EProgramTransition transition = runningBeginTransition ?
+		activeProgram->getBeginTransition() : activeProgram->getEndTransition();
+	
+	switch (transition) {
 		case TRANSITION_OVERWRITE:
 		timeElapsed = transitionLength;
 		break;
@@ -265,6 +270,11 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 		opacity = 255 - ratio;
 		clear = true;
 		break;
+
+		case TRANSITION_FADE_UP:
+		activeProgram->update(timeDelta);
+		opacity = ratio;
+		break;
 	}
 
 	if (timeElapsed >= transitionLength) {
@@ -275,26 +285,30 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 	}
 
 	if (transitionState == TRANSITION_DONE) {
-		switch (playMode) {
-			case PLAY_MODE_CONTINUOUS:
-			{
-				ProgramCode code = activeProgram->getNextProgramCode();
-				if (code == ProgramCode(0xff, 0xff, 0xff)) {
-					nextProgram();
-				} else {
-					startProgram(code);
+		if (!runningBeginTransition) {
+			switch (playMode) {
+				case PLAY_MODE_CONTINUOUS:
+				{
+					ProgramCode code = activeProgram->getNextProgramCode();
+					if (code == ProgramCode(0xff, 0xff, 0xff)) {
+						nextProgram();
+					} else {
+						startProgram(code);
+					}
 				}
-			}
-			break;
+				break;
 
-			case PLAY_MODE_ONCE: // Once we're done
-			finishProgram();
-			setPlayState(PROGRAM_STOPPED);
-			break;
+				case PLAY_MODE_ONCE: // Once we're done
+				finishProgram();
+				setPlayState(PROGRAM_STOPPED);
+				break;
 			
-			case PLAY_MODE_REPEAT:
-			startProgram(programList[programIndex]);
-			break;
+				case PLAY_MODE_REPEAT:
+				startProgram(programList[programIndex]);
+				break;
+			}
+		} else {
+			runningBeginTransition = false;
 		}
 	}
 }

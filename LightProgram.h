@@ -11,7 +11,8 @@ typedef enum {
 	TRANSITION_OVERWRITE = 0, // Starts playing new program over existing data
 	TRANSITION_WIPE, // Clears data and starts new program immediately
 	TRANSITION_FADE_DOWN, // Forces all lights to fade while playing
-	TRANSITION_FREEZE_FADE // Forces just the section to freeze, then fade down
+	TRANSITION_FADE_UP, // Fades in all lights while playing
+	TRANSITION_FREEZE_FADE, // Forces just the section to freeze, then fade down
 } EProgramTransition;
 
 typedef enum {
@@ -140,7 +141,9 @@ public:
 
 	virtual ProgramCode getNextProgramCode() { return ProgramCode(0xff, 0xff, 0xff); /* Any program */ }
 
-	virtual EProgramTransition getTransition() { return TRANSITION_FADE_DOWN; }
+	virtual EProgramTransition getTransition() { return getEndTransition(); }
+	virtual EProgramTransition getBeginTransition() { return TRANSITION_FADE_UP; }
+	virtual EProgramTransition getEndTransition() { return TRANSITION_FADE_DOWN; }
 
 	// If false the program can only be activated by getNextProgramCode()
 	virtual bool hideFromProgramList() { return false; }

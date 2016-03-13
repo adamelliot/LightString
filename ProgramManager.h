@@ -81,6 +81,7 @@ private:
 
 	uint32_t transitionLength;
 	uint32_t transitionStartedAt;
+	bool runningBeginTransition;
 	
 	uint8_t opacity;
 
