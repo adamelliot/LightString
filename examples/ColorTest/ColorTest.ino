@@ -32,6 +32,38 @@ void setup() {
 
 	blink();
 	
+	////// Tests
+	
+	RGBu colA0(255, 0, 0);
+	RGBu colA1(0, 0, 255);
+
+	colA0 += RGBu(CRGB::Green);
+	colA0.println();
+	
+	RGBAu colB0(0, 255, 255);
+	RGBAu colB1(0, 0, 255);
+
+	colA1 += RGBu(CRGB::Green);
+
+	colA0 = colA1;
+	colB1 = colA1;
+	colA1 = colB1;
+
+	colB0.lerp8(colA0, 127);
+	colA1.lerp8(colB1, 127);
+	
+	colB0.lerp8(CRGB::Blue, 127);
+	colB0.println();
+	
+	colB0 *= 2;
+	colB0.println();
+
+	colB0 /= 2;
+	colB0.println();
+	
+	
+	///////// END
+
 	uint8_t sectionID = programManager.addLightSection(ledBuffer);
 	programManager.addBufferToLightSection(sectionID, backBuffer1);
 	programManager.addBufferToLightSection(sectionID, backBuffer2);

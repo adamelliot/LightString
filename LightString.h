@@ -11,6 +11,7 @@
 // Core Functionality
 
 #include "palette.h"
+#include "colortypes.h"
 #include "drawing.h"
 
 #include "LightProgram.h"
