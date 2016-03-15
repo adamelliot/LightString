@@ -1,7 +1,7 @@
 #ifndef __COLORTYPES_H__
 #define __COLORTYPES_H__
 
-#include <FastLED.h>
+// #include <FastLED.h>
 
 /* ==================== Common Helpers =================== */
 
