@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-c -Wall -I/Users/adam/Code/Arduino/libraries/FastLED
 LDFLAGS=-lstdc++ -lCppUnitLite
-SOURCES=fakes/FakeSerial.cpp colortypes_tests.cpp tests.cpp
+SOURCES=fakes/FakeSerial.cpp RGBu_tests.cpp tests.cpp
 OBJECTS=$(addsuffix .o, $(addprefix .build/, $(basename $(SOURCES))))
 EXECUTABLE=test
 

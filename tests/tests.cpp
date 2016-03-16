@@ -10,7 +10,3 @@ int main() {
 	
 	return 0;
 }
-
-TEST(Sale, totalNewSale) {
-	CHECK(0 == GetTotal());
-}
