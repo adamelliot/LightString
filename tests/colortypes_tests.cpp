@@ -1,8 +1,8 @@
 #include <CppUnitLite/TestHarness.h>
 
 #include <stdlib.h>
-#include "fake_FastLED.h"
-#include "fake_Serial.h"
+#include "fakes/FakeFastLED.h"
+#include "fakes/FakeSerial.h"
 #include "../colortypes.h"
 
 TEST(RGBu, creation) {

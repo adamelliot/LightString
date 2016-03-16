@@ -1,24 +1,23 @@
-SOURCES = fake_Serial.cpp runtests.cpp colortypes_tests.cpp
+CC=g++
+CFLAGS=-c -Wall -I/Users/adam/Code/Arduino/libraries/FastLED
+LDFLAGS=-lstdc++ -lCppUnitLite
+SOURCES=fakes/FakeSerial.cpp colortypes_tests.cpp tests.cpp
+OBJECTS=$(addsuffix .o, $(addprefix .build/, $(basename $(SOURCES))))
+EXECUTABLE=test
 
-#OBJECTS := $(addsuffix .o, $(addprefix .build/, $(basename $(SOURCES))))
-#DEPFILES := $(subst .o,.dep, $(subst .build/,.deps/, $(OBJECTS)))
-#TESTCPPFLAGS = -D_TEST_ -Ilibraries/dsm2_tx -Itest -Iarduino
-#CPPDEPFLAGS = -MMD -MP -MF .deps/$(basename $<).dep
-RUNTESTS := runtests
-#
-#all: runtests
-#
-#.build/%.o: %.cpp
-#	mkdir -p .deps/$(dir $<)
-#	mkdir -p .build/$(dir $<)
-#	$(COMPILE.cpp) $(TESTCPPFLAGS) $(CPPDEPFLAGS) -o $@ $<
-
-runtests: $(OBJECTS)
-	$(CC) -o $(RUNTESTS) $(SOURCES) -lstdc++ -lCppUnitLite -DARDUINO -I/Users/adam/Code/Arduino/libraries/FastLED
 # -I/Applications/Arduino.app/Contents/Java/hardware/tools/avr/avr/include -I/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/cores/arduino -I/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/variants/standard  
 
-test: clean runtests
-	@./$(RUNTESTS)
+all: $(SOURCES) $(EXECUTABLE)
 
 clean:
-	@rm -rf $(RUNTESTS)
+	rm *.o
+	rm fakes/*.o
+	rm $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS) 
+	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+	./$(EXECUTABLE)
+
+.build/%.o: %.cpp
+	mkdir -p .build/$(dir $<)
+	$(CC) $(CFLAGS) $< -o $@

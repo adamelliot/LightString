@@ -2,7 +2,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "fake_Serial.h"
+#include "FakeSerial.h"
 
 void FakeSerial::begin(unsigned long speed) {
   return;
