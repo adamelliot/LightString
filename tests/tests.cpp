@@ -1,9 +1,5 @@
 #include <CppUnitLite/TestHarness.h>
 
-int GetTotal() {
-	return 0;
-}
-
 int main() {
 	TestResult tr;
 	TestRegistry::runAllTests(tr);

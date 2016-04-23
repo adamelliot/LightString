@@ -1,8 +1,6 @@
 #ifndef __COLORTYPES_H__
 #define __COLORTYPES_H__
 
-// #include <FastLED.h>
-
 /* ==================== Common Helpers =================== */
 
 inline float lerp(const float a, const float b, const float ratio) {
@@ -53,6 +51,12 @@ inline void qmul8(uint8_t *a, const uint8_t val, uint8_t count) {
 	}
 }
 
+inline void scale8(uint8_t *a, const uint8_t val, uint8_t count) {
+	for (uint8_t i = 0; i < count; i++) {
+		a[i] = scale8(a[i], val);
+	}	
+}
+
 template <typename TYPE>
 void div(TYPE *in, const TYPE val, uint8_t count) {
 	for (uint8_t i = 0; i < count; i++) {
@@ -92,7 +96,6 @@ struct TRGB {
 		this->b = b;
 	}
 
-	// Can't set full alpha through this construtor so 3 channel notation works
 	inline TRGB(uint32_t colorcode) __attribute__((always_inline)) {
 		this->r = (colorcode >> 16) & 0xff;
 		this->g = (colorcode >>  8) & 0xff;
@@ -113,7 +116,9 @@ struct TRGB {
 	
 	/* --------------- Casting ----------------- */
 
-	
+	inline operator bool() const __attribute__((always_inline)) {
+		return r || g || b;
+	}
 
 	/* -------------- Operators ---------------- */
 
@@ -142,7 +147,7 @@ struct TRGB {
 
 	inline TRGB operator++ (int) __attribute__((always_inline)) {
 		TRGB tmp(*this);
-		operator--();
+		operator++();
 		return tmp;
 	}
 
@@ -177,21 +182,44 @@ struct TRGB {
 		return *this;
 	}
 
-	
+	inline TRGB& operator%= (const uint8_t ratio) __attribute__((always_inline)) {
+		::scale8(this->raw, ratio, sizeof(*this));
+		return *this;
+	}
 
 	/* ----------- Color Manipulation ------------ */
 
-	inline TRGB &lerp(const TRGB<TYPE> &other, uint8_t ratio) __attribute__((always_inline)) {
-		uint8_t r8 = ratio * 0xff;
+	inline TRGB &lerp(const TRGB<TYPE> &other, const float ratio) __attribute__((always_inline)) {
+		if (ratio >= 1) {
+			*this = other;
+		}
+		if (ratio <= 0) {
+			return *this;
+		}
+
+		uint8_t r8 = ratio * 256;
 		lerp8by8(this->raw, other.raw, 3, r8);
 		return *this;
 	}
 
-	inline TRGB &lerp8(const TRGB<TYPE> &other, uint8_t ratio) __attribute__((always_inline)) {
+	inline TRGB &lerp8(const TRGB<TYPE> &other, const uint8_t ratio) __attribute__((always_inline)) {
 		lerp8by8(this->raw, other.raw, 3, ratio);
 		return *this;
 	}
-	
+
+	inline TRGB &scale8(const uint8_t ratio) {
+		::scale8(this->raw, ratio, sizeof(*this));
+		return *this;
+	}
+
+	inline TRGB &maximizeBrightness(const TYPE max) {
+		return *this;
+	}
+
+	inline TRGB &maximizeBrightness() {
+		return maximizeBrightness(255);
+	}
+
 	/* ------------------- Other ----------------- */
 
 	void print() {
@@ -209,6 +237,46 @@ struct TRGB {
 		Serial.println();
 	}
 };
+
+/* --------------- Specializations -----------------*/ 
+
+template <>
+TRGB<uint8_t>& TRGB<uint8_t>::maximizeBrightness(const uint8_t limit) {
+	uint8_t max = r;
+	if (g > max) max = g;
+	if (b > max) max = b;
+	uint16_t fact = ((uint16_t)limit * 256) / max;
+
+	r = (r * fact) / 256;
+	g = (g * fact) / 256;
+	b = (b * fact) / 256;
+
+	return *this;
+}
+
+template <>
+TRGB<float>& TRGB<float>::maximizeBrightness(const float limit) {
+	float max = r;
+	if (g > max) max = g;
+	if (b > max) max = b;
+	uint16_t fact = 1 / max;
+
+	r *= fact;
+	g *= fact;
+	b *= fact;
+
+	return *this;
+}
+
+template <>
+TRGB<uint8_t>& TRGB<uint8_t>::maximizeBrightness() {
+	return maximizeBrightness(255);
+}
+
+template <>
+TRGB<float>& TRGB<float>::maximizeBrightness() {
+	return maximizeBrightness(1);
+}
 
 /* ======================== RGBA ========================= */
 

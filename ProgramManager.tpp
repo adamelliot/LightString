@@ -187,7 +187,7 @@ void LIGHT_LAYER_CLASS::shufflePrograms() {
 	}
 }
 
-// TODO: This will only support up to 64 progrom modes currently, should really support 256
+// TODO: This will only support up to 64 program modes currently, should really support 256
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::addLightProgram(ILightProgram &program, uint64_t modeList) {
 	uint8_t programID = program.getProgramID();

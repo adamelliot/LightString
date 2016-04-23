@@ -61,7 +61,7 @@ class LightLayer : public ILightLayer {
 private:
 	uint8_t layerID;
 
-	// TODO: Implement with virtual interface to remove the MAX_LAYER depenance 
+	// TODO: Implement with virtual interface to remove the MAX_LAYER dependence 
 	ILightSection *section;
 
 	ILightProgram *lightPrograms[MAX_LIGHT_PROGRAMS];
@@ -73,7 +73,7 @@ private:
 
 	// Program Manager Timing
 	// 0 -> let the program choose it's own timing
-	// If the program specifies a time and this is set, the progrm will take precident
+	// If the program specifies a time and this is set, the program will take precedent
 	uint32_t maxProgramLength;
 	uint32_t lastTime;
 	uint32_t programStartedAt;
@@ -139,9 +139,9 @@ public:
 	bool startRandomProgram();
 	bool nextProgram();
 	bool prevProgram();
-	
+
 	void shufflePrograms();
-	
+
 	void addLightProgram(ILightProgram &program, uint64_t modeList);
 	void addLightProgram(ILightProgram &program);
 	
@@ -170,7 +170,7 @@ public:
 			layers[i].setLightSection(this);
 		}
 	}
-	
+
 	TPixelBuffer<RGB> *getOutputBuffer() { return outputBuffer; }
 
 	uint8_t getMaxLayers() { return MAX_LAYERS; }

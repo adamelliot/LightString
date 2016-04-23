@@ -10,6 +10,8 @@
 
 // Core Functionality
 
+#include <FastLED.h>
+
 #include "palette.h"
 #include "colortypes.h"
 #include "drawing.h"

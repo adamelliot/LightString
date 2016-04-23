@@ -42,3 +42,18 @@ struct CRGB {
 
 #include "lib8tion/math8.h"
 #include "lib8tion/scale8.h"
+
+uint8_t lerp8by8( uint8_t a, uint8_t b, fract8 frac)
+{
+    uint8_t result;
+    if( b > a) {
+        uint8_t delta = b - a;
+        uint8_t scaled = scale8( delta, frac);
+        result = a + scaled;
+    } else {
+        uint8_t delta = a - b;
+        uint8_t scaled = scale8( delta, frac);
+        result = a - scaled;
+    }
+    return result;
+}

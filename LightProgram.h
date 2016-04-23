@@ -4,6 +4,7 @@
 #include "drawing.h"
 
 using namespace LightString;
+using namespace NSFastLED;
 
 namespace LightString {
 	

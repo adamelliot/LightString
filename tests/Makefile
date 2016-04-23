@@ -10,8 +10,7 @@ EXECUTABLE=test
 all: $(SOURCES) $(EXECUTABLE)
 
 clean:
-	rm *.o
-	rm fakes/*.o
+	rm -rf .build
 	rm $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS) 
