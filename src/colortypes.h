@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef __COLORTYPES_H__
 #define __COLORTYPES_H__
 

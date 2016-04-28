@@ -14,6 +14,10 @@
 #define EASE8_C 1
 #define AVG8_C 1
 #define AVG7_C 1
+#define AVG16_C 1
+#define AVG15_C 1
+
+#define LIB8STATIC_ALWAYS_INLINE
 
 typedef uint8_t   fract8;
 typedef int8_t    sfract7;

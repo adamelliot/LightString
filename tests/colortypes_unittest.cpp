@@ -1,11 +1,14 @@
-#include <CppUnitLite/TestHarness.h>
+#include "gtest/gtest.h"
 
 #include <stdlib.h>
 #include "fakes/FakeFastLED.h"
 #include "fakes/FakeSerial.h"
-#include "../colortypes.h"
 
-#define CHECK_RGB(COL, R, G, B) { CHECK(COL.r == R); CHECK(COL.g == G); CHECK(COL.b == B); };
+#include "../src/colortypes.h"
+
+#define CHECK_RGB(COL, R, G, B) { EXPECT_EQ(COL.r, R); EXPECT_EQ(COL.g, G); EXPECT_EQ(COL.b, B); };
+
+// ------------- RGBu -----------------
 
 TEST(RGBu, creation) {
 	RGBu col;
@@ -19,10 +22,10 @@ TEST(RGBu, initialization) {
 
 TEST(RGBu, boolEval) {
 	RGBu col(0, 0, 0);
-	CHECK(col == false);
+	EXPECT_EQ(col, false);
 
 	col = RGBu(10, 20, 30);
-	CHECK(col == true);
+	EXPECT_EQ(col, true);
 }
 
 TEST(RGBu, equals) {
@@ -122,4 +125,6 @@ TEST(RGBu, maximizeBrightness) {
 
 	CHECK_RGB(col, 80, 120, 254);
 }
+
+// ------------- RGBAu -----------------
 
