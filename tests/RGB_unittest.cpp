@@ -120,6 +120,13 @@ TEST(RGBu, modEquals) {
 	EXPECT_RGB_EQ(col, 10, 15, 20);
 }
 
+TEST(RGBu, divEquals) {
+	RGBu col(20, 30, 40);
+	col /= 5;
+
+	EXPECT_RGB_EQ(col, 4, 6, 8);
+}
+
 TEST(RGBu, lerp) {
 	RGBu col1(20, 30, 40);
 	RGBu col2(60, 70, 80);
