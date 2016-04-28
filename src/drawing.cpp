@@ -2,6 +2,7 @@
 
 using namespace LightString;
 
+#ifdef USE_FASTLED
 void blink(CRGB col, int times, int timing) {
 	CRGB saveCol = *FastLED.leds();
 	
@@ -15,11 +16,7 @@ void blink(CRGB col, int times, int timing) {
 
 	*FastLED.leds() = saveCol;
 }
-
-inline void setPixel8(int16_t x, int16_t y, CRGB col) {
-	int8_t ax = x >> 8, ay = y >> 8;
-	uint8_t fx0 = x & 0xff, fy0 = y & 0xff, fx1 = 0xff - fx0;
-}
+#endif
 
 void vertLine(CRGB *pixels, int16_t x, int16_t y, int16_t len, CRGB col) {
 	if (len == 0) return;

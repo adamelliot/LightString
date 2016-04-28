@@ -1,8 +1,10 @@
 #ifndef _PALETTE_H_
 #define _PALETTE_H_
 
-#include <Arduino.h>
+#ifdef USE_FASTLED
 #include <FastLED.h>
+#endif
+
 #include "drawing.h"
 
 const uint16_t kPaletteSize = 256;

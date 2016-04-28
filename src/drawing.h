@@ -1,8 +1,11 @@
 #ifndef _DRAWING_H_
 #define _DRAWING_H_
 
-#include "FastLED.h"
-using namespace NSFastLED;
+#ifdef USE_FASTLED
+#include <FastLED.h>
+#endif
+
+#include "colortypes.h"
 
 #define SWAP(x, y) do { typeof(x) SWAP = x; x = y; y = SWAP; } while (0)
 
@@ -13,10 +16,11 @@ extern uint8_t *generic_map;
 
 extern int16_t xy(int16_t, int16_t);
 
+#ifdef USE_FASTLED
 void blink(CRGB col = CRGB::Yellow, int t
 	imes = 4, int timing = 75);
 
-void setPixel8(int16_t x, int16_t y, CRGB col);
+#endif
 
 void vertLine(CRGB *pixels, int16_t x, int16_t y, int16_t len, CRGB col);
 void horzLine(CRGB *pixels, int16_t x, int16_t y, int16_t len, CRGB col);

@@ -1,4 +1,4 @@
-#define LIB8STATIC
+#pragma once
 
 #define QADD8_C 1
 #define QADD7_C 1
@@ -17,7 +17,8 @@
 #define AVG16_C 1
 #define AVG15_C 1
 
-#define LIB8STATIC_ALWAYS_INLINE
+#define LIB8STATIC_ALWAYS_INLINE inline
+#define LIB8STATIC inline
 
 typedef uint8_t   fract8;
 typedef int8_t    sfract7;
@@ -47,7 +48,7 @@ struct CRGB {
 #include "lib8tion/math8.h"
 #include "lib8tion/scale8.h"
 
-uint8_t lerp8by8( uint8_t a, uint8_t b, fract8 frac)
+inline uint8_t lerp8by8( uint8_t a, uint8_t b, fract8 frac)
 {
     uint8_t result;
     if( b > a) {

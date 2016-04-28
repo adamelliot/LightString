@@ -1,3 +1,5 @@
+#pragma once
+
 // Place holder type for all generated TPixelBuffers
 struct IPixelBuffer {
 	virtual uint16_t getLength() = 0;
