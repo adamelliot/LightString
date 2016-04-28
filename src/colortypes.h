@@ -3,6 +3,8 @@
 #ifndef __COLORTYPES_H__
 #define __COLORTYPES_H__
 
+#include "FastLEDWrapper.h"
+
 /* ==================== Common Helpers =================== */
 
 inline float lerp(const float a, const float b, const float ratio) {

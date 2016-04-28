@@ -1,7 +1,6 @@
 #include "gtest/gtest.h"
 
 #include <stdlib.h>
-#include "fakes/FakeFastLED.h"
 
 #include "../src/colortypes.h"
 
@@ -66,6 +65,39 @@ TEST(RGBu, incrementPostfix) {
 	RGBu col2 = col++;
 
 	EXPECT_RGB_EQ(col, 21, 31, 41);
+	EXPECT_RGB_EQ(col2, 20, 30, 40);
+}
+
+TEST(RGBu, subEqualsRBG) {
+	RGBu col1(20, 30, 10);
+	RGBu col2(10, 11, 12);
+
+	col1 -= col2;
+	
+	EXPECT_RGB_EQ(col1, 10, 19, 0);
+}
+
+TEST(RGBu, subEqualsVal) {
+	RGBu col1(20, 30, 40);
+	
+	col1 -= 20;
+	
+	EXPECT_RGB_EQ(col1, 0, 10, 20);
+}
+
+TEST(RGBu, decrementPrefix) {
+	RGBu col(20, 30, 40);
+	RGBu col2 = --col;
+
+	EXPECT_RGB_EQ(col, 19, 29, 39);
+	EXPECT_RGB_EQ(col2, 19, 29, 39);
+}
+
+TEST(RGBu, decrementPostfix) {
+	RGBu col(20, 30, 40);
+	RGBu col2 = col--;
+
+	EXPECT_RGB_EQ(col, 19, 29, 39);
 	EXPECT_RGB_EQ(col2, 20, 30, 40);
 }
 

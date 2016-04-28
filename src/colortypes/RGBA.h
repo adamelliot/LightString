@@ -73,6 +73,28 @@ struct TRGBA : TRGB<TYPE> {
 		return tmp;
 	}
 
+
+	inline TRGBA& operator-= (const TRGBA<TYPE> &rhs) __attribute__((always_inline)) {
+		qsub8(this->raw, rhs.raw, sizeof(*this));
+		return *this;
+	}
+
+	inline TRGBA& operator-= (const TYPE val) __attribute__((always_inline)) {
+		qsub8(this->raw, val, sizeof(*this));
+		return *this;
+	}
+
+	inline TRGBA& operator-- () __attribute__((always_inline)) {
+		operator-=(1);
+		return *this;
+	}
+
+	inline TRGBA operator-- (int) __attribute__((always_inline)) {
+		TRGBA tmp(*this);
+		operator--();
+		return tmp;
+	}
+
 	inline TRGBA& operator*= (const TYPE val) __attribute__((always_inline)) {
 		qmul8(this->raw, val, sizeof(*this));
 		return *this;
