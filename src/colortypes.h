@@ -5,6 +5,8 @@
 
 #include "FastLEDWrapper.h"
 
+
+
 /* ==================== Common Helpers =================== */
 
 inline float lerp(const float a, const float b, const float ratio) {
@@ -73,10 +75,14 @@ void div(TYPE *in, const TYPE val, uint8_t count) {
 
 /* ============== Actual Declarations ================ */
 
+namespace LightString {
+
 typedef TRGB<uint8_t> RGBu;
 typedef TRGBA<uint8_t> RGBAu;
 
 typedef TRGB<float> RGBf;
 typedef TRGBA<float> RGBAf;
+
+};
 
 #endif

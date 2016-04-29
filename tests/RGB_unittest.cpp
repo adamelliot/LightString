@@ -1,8 +1,9 @@
 #include "gtest/gtest.h"
 
 #include <stdlib.h>
-
 #include "../src/colortypes.h"
+
+using namespace LightString;
 
 #define EXPECT_RGB_EQ(COL, R, G, B) { EXPECT_EQ(COL.r, R); EXPECT_EQ(COL.g, G); EXPECT_EQ(COL.b, B); };
 
@@ -113,18 +114,18 @@ TEST(RGBu, multEquals) {
 	EXPECT_RGB_EQ(col, 40, 60, 80);
 }
 
-TEST(RGBu, modEquals) {
-	RGBu col(20, 30, 40);
-	col %= 128; // Scale by half
-
-	EXPECT_RGB_EQ(col, 10, 15, 20);
-}
-
 TEST(RGBu, divEquals) {
 	RGBu col(20, 30, 40);
 	col /= 5;
 
 	EXPECT_RGB_EQ(col, 4, 6, 8);
+}
+
+TEST(RGBu, modEquals) {
+	RGBu col(20, 30, 40);
+	col %= 128; // Scale by half
+
+	EXPECT_RGB_EQ(col, 10, 15, 20);
 }
 
 TEST(RGBu, lerp) {
@@ -147,7 +148,7 @@ TEST(RGBu, lerp8) {
 
 TEST(RGBu, scale8) {
 	RGBu col(40, 60, 80);
-	col %= 64; // Scale by quarter
+	col.scale8(64); // Scale by quarter
 
 	EXPECT_RGB_EQ(col, 10, 15, 20);
 }

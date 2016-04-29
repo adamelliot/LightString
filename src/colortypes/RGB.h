@@ -1,5 +1,7 @@
 #pragma once
 
+namespace LightString {
+
 template <typename TYPE>
 struct TRGB {
 	union {
@@ -141,6 +143,8 @@ struct TRGB {
 		return *this;
 	}
 
+	// Scales by 8 bit ratio, so 128 = 0.5, 192 = 0.75, etc.
+
 	inline TRGB &scale8(const uint8_t ratio) {
 		::scale8(this->raw, ratio, sizeof(*this));
 		return *this;
@@ -174,7 +178,7 @@ struct TRGB {
 #endif
 };
 
-/* --------------- Specializations -----------------*/ 
+/* --------------- Specializations ---------------*/ 
 
 template <>
 inline TRGB<uint8_t>& TRGB<uint8_t>::maximizeBrightness(const uint8_t limit) {
@@ -214,3 +218,4 @@ inline TRGB<float>& TRGB<float>::maximizeBrightness() {
 	return maximizeBrightness(1);
 }
 
+};

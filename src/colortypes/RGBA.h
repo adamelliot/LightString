@@ -2,6 +2,8 @@
 
 #include "RGB.h"
 
+namespace LightString {
+
 template <typename TYPE>
 struct TRGBA : TRGB<TYPE> {
 	union {
@@ -47,18 +49,13 @@ struct TRGBA : TRGB<TYPE> {
 		return *this;
 	}
 
-	inline TRGBA& operator+= (const TRGBA<TYPE> &rhs) __attribute__((always_inline)) {
-		qadd8(this->raw, rhs.raw, sizeof(*this));
-		return *this;
-	}
-
 	inline TRGBA& operator+= (const TRGB<TYPE> &rhs) __attribute__((always_inline)) {
 		qadd8(this->raw, rhs.raw, 3);
 		return *this;
 	}
 
 	inline TRGBA& operator+= (const TYPE val) __attribute__((always_inline)) {
-		qadd8(this->raw, val, sizeof(*this));
+		qadd8(this->raw, val, 3);
 		return *this;
 	}
 
@@ -73,14 +70,13 @@ struct TRGBA : TRGB<TYPE> {
 		return tmp;
 	}
 
-
-	inline TRGBA& operator-= (const TRGBA<TYPE> &rhs) __attribute__((always_inline)) {
-		qsub8(this->raw, rhs.raw, sizeof(*this));
+	inline TRGBA& operator-= (const TRGB<TYPE> &rhs) __attribute__((always_inline)) {
+		qsub8(this->raw, rhs.raw, 3);
 		return *this;
 	}
 
 	inline TRGBA& operator-= (const TYPE val) __attribute__((always_inline)) {
-		qsub8(this->raw, val, sizeof(*this));
+		qsub8(this->raw, val, 3);
 		return *this;
 	}
 
@@ -96,7 +92,17 @@ struct TRGBA : TRGB<TYPE> {
 	}
 
 	inline TRGBA& operator*= (const TYPE val) __attribute__((always_inline)) {
-		qmul8(this->raw, val, sizeof(*this));
+		qmul8(this->raw, val, 3);
+		return *this;
+	}
+
+	inline TRGBA& operator/= (const TYPE val) __attribute__((always_inline)) {
+		div<TYPE>(this->raw, val, 3);
+		return *this;
+	}
+
+	inline TRGBA& operator%= (const uint8_t ratio) __attribute__((always_inline)) {
+		::scale8(this->raw, ratio, 3);
 		return *this;
 	}
 
@@ -124,6 +130,11 @@ struct TRGBA : TRGB<TYPE> {
 		return *this;
 	}
 
+	inline TRGBA &scale8(const uint8_t ratio) {
+		::scale8(this->raw, ratio, 3);
+		return *this;
+	}
+
 	/* ------------------- Other ----------------- */
 
 #ifdef ARDUINO
@@ -143,3 +154,66 @@ struct TRGBA : TRGB<TYPE> {
 	}
 #endif
 };
+
+/* --------------- Blending ---------------*/
+
+template <typename TYPE>
+TRGBA<TYPE> blendCOPY(TRGBA<TYPE> &lhs, const TRGBA<TYPE> &rhs);
+
+template <typename TYPE>
+TRGB<TYPE> blendCOPY(TRGB<TYPE> &lhs, const TRGBA<TYPE> &rhs);
+
+template <>
+inline TRGBA<uint8_t> blendCOPY(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
+	uint8_t a = lhs.a;
+	lhs.lerp8(rhs, rhs.a);
+	lhs.a = a;
+	return lhs;
+}
+
+template <>
+inline TRGB<uint8_t> blendCOPY(TRGB<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
+	lhs.lerp8(rhs, rhs.a);
+	return lhs;
+}
+
+template <typename TYPE>
+TRGBA<TYPE> blendADD(TRGBA<TYPE> &lhs, const TRGBA<TYPE> &rhs);
+
+template <typename TYPE>
+TRGB<TYPE> blendADD(TRGB<TYPE> &lhs, const TRGBA<TYPE> &rhs);
+
+template <>
+inline TRGBA<uint8_t> blendADD(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
+	TRGBA<uint8_t> adj = TRGBA<uint8_t>(rhs).scale8(rhs.a);
+	lhs += adj;
+	return lhs;
+}
+
+template <>
+inline TRGB<uint8_t> blendADD(TRGB<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
+	lhs += rhs;
+	return lhs;
+}
+
+/*
+inline CRGB applyCOPYTo(CRGB &other) __attribute__((always_inline)) {
+	return other.lerp8((CRGB &)*this, this->a);
+}
+
+inline RGBA applyADDTo(RGBA &other) __attribute__((always_inline)) {
+	RGBA ret = this->nscale8(this->a);
+	ret.a = this->a;
+	ret += other;
+	
+	return ret;
+}
+
+inline CRGB applyADDTo(CRGB &other) __attribute__((always_inline)) {
+	RGBA adj = this->nscale8(this->a);
+	return other + (CRGB &)adj;
+}
+*/
+
+};
+

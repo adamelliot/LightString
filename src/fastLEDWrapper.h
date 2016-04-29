@@ -61,7 +61,7 @@ LIB8STATIC_ALWAYS_INLINE uint8_t qmul8( uint8_t i, uint8_t j)
 
 LIB8STATIC_ALWAYS_INLINE uint8_t scale8( uint8_t i, fract8 scale)
 {
-    return ((uint16_t)i * (uint16_t)(scale) ) >> 8;
+    return ((uint16_t)i * (uint16_t)(scale + 1) ) >> 8;
 }
 
 LIB8STATIC_ALWAYS_INLINE uint8_t lerp8by8( uint8_t a, uint8_t b, fract8 frac)

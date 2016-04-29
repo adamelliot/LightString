@@ -4,7 +4,10 @@
 
 #include "../src/colortypes.h"
 
+using namespace LightString;
+
 #define EXPECT_RGBA_EQ(COL, R, G, B, A) { EXPECT_EQ(COL.r, R); EXPECT_EQ(COL.g, G); EXPECT_EQ(COL.b, B); EXPECT_EQ(COL.a, A); };
+#define EXPECT_RGB_EQ(COL, R, G, B) { EXPECT_EQ(COL.r, R); EXPECT_EQ(COL.g, G); EXPECT_EQ(COL.b, B); };
 
 // ------------- RGBu -----------------
 
@@ -51,7 +54,7 @@ TEST(RGBAu, addEqualsRBGA) {
 
 	col1 += col2;
 	
-	EXPECT_RGBA_EQ(col1, 30, 41, 52, 63);
+	EXPECT_RGBA_EQ(col1, 30, 41, 52, 50);
 }
 
 TEST(RGBAu, addEqualsRBG) {
@@ -59,7 +62,7 @@ TEST(RGBAu, addEqualsRBG) {
 	RGBu col2(10, 11, 12);
 
 	col1 += col2;
-	
+
 	EXPECT_RGBA_EQ(col1, 30, 41, 52, 50);
 }
 
@@ -68,22 +71,22 @@ TEST(RGBAu, addEqualsVal) {
 	
 	col1 += 20;
 	
-	EXPECT_RGBA_EQ(col1, 40, 50, 60, 70);
+	EXPECT_RGBA_EQ(col1, 40, 50, 60, 50);
 }
 
 TEST(RGBAu, incrementPrefix) {
 	RGBAu col(20, 30, 40, 50);
 	RGBAu col2 = ++col;
 
-	EXPECT_RGBA_EQ(col, 21, 31, 41, 51);
-	EXPECT_RGBA_EQ(col2, 21, 31, 41, 51);
+	EXPECT_RGBA_EQ(col, 21, 31, 41, 50);
+	EXPECT_RGBA_EQ(col2, 21, 31, 41, 50);
 }
 
 TEST(RGBAu, incrementPostfix) {
 	RGBAu col(20, 30, 40, 50);
 	RGBAu col2 = col++;
 
-	EXPECT_RGBA_EQ(col, 21, 31, 41, 51);
+	EXPECT_RGBA_EQ(col, 21, 31, 41, 50);
 	EXPECT_RGBA_EQ(col2, 20, 30, 40, 50);
 }
 
@@ -93,7 +96,7 @@ TEST(RGBAu, subEqualsRBG) {
 
 	col1 -= col2;
 	
-	EXPECT_RGBA_EQ(col1, 10, 19, 0, 20);
+	EXPECT_RGBA_EQ(col1, 10, 19, 0, 40);
 }
 
 TEST(RGBAu, subEqualsVal) {
@@ -101,22 +104,22 @@ TEST(RGBAu, subEqualsVal) {
 	
 	col1 -= 20;
 	
-	EXPECT_RGBA_EQ(col1, 0, 10, 0, 40);
+	EXPECT_RGBA_EQ(col1, 0, 10, 0, 60);
 }
 
 TEST(RGBAu, decrementPrefix) {
 	RGBAu col(20, 30, 0, 50);
 	RGBAu col2 = --col;
 
-	EXPECT_RGBA_EQ(col, 19, 29, 0, 49);
-	EXPECT_RGBA_EQ(col2, 19, 29, 0, 49);
+	EXPECT_RGBA_EQ(col, 19, 29, 0, 50);
+	EXPECT_RGBA_EQ(col2, 19, 29, 0, 50);
 }
 
 TEST(RGBAu, decrementPostfix) {
 	RGBAu col(20, 30, 0, 50);
 	RGBAu col2 = col--;
 
-	EXPECT_RGBA_EQ(col, 19, 29, 0, 49);
+	EXPECT_RGBA_EQ(col, 19, 29, 0, 50);
 	EXPECT_RGBA_EQ(col2, 20, 30, 0, 50);
 }
 
@@ -124,55 +127,180 @@ TEST(RGBAu, multEquals) {
 	RGBAu col(20, 30, 40, 50);
 	col *= 10;
 
-	EXPECT_RGBA_EQ(col, 200, 255, 255, 255);
+	EXPECT_RGBA_EQ(col, 200, 255, 255, 50);
 
 	col = RGBAu(20, 30, 40, 50);
 	col *= 2;
 
-	EXPECT_RGBA_EQ(col, 40, 60, 80, 100);
+	EXPECT_RGBA_EQ(col, 40, 60, 80, 50);
 }
-/*
-TEST(RGBu, modEquals) {
-	RGBu col(20, 30, 40);
+
+TEST(RGBAu, divEquals) {
+	RGBAu col(20, 30, 40, 50);
+	col /= 5;
+
+	EXPECT_RGBA_EQ(col, 4, 6, 8, 50);
+}
+
+TEST(RGBAu, modEquals) {
+	RGBAu col(20, 30, 40, 50);
 	col %= 128; // Scale by half
 
-	EXPECT_RGB_EQ(col, 10, 15, 20);
+	EXPECT_RGBA_EQ(col, 10, 15, 20, 50);
 }
 
-TEST(RGBu, lerp) {
-	RGBu col1(20, 30, 40);
+TEST(RGBAu, lerp) {
+	RGBAu col1(20, 30, 40, 50);
+	RGBAu col2(60, 70, 80, 90);
+
+	col1.lerp(col2, 0.0);
+
+	EXPECT_RGBA_EQ(col1, 20, 30, 40, 50);
+
+	col1.lerp(col2, 0.5);
+
+	EXPECT_RGBA_EQ(col1, 40, 50, 60, 70);
+
+	col1.lerp(col2, 1.0);
+
+	EXPECT_RGBA_EQ(col1, 60, 70, 80, 90);
+}
+
+TEST(RGBAu, lerpRGB) {
+	RGBAu col1(20, 30, 40, 50);
 	RGBu col2(60, 70, 80);
+
+	col1.lerp(col2, 0.0);
+
+	EXPECT_RGBA_EQ(col1, 20, 30, 40, 50);
+
+	col1.lerp(col2, 0.5);
+
+	EXPECT_RGBA_EQ(col1, 40, 50, 60, 50);
+
+	col1.lerp(col2, 1.0);
+
+	EXPECT_RGBA_EQ(col1, 60, 70, 80, 50);
+}
+
+TEST(RGBu, lerpRGBA) {
+	RGBu col1(20, 30, 40);
+	RGBAu col2(60, 70, 80, 90);
+
+	col1.lerp(col2, 0.0);
+
+	EXPECT_RGB_EQ(col1, 20, 30, 40);
 
 	col1.lerp(col2, 0.5);
 
 	EXPECT_RGB_EQ(col1, 40, 50, 60);
+
+	col1.lerp(col2, 1.0);
+
+	EXPECT_RGB_EQ(col1, 60, 70, 80);
 }
 
-TEST(RGBu, lerp8) {
-	RGBu col1(20, 30, 40);
+TEST(RGBAu, lerp8) {
+	RGBAu col1(20, 30, 40, 50);
+	RGBAu col2(60, 70, 80, 90);
+
+	col1.lerp8(col2, 0);
+
+	EXPECT_RGBA_EQ(col1, 20, 30, 40, 50);
+	col1.lerp8(col2, 192);
+
+	EXPECT_RGBA_EQ(col1, 50, 60, 70, 80);
+
+	col1.lerp8(col2, 255);
+
+	EXPECT_RGBA_EQ(col1, 60, 70, 80, 90);
+}
+
+TEST(RGBAu, lerp8RGB) {
+	RGBAu col1(20, 30, 40, 50);
 	RGBu col2(60, 70, 80);
 
+	col1.lerp8(col2, 0);
+
+	EXPECT_RGBA_EQ(col1, 20, 30, 40, 50);
+	col1.lerp8(col2, 192);
+
+	EXPECT_RGBA_EQ(col1, 50, 60, 70, 50);
+
+	col1.lerp8(col2, 255);
+
+	EXPECT_RGBA_EQ(col1, 60, 70, 80, 50);
+}
+
+TEST(RGBu, lerp8RGBA) {
+	RGBu col1(20, 30, 40);
+	RGBAu col2(60, 70, 80, 90);
+
+	col1.lerp8(col2, 0);
+
+	EXPECT_RGB_EQ(col1, 20, 30, 40);
 	col1.lerp8(col2, 192);
 
 	EXPECT_RGB_EQ(col1, 50, 60, 70);
+
+	col1.lerp8(col2, 255);
+
+	EXPECT_RGB_EQ(col1, 60, 70, 80);
 }
 
-TEST(RGBu, scale8) {
-	RGBu col(40, 60, 80);
-	col %= 64; // Scale by quarter
+TEST(RGBAu, scale8) {
+	RGBAu col(40, 60, 80, 100);
+	col.scale8(64); // Scale by quarter
 
-	EXPECT_RGB_EQ(col, 10, 15, 20);
+	EXPECT_RGBA_EQ(col, 10, 15, 20, 100);
 }
 
-TEST(RGBu, maximizeBrightness) {
-	RGBu col(40, 60, 100);
+TEST(RGBAu, maximizeBrightness) {
+	RGBAu col(40, 60, 100, 70);
 	col.maximizeBrightness(200);
 
-	EXPECT_RGB_EQ(col, 80, 120, 200);
+	EXPECT_RGBA_EQ(col, 80, 120, 200, 70);
 
-	col = RGBu(40, 60, 127);
-	col.maximizeBrightness();	
+	col = RGBAu(40, 60, 127, 200);
+	col.maximizeBrightness();
 
-	EXPECT_RGB_EQ(col, 80, 120, 254);
+	EXPECT_RGBA_EQ(col, 80, 120, 254, 200);
 }
-*/
+
+TEST(Blending_U8, blendCOPYRGBA) {
+	TRGBA<uint8_t> col1(10, 20, 30, 255);
+	TRGBA<uint8_t> col2(40, 50, 60, 127);
+
+	blendCOPY(col1, col2);
+
+	EXPECT_RGBA_EQ(col1, 25, 35, 45, 255);
+}
+
+TEST(Blending_U8, blendCOPYRGB) {
+	TRGB<uint8_t> col1(10, 20, 30);
+	TRGBA<uint8_t> col2(40, 50, 60, 127);
+
+	blendCOPY(col1, col2);
+
+	EXPECT_RGB_EQ(col1, 25, 35, 45);
+}
+
+
+TEST(Blending_U8, blendADDRGBA) {
+	TRGBA<uint8_t> col1(10, 20, 30, 255);
+	TRGBA<uint8_t> col2(40, 50, 60, 127);
+
+	blendADD(col1, col2);
+
+	EXPECT_RGBA_EQ(col1, 30, 45, 60, 255);
+}
+
+TEST(Blending_U8, blendADDRGB) {
+	TRGB<uint8_t> col1(10, 20, 30);
+	TRGBA<uint8_t> col2(40, 50, 60, 127);
+
+	blendADD(col1, col2);
+
+	EXPECT_RGB_EQ(col1, 50, 70, 90);
+}
+
