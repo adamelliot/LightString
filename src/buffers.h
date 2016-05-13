@@ -1,12 +1,23 @@
 #pragma once
 
+#include <math.h>
+#include "colortypes.h"
+
+namespace LightString {
+
+typedef enum {
+	BLEND_COPY = 0,
+	BLEND_ADD
+	
+} EBlendMode;
+
 // Place holder type for all generated TPixelBuffers
 struct IPixelBuffer {
 	virtual uint16_t getLength() = 0;
 	virtual void clear() = 0;
 };
 
-template <typename T>
+template < typename T, class PIXEL_TYPE<T> >
 struct TPixelBuffer : public IPixelBuffer {
 	T *pixels;
 	uint16_t length;
@@ -20,15 +31,15 @@ struct TPixelBuffer : public IPixelBuffer {
 
 	inline TPixelBuffer(const uint16_t length) : length(length) {
 		pixels = new T[length];
-		memset8(pixels, 0, sizeof(T) * length);
+		memset(pixels, 0, sizeof(T) * length);
 		shouldDelete = true;
 	}
 
 	inline ~TPixelBuffer() {
 		if (shouldDelete) delete pixels;
 	}
-	
-	uint16_t getLength() {
+
+	inline uint16_t getLength() {
 		return length;
 	}
 
@@ -40,6 +51,7 @@ struct TPixelBuffer : public IPixelBuffer {
 		pixels[index] = col;
 	}
 	
+	// FIXME: Alpha channel semantics should be reviewed
 	inline void setPixelAA(float index, T col) __attribute__((always_inline)) {
 		uint16_t base = (uint16_t)index;
 		uint8_t ratio = (uint8_t)(fmod(index, 1) * 255);
@@ -66,7 +78,7 @@ struct TPixelBuffer : public IPixelBuffer {
 	}
 
 	inline void clear() __attribute__((always_inline)) {
-		memset8((void*)pixels, 0, sizeof(T) * length);
+		memset(pixels, 0, sizeof(T) * length);
 	}
 
 	inline void fillColor(T col) __attribute__((always_inline)) {
@@ -77,10 +89,12 @@ struct TPixelBuffer : public IPixelBuffer {
 
 	inline void fade(uint8_t fadeRate) __attribute__((always_inline)) {
 		for (uint16_t i = 0; i < this->length; i++) {
-			pixels[i].nscale8(fadeRate);
+			pixels[i].scale8(fadeRate);
 		}
 	}
-	
+
+/*
+	// 2d stuff should be broken out into 2d buffer
 	inline void drawRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col) {
 		::drawRect(pixels, x0, y0, x1, y1, col);
 	}
@@ -100,54 +114,37 @@ struct TPixelBuffer : public IPixelBuffer {
 	inline void drawSolidCircle(Point<float> pt, uint8_t radius, CRGB col) {
 		::drawSolidCircle(pixels, pt.x, pt.y, radius, col);
 	}
+*/
 
-	inline TPixelBuffer<T> &applyCOPY(TPixelBuffer<RGBA> &src) __attribute__((always_inline)) {
+	inline TPixelBuffer<T> &blendCOPY(TPixelBuffer<RGBAu> &src) __attribute__((always_inline)) {
 		uint16_t len = min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
-			pixels[i] = src.pixels[i].applyCOPYTo(this->pixels[i]);
+			blendCOPY(this->pixels[i], src.pixels[i]);
 		}
 
 		return *this;
 	}
 
-	inline TPixelBuffer<T> &applyADD(TPixelBuffer<RGBA> &src) __attribute__((always_inline)) {
+	inline TPixelBuffer<T> &blendADD(TPixelBuffer<RGBAu> &src) __attribute__((always_inline)) {
 		uint16_t len = min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
-			pixels[i] = src.pixels[i].applyADDTo(this->pixels[i]);
+			blendADD(this->pixels[i], src.pixels[i]);
 		}
 
 		return *this;
 	}
 
-	inline TPixelBuffer<T> &applySUBTRACT(TPixelBuffer<RGBA> &src) __attribute__((always_inline)) {
-		uint16_t len = min(this->length, src.length);
-		for (uint16_t i = 0; i < len; i++) {
-			pixels[i] = src.pixels[i].applySUBTRACTTo(this->pixels[i]);
-		}
-
-		return *this;
-	}
-
-	inline TPixelBuffer<T> &applyXOR(TPixelBuffer<RGBA> &src) __attribute__((always_inline)) {
-		uint16_t len = min(this->length, src.length);
-		for (uint16_t i = 0; i < len; i++) {
-			pixels[i] = src.pixels[i].applyXORTo(this->pixels[i]);
-		}
-
-		return *this;
-	}
-
-	inline TPixelBuffer<T> &applyBlend(TPixelBuffer<RGBA> &src, EBlendMode blendMode)  __attribute__((always_inline)) {
+	inline TPixelBuffer<T> &blendWith(TPixelBuffer<RGBAu> &src, EBlendMode blendMode)  __attribute__((always_inline)) {
 		switch (blendMode) {
-			case BLEND_COPY: return applyCOPY(src);
-			case BLEND_ADD: return applyADD(src);
-			case BLEND_SUBTRACT: return applySUBTRACT(src);
-			case BLEND_XOR: return applyXOR(src);
+			case BLEND_COPY: return blendCOPY(src);
+			case BLEND_ADD: return blendADD(src);
 		}
 
 		return *this;
 	}
 };
 
-typedef TPixelBuffer<RGB> RGBBuffer;
-typedef TPixelBuffer<RGBA> RGBABuffer;
+typedef TPixelBuffer<RGBu> RGBBuffer;
+typedef TPixelBuffer<RGBAu> RGBABuffer;
+
+};

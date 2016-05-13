@@ -1,11 +1,11 @@
 #include "gtest/gtest.h"
 
 #include <stdlib.h>
+
+#include "helpers.h"
 #include "../src/colortypes.h"
 
 using namespace LightString;
-
-#define EXPECT_RGB_EQ(COL, R, G, B) { EXPECT_EQ(COL.r, R); EXPECT_EQ(COL.g, G); EXPECT_EQ(COL.b, B); };
 
 // ------------- RGBu -----------------
 

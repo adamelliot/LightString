@@ -1,7 +1,8 @@
 APP_NAME = lightstring
 
 CC = g++
-CFLAGS = -c -Wall -I/Users/adam/Code/Arduino/libraries/FastLED
+CFLAGS = -c -Wall 
+#-I/Users/adam/Code/Arduino/libraries/FastLED
 LDFLAGS = 
 
 SOURCES = $(wildcard src/*.cpp)
