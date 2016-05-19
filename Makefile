@@ -2,6 +2,7 @@ APP_NAME = lightstring
 
 CC = g++
 CFLAGS = -c -Wall 
+#-std=c++14 -O0 -g -DDEBUG
 #-I/Users/adam/Code/Arduino/libraries/FastLED
 LDFLAGS = 
 

@@ -8,7 +8,7 @@
 using namespace LightString;
 
 TEST(TPixelBuffer, creation) {
-	TPixelBuffer<RGBu> buffer(30);
+	TPixelBuffer<TRGB, uint8_t> buffer(30);
 
 	EXPECT_EQ(buffer.length, 30);
 	EXPECT_TRUE(buffer.shouldDelete);
@@ -16,7 +16,7 @@ TEST(TPixelBuffer, creation) {
 
 TEST(TPixelBuffer, creationExternalMemory) {
 	RGBu rawBuff[30];
-	TPixelBuffer<RGBu> buffer(rawBuff, 30);
+	TPixelBuffer<TRGB> buffer(rawBuff, 30);
 
 	EXPECT_EQ(buffer.length, 30);
 	EXPECT_EQ(buffer.pixels, rawBuff);
@@ -24,7 +24,7 @@ TEST(TPixelBuffer, creationExternalMemory) {
 }
 
 TEST(TPixelBuffer, indexAccess) {
-	TPixelBuffer<RGBu> buffer(30);
+	TPixelBuffer<TRGB> buffer(30);
 
 	buffer[0] = RGBu(10, 20, 30);
 	RGBu col = buffer[0];
@@ -33,7 +33,7 @@ TEST(TPixelBuffer, indexAccess) {
 }
 
 TEST(TPixelBuffer, setPixel) {
-	TPixelBuffer<RGBu> buffer(30);
+	TPixelBuffer<TRGB> buffer(30);
 
 	buffer.setPixel(0, RGBu(10, 20, 30));
 	RGBu col = buffer[0];
@@ -42,7 +42,7 @@ TEST(TPixelBuffer, setPixel) {
 }
 
 TEST(TPixelBuffer, setPixelAA) {
-	TPixelBuffer<RGBu> buffer(30);
+	TPixelBuffer<TRGB> buffer(30);
 
 	buffer[0] = RGBu(20, 40, 60);
 	buffer[1] = RGBu(60, 80, 100);
@@ -54,7 +54,7 @@ TEST(TPixelBuffer, setPixelAA) {
 }
 
 TEST(TPixelBuffer, setPixels) {
-	TPixelBuffer<RGBu> buffer(30);
+	TPixelBuffer<TRGB> buffer(30);
 
 	buffer.setPixels(4, 10, RGBu(10, 20, 30));
 
@@ -64,7 +64,7 @@ TEST(TPixelBuffer, setPixels) {
 }
 
 TEST(TPixelBuffer, setMirroredPixel) {
-	TPixelBuffer<RGBu> buffer(30);
+	TPixelBuffer<TRGB> buffer(30);
 
 	buffer.setMirroredPixel(4, RGBu(10, 20, 30));
 
@@ -73,7 +73,7 @@ TEST(TPixelBuffer, setMirroredPixel) {
 }
 
 TEST(TPixelBuffer, clear) {
-	TPixelBuffer<RGBu> buffer(30);
+	TPixelBuffer<TRGB> buffer(30);
 
 	buffer.setMirroredPixel(4, RGBu(10, 20, 30));
 	buffer.clear();
@@ -84,7 +84,7 @@ TEST(TPixelBuffer, clear) {
 }
 
 TEST(TPixelBuffer, fillColor) {
-	TPixelBuffer<RGBu> buffer(30);
+	TPixelBuffer<TRGB> buffer(30);
 
 	buffer.setMirroredPixel(4, RGBu(10, 20, 30));
 	buffer.clear();
@@ -93,15 +93,14 @@ TEST(TPixelBuffer, fillColor) {
 		EXPECT_RGB_EQ(buffer[i], 0, 0, 0);
 	}
 }
-/*
-TEST(TPixelBuffer, fade) {
-	TPixelBuffer<RGBu> buffer(30);
 
-	buffer.fillColor(RGBu(10, 20, 30));
-	buffer.clear();
+TEST(TPixelBuffer, fade) {
+	TPixelBuffer<TRGB, uint8_t> buffer(30);
+
+	buffer.fillColor(RGBu(100, 80, 60));
+	buffer.fade(191);
 
 	for (int i = 0; i < 30; i++) {
-		EXPECT_RGB_EQ(buffer[i], 0, 0, 0);
+		EXPECT_RGB_EQ(buffer[i], 75, 60, 45);
 	}
 }
-*/
