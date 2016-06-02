@@ -3,11 +3,9 @@
 #ifndef __COLORTYPES_H__
 #define __COLORTYPES_H__
 
-#include "FastLEDWrapper.h"
 #include <cstdlib>
 #include <stdint.h>
-
-
+#include "FastLEDWrapper.h"
 
 /* ==================== Common Helpers =================== */
 

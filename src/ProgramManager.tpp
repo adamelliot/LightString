@@ -113,15 +113,17 @@ bool LIGHT_LAYER_CLASS::startProgram(ProgramCode programCode) {
 
 	ILightProgram *program = getProgram(programCode);
 	if (!program) {
+#ifdef __DISPLAY_ERROR
 		Serial.print("Program not found: 0x");
 		Serial.print(programCode.programID, HEX);
 		Serial.print(" on Layer: ");
 		Serial.println(layerID);
+#endif
 		return false;
 	}
 
 	if (randomMode) {
-		programCode.mode = random8(program->getModeCount());
+		programCode.mode = random(program->getModeCount());
 	}
 
 	finishProgram();
@@ -375,7 +377,11 @@ LIGHT_SECTION_TEMPLATE
 bool LIGHT_SECTION_CLASS::addBuffer(IPixelBuffer *buffer) {
 	if (!buffer->getLength() == this->outputBuffer->getLength()) {
 #ifdef VERBOSE
+#ifdef ARDUINO
 		Serial.println(F("ERROR: Buffer added to pool needs to be the same size as the output buffer."));
+#else 
+		frprintf(stderr, "ERROR: Buffer added to pool needs to be the same size as the output buffer.");
+#endif
 #endif
 
 		return false;
@@ -392,7 +398,7 @@ void LIGHT_SECTION_CLASS::update() {
 	if (bufferCount > 0) {
 		outputBuffer->clear();
 	}
-
+/*
 	for (int i = 0; i < MAX_LAYERS; i++) {
 		layers[i].update();
 		ILightProgram *program = layers[i].getActiveProgram();
@@ -411,6 +417,7 @@ void LIGHT_SECTION_CLASS::update() {
 			outputBuffer->applyBlend(*buffer, program->getBlendMode());
 		}
 	}
+	*/
 }
 
 // ------------------------ Program Manager ------------------------
@@ -601,7 +608,7 @@ LIGHT_SECTION_CLASS *PROGRAM_MANAGER_CLASS::getLightSection(uint8_t sectionID) {
 }
 
 PROGRAM_MANAGER_TEMPLATE
-uint8_t PROGRAM_MANAGER_CLASS::addLightSection(TPixelBuffer<RGB> &pixelBuffer) {
+uint8_t PROGRAM_MANAGER_CLASS::addLightSection(TPixelBuffer<PIXEL, FORMAT> &pixelBuffer) {
 	if (sectionCount >= MAX_LIGHT_SECTIONS) {
 #ifdef VERBOSE
 		Serial.println(F("ERROR: Maximum amount of light sections already added."));
@@ -634,7 +641,9 @@ PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::fadeUp(bool forceZero) {
 	if (forceZero) {
 		adjustedBrightness = 0;
+#ifdef USE_FASTLED
 		FastLED.setBrightness(adjustedBrightness);
+#endif
 	}
 
 	targetBrightness = brightness;
@@ -647,7 +656,9 @@ void PROGRAM_MANAGER_CLASS::setBrightness(uint8_t brightness) {
 	this->adjustedBrightness = brightness;
 	this->targetBrightness = brightness;
 
+#ifdef USE_FASTLED
 	FastLED.setBrightness(brightness);
+#endif
 }
 
 PROGRAM_MANAGER_TEMPLATE
@@ -665,7 +676,9 @@ void PROGRAM_MANAGER_CLASS::transitionBrightness() {
 		adjustedBrightness = targetBrightness;
 	}
 
+#ifdef USE_FASTLED
 	FastLED.setBrightness(adjustedBrightness);
+#endif
 }
 
 // -------------------- Primary Manager Loop -------------------

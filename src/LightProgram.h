@@ -1,10 +1,9 @@
+#pragma once
+
 #ifndef _LIGHTPROGRAM_H_
 #define _LIGHTPROGRAM_H_
 
-#include "drawing.h"
-
-using namespace LightString;
-using namespace NSFastLED;
+#include "buffers.h"
 
 namespace LightString {
 	
@@ -55,7 +54,7 @@ class ILightProgram;
 class ILightSection {
 public:
 
-	virtual TPixelBuffer<RGB> *getOutputBuffer() = 0;
+	virtual IPixelBuffer *getOutputBuffer() = 0;
 
 	virtual uint8_t getMaxLayers() = 0;
 	virtual ILightLayer *getLayer(uint8_t layerID) = 0;
@@ -105,8 +104,6 @@ public:
 
 	virtual void setupMode(uint8_t mode) {}
 	virtual void programFinished() {}
-	
-	// virtual void setPalette(IPalette *palette) {}
 	
 	void setMode(uint8_t mode) { this->mode = mode; setupMode(mode); }
 	uint8_t getMode() { return mode; }
@@ -162,21 +159,21 @@ public:
 	virtual void update(uint32_t ms) {}
 };
 
-template <typename PIXEL = Pixel>
+template <template <typename> class PIXEL, typename FORMAT = uint8_t>
 class TLightProgram : public ILightProgram {
 protected:
 	
 	// Set to which layer the program is being drawn on
 	uint8_t layer;
 
-	TPixelBuffer<PIXEL> *pixelBuffer;
+	TPixelBuffer<PIXEL, FORMAT> *pixelBuffer;
 
 public:
 	TLightProgram(uint8_t modeCount = 1) __attribute__((always_inline))
 		: ILightProgram(modeCount), layer(0), pixelBuffer(0) {}
 
 	void setPixelBuffer(IPixelBuffer *pixelBuffer) {
-		this->pixelBuffer = (TPixelBuffer<PIXEL> *)pixelBuffer;
+		this->pixelBuffer = (TPixelBuffer<PIXEL, FORMAT> *)pixelBuffer;
 	}
 
 	IPixelBuffer *getPixelBuffer() { return pixelBuffer; }
@@ -186,7 +183,7 @@ public:
 
 // Filter programs don't get their own private buffer, but operate on the
 // output buffer.
-class FilterLightProgram : public TLightProgram<RGB> {
+class FilterLightProgram : public TLightProgram<TRGB, uint8_t> {
 public:
 	inline FilterLightProgram(uint8_t modeCount = 1) __attribute__((always_inline))
 		: TLightProgram(modeCount) {}
@@ -194,9 +191,8 @@ public:
 	bool isFilterProgram() { return true; } 
 };
 
-// Old style light programs are designed to write on CRGB buffers
+// Old style light programs are designed to write on RGBu buffers
 typedef FilterLightProgram LightProgram;
-
 
 };
 

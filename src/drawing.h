@@ -17,9 +17,7 @@ extern uint8_t *generic_map;
 extern int16_t xy(int16_t, int16_t);
 
 #ifdef USE_FASTLED
-void blink(CRGB col = CRGB::Yellow, int t
-	imes = 4, int timing = 75);
-
+void blink(CRGB col = CRGB::Yellow, int times = 4, int timing = 75);
 #endif
 
 void vertLine(CRGB *pixels, int16_t x, int16_t y, int16_t len, CRGB col);

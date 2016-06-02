@@ -1,10 +1,10 @@
+#pragma once
+
 #ifndef _LIGHTPROGRAMMANAGER_H_
 #define _LIGHTPROGRAMMANAGER_H_
 
-#include "FastLED.h"
 #include "LightProgram.h"
-
-#define VERBOSE
+#include "utils.h"
 
 using namespace LightString;
 
@@ -36,22 +36,14 @@ typedef enum {
 
 typedef void (* ProgramEvent)(ILightProgram &lightProgram, EPlayState event);
 
-// TODO: Implement program grouping
-/*
-struct LightProgramGroup {
-	uint8_t programID;
-	// Pairs of codes and strip addreses
-};
-*/
+#define LIGHT_LAYER_TEMPLATE template <size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES>
+#define LIGHT_LAYER_CLASS LightLayer<MAX_LIGHT_PROGRAMS, MAX_MODES>
 
-#define LIGHT_LAYER_TEMPLATE template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES>
-#define LIGHT_LAYER_CLASS LightLayer<PIXEL, MAX_LIGHT_PROGRAMS, MAX_MODES>
+#define LIGHT_SECTION_TEMPLATE template <template <typename> class PIXEL, typename FORMAT, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LAYERS>
+#define LIGHT_SECTION_CLASS LightSection<PIXEL, FORMAT, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LAYERS>
 
-#define LIGHT_SECTION_TEMPLATE template <typename PIXEL, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LAYERS>
-#define LIGHT_SECTION_CLASS LightSection<PIXEL, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LAYERS>
-
-#define PROGRAM_MANAGER_TEMPLATE template <typename PIXEL, size_t MAX_LAYERS, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LIGHT_SECTIONS>
-#define PROGRAM_MANAGER_CLASS ProgramManager<PIXEL, MAX_LAYERS, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LIGHT_SECTIONS>
+#define PROGRAM_MANAGER_TEMPLATE template <template <typename> class PIXEL, typename FORMAT, size_t MAX_LAYERS, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LIGHT_SECTIONS>
+#define PROGRAM_MANAGER_CLASS ProgramManager<PIXEL, FORMAT, MAX_LAYERS, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LIGHT_SECTIONS>
 
 LIGHT_SECTION_TEMPLATE
 struct LightSection;
@@ -159,7 +151,7 @@ private:
 
 public:
 
-	TPixelBuffer<RGB> *outputBuffer;
+	TPixelBuffer<PIXEL, FORMAT> *outputBuffer;
 	LIGHT_LAYER_CLASS layers[MAX_LAYERS];
 
 	inline LightSection()
@@ -171,7 +163,7 @@ public:
 		}
 	}
 
-	TPixelBuffer<RGB> *getOutputBuffer() { return outputBuffer; }
+	TPixelBuffer<PIXEL, FORMAT> *getOutputBuffer() { return outputBuffer; }
 
 	uint8_t getMaxLayers() { return MAX_LAYERS; }
 	ILightLayer *getLayer(uint8_t layerID) { return &layers[layerID]; }
@@ -185,7 +177,7 @@ public:
 };
 
 // PROGRAM_MANAGER_TEMPLATE
-template <typename PIXEL, size_t MAX_LAYERS = 1, size_t MAX_LIGHT_PROGRAMS = 6, size_t MAX_MODES = 4, size_t MAX_LIGHT_SECTIONS = 1>
+template <template <typename> class PIXEL, typename FORMAT, size_t MAX_LAYERS = 1, size_t MAX_LIGHT_PROGRAMS = 6, size_t MAX_MODES = 4, size_t MAX_LIGHT_SECTIONS = 1>
 class ProgramManager {
 private:
 	LIGHT_SECTION_CLASS sections[MAX_LIGHT_SECTIONS];
@@ -248,7 +240,7 @@ public:
 	void addLightProgram(ILightProgram &program, uint64_t modeList, uint8_t layerID);
 	void addLightProgram(ILightProgram &program, uint64_t modeList, uint8_t layerID, uint8_t sectionID);
 
-	uint8_t addLightSection(TPixelBuffer<RGB> &pixelBuffer);
+	uint8_t addLightSection(TPixelBuffer<PIXEL, FORMAT> &pixelBuffer);
 	bool addBufferToLightSection(uint8_t sectionID, IPixelBuffer &buffer);
 
 	void fadeDown();

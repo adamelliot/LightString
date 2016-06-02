@@ -1,5 +1,7 @@
 #include "LightProgram.h"
 
+using namespace LightString;
+
 ILightLayer *ILightProgram::layerAbove() {
 	if (layer && layer->getLightSection()) {
 		ILightSection *section = layer->getLightSection();
