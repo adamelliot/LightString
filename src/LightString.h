@@ -7,7 +7,7 @@
 #if (ARDUINO >= 100)
 #include <Arduino.h>
 #else
-#include <WProgram.h>
+#include <WPattern.h>
 #include <pins_arduino.h>
 #endif
 #endif
@@ -23,8 +23,8 @@
 #include "palette.h"
 #include "drawing.h"
 
-#include "LightProgram.h"
-#include "ProgramManager.h"
+#include "LightPattern.h"
+#include "PatternManager.h"
 
 #define LIGHTSTRING_VERSION "0.5"
 

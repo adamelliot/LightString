@@ -3,7 +3,7 @@
 #ifndef _LIGHTPROGRAMMANAGER_H_
 #define _LIGHTPROGRAMMANAGER_H_
 
-#include "LightProgram.h"
+#include "LightPattern.h"
 #include "utils.h"
 
 using namespace LightString;
@@ -22,19 +22,19 @@ typedef enum {
 typedef enum {
 	PROGRAM_STARTED = 0,
 	PROGRAM_PLAYING,
-	PROGRAM_FINISHED, // Happens when a program ends
+	PROGRAM_FINISHED, // Happens when a pattern ends
 	PROGRAM_PAUSED,
-	PROGRAM_STOPPED // Happens after a program finishes, but another isn't started
+	PROGRAM_STOPPED // Happens after a pattern finishes, but another isn't started
 } EPlayState;
 
 typedef enum {
-	PLAY_MODE_CONTINUOUS = 0, // Keep playing another program
-	PLAY_MODE_ONCE, // Play the program then stop
-	PLAY_MODE_REPEAT // Keep repeating the same program
+	PLAY_MODE_CONTINUOUS = 0, // Keep playing another pattern
+	PLAY_MODE_ONCE, // Play the pattern then stop
+	PLAY_MODE_REPEAT // Keep repeating the same pattern
 
 } EPlayMode;
 
-typedef void (* ProgramEvent)(ILightProgram &lightProgram, EPlayState event);
+typedef void (* PatternEvent)(ILightPattern &lightPattern, EPlayState event);
 
 #define LIGHT_LAYER_TEMPLATE template <size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES>
 #define LIGHT_LAYER_CLASS LightLayer<MAX_LIGHT_PROGRAMS, MAX_MODES>
@@ -43,10 +43,10 @@ typedef void (* ProgramEvent)(ILightProgram &lightProgram, EPlayState event);
 #define LIGHT_SECTION_CLASS LightSection<PIXEL, FORMAT, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LAYERS>
 
 #define PROGRAM_MANAGER_TEMPLATE template <template <typename> class PIXEL, typename FORMAT, size_t MAX_LAYERS, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LIGHT_SECTIONS>
-#define PROGRAM_MANAGER_CLASS ProgramManager<PIXEL, FORMAT, MAX_LAYERS, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LIGHT_SECTIONS>
+#define PROGRAM_MANAGER_CLASS PatternManager<PIXEL, FORMAT, MAX_LAYERS, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LIGHT_SECTIONS>
 
 LIGHT_SECTION_TEMPLATE
-struct LightSection;
+class LightSection;
 
 LIGHT_LAYER_TEMPLATE
 class LightLayer : public ILightLayer {
@@ -56,19 +56,19 @@ private:
 	// TODO: Implement with virtual interface to remove the MAX_LAYER dependence 
 	ILightSection *section;
 
-	ILightProgram *lightPrograms[MAX_LIGHT_PROGRAMS];
-	uint8_t programCount;
+	ILightPattern *lightPatterns[MAX_LIGHT_PROGRAMS];
+	uint8_t patternCount;
 
-	ProgramCode programList[MAX_LIGHT_PROGRAMS * MAX_MODES];
-	uint8_t programListLength;
-	uint8_t programIndex; // Index in the program order
+	PatternCode patternList[MAX_LIGHT_PROGRAMS * MAX_MODES];
+	uint8_t patternListLength;
+	uint8_t patternIndex; // Index in the pattern order
 
-	// Program Manager Timing
-	// 0 -> let the program choose it's own timing
-	// If the program specifies a time and this is set, the program will take precedent
-	uint32_t maxProgramLength;
+	// Pattern Manager Timing
+	// 0 -> let the pattern choose it's own timing
+	// If the pattern specifies a time and this is set, the pattern will take precedent
+	uint32_t maxPatternLength;
 	uint32_t lastTime;
-	uint32_t programStartedAt;
+	uint32_t patternStartedAt;
 	uint32_t pauseStartedAt;
 
 	uint32_t transitionLength;
@@ -77,27 +77,27 @@ private:
 	
 	uint8_t opacity;
 
-	ILightProgram *activeProgram;
+	ILightPattern *activePattern;
 
-	ProgramEvent programEventHandler;
+	PatternEvent patternEventHandler;
 
 	EPlayState playState;
 	EPlayMode playMode;
 	ETransitionState transitionState;
 
-	ILightProgram *getProgram(ProgramCode programCode);
-	void updateProgramIndex(ProgramCode programCode);
-	void finishProgram();
+	ILightPattern *getPattern(PatternCode patternCode);
+	void updatePatternIndex(PatternCode patternCode);
+	void finishPattern();
 
 	void setPlayState(EPlayState playState);
 
 public:
 
 	inline LightLayer()
-		: programCount(0), programListLength(0), programIndex(0), maxProgramLength(0),
-		lastTime(0), programStartedAt(0), pauseStartedAt(0), transitionLength(kDefaultTransitionLength),
-		transitionStartedAt(0), opacity(255), activeProgram(0),
-		programEventHandler(0), playState(PROGRAM_STOPPED), playMode(PLAY_MODE_CONTINUOUS),
+		: patternCount(0), patternListLength(0), patternIndex(0), maxPatternLength(0),
+		lastTime(0), patternStartedAt(0), pauseStartedAt(0), transitionLength(kDefaultTransitionLength),
+		transitionStartedAt(0), opacity(255), activePattern(0),
+		patternEventHandler(0), playState(PROGRAM_STOPPED), playMode(PLAY_MODE_CONTINUOUS),
 		transitionState(TRANSITION_DONE) {}
 
 	bool isActive() { return playState != PROGRAM_STOPPED; }
@@ -107,16 +107,16 @@ public:
 	
 	void setLightSection(ILightSection *section) { this->section = section; }
 	ILightSection *getLightSection() { return section; }
-	ILightProgram *getActiveProgram() { return activeProgram; }
+	ILightPattern *getActivePattern() { return activePattern; }
 	
 	inline uint8_t getOpacity() { return opacity; }
-	void setPalette(IPalette *palette) { if (activeProgram) activeProgram->setPalette(palette); }
+	void setPalette(IPalette *palette) { if (activePattern) activePattern->setPalette(palette); }
 
-	void setMaxProgramLength(uint32_t maxProgramLength) { this->maxProgramLength = maxProgramLength; }
-	uint32_t getMaxProgramLength() { return maxProgramLength; }
+	void setMaxPatternLength(uint32_t maxPatternLength) { this->maxPatternLength = maxPatternLength; }
+	uint32_t getMaxPatternLength() { return maxPatternLength; }
 
-	void setProgramEventHandler(ProgramEvent programEventHandler) { this->programEventHandler = programEventHandler; }
-	ProgramEvent getProgramEventHandler() { return programEventHandler; }
+	void setPatternEventHandler(PatternEvent patternEventHandler) { this->patternEventHandler = patternEventHandler; }
+	PatternEvent getPatternEventHandler() { return patternEventHandler; }
 	
 	void setPlayMode(EPlayMode playMode) { this->playMode = playMode; }
 	uint32_t getPlayMode() { return playMode; }
@@ -127,15 +127,15 @@ public:
 	void pause();
 	void unpause();
 
-	bool startProgram(ProgramCode programCode);
-	bool startRandomProgram();
-	bool nextProgram();
-	bool prevProgram();
+	bool startPattern(PatternCode patternCode);
+	bool startRandomPattern();
+	bool nextPattern();
+	bool prevPattern();
 
-	void shufflePrograms();
+	void shufflePatterns();
 
-	void addLightProgram(ILightProgram &program, uint64_t modeList);
-	void addLightProgram(ILightProgram &program);
+	void addLightPattern(ILightPattern &pattern, uint64_t modeList);
+	void addLightPattern(ILightPattern &pattern);
 	
 	void updateTransition(uint32_t timeDelta);
 	void update();
@@ -178,7 +178,7 @@ public:
 
 // PROGRAM_MANAGER_TEMPLATE
 template <template <typename> class PIXEL, typename FORMAT, size_t MAX_LAYERS = 1, size_t MAX_LIGHT_PROGRAMS = 6, size_t MAX_MODES = 4, size_t MAX_LIGHT_SECTIONS = 1>
-class ProgramManager {
+class PatternManager {
 private:
 	LIGHT_SECTION_CLASS sections[MAX_LIGHT_SECTIONS];
 	uint8_t sectionCount;
@@ -197,15 +197,15 @@ private:
 
 public:
 
-	ProgramManager() : sectionCount(0), msPerFrame(20),
+	PatternManager() : sectionCount(0), msPerFrame(20),
 		brightness(255), targetBrightness(255), adjustedBrightness(255),
 		brightnessStep(0) {}
 
-	void setProgramEventHandler(ProgramEvent programEventHandler);
-	void setProgramEventHandler(ProgramEvent programEventHandler, uint8_t layerID, uint8_t sectionID = 0);
+	void setPatternEventHandler(PatternEvent patternEventHandler);
+	void setPatternEventHandler(PatternEvent patternEventHandler, uint8_t layerID, uint8_t sectionID = 0);
 
-	void setMaxProgramLength(uint32_t maxProgramLength);
-	void setMaxProgramLength(uint32_t maxProgramLength, uint8_t layerID, uint8_t sectionID = 0);
+	void setMaxPatternLength(uint32_t maxPatternLength);
+	void setMaxPatternLength(uint32_t maxPatternLength, uint8_t layerID, uint8_t sectionID = 0);
 	
 	void setPlayMode(EPlayMode playMode);
 	void setPlayMode(EPlayMode playMode, uint8_t layerID, uint8_t sectionID = 0);
@@ -217,28 +217,28 @@ public:
 	void pause(bool blackout = true, bool fade = true);
 	void unpause();
 
-	bool startProgram(ProgramCode programCode, uint8_t layerID, uint8_t sectionID = 0);
-	bool startProgram(uint8_t programID, uint8_t layerID = 0);
+	bool startPattern(PatternCode patternCode, uint8_t layerID, uint8_t sectionID = 0);
+	bool startPattern(uint8_t patternID, uint8_t layerID = 0);
 
 	// Only starts on active layers
-	void startRandomProgram();
-	void startRandomProgramOnAllLayers();
-	void startRandomProgram(uint8_t layerID, uint8_t sectionID = 0);
+	void startRandomPattern();
+	void startRandomPatternOnAllLayers();
+	void startRandomPattern(uint8_t layerID, uint8_t sectionID = 0);
 
-	// Start the current program
+	// Start the current pattern
 	void play();
 	void play(uint8_t layerID, uint8_t sectionID = 0);
 
-	void nextProgram();
-	void nextProgram(uint8_t layerID, uint8_t sectionID = 0);
-	void prevProgram();
-	void prevProgram(uint8_t layerID, uint8_t sectionID = 0);
+	void nextPattern();
+	void nextPattern(uint8_t layerID, uint8_t sectionID = 0);
+	void prevPattern();
+	void prevPattern(uint8_t layerID, uint8_t sectionID = 0);
 
-	void shufflePrograms();
+	void shufflePatterns();
 
-	void addLightProgram(ILightProgram &program, uint8_t layerID = 0);
-	void addLightProgram(ILightProgram &program, uint64_t modeList, uint8_t layerID);
-	void addLightProgram(ILightProgram &program, uint64_t modeList, uint8_t layerID, uint8_t sectionID);
+	void addLightPattern(ILightPattern &pattern, uint8_t layerID = 0);
+	void addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID);
+	void addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID, uint8_t sectionID);
 
 	uint8_t addLightSection(TPixelBuffer<PIXEL, FORMAT> &pixelBuffer);
 	bool addBufferToLightSection(uint8_t sectionID, IPixelBuffer &buffer);
@@ -252,7 +252,7 @@ public:
 	bool loop();
 };
 
-#include "ProgramManager.tpp"
+#include "PatternManager.tpp"
 
 };
 

@@ -1,12 +1,12 @@
 // -------------------------- Light Layer --------------------------
 
 LIGHT_LAYER_TEMPLATE
-ILightProgram *LIGHT_LAYER_CLASS::getProgram(ProgramCode programCode) {
+ILightPattern *LIGHT_LAYER_CLASS::getPattern(PatternCode patternCode) {
 	int copy = 0;
-	for (int i = 0; i < programCount; i++) {
-		if (lightPrograms[i]->getProgramID() == programCode.programID) {
-			if (copy == programCode.copyID) {
-				return lightPrograms[i];
+	for (int i = 0; i < patternCount; i++) {
+		if (lightPatterns[i]->getPatternID() == patternCode.patternID) {
+			if (copy == patternCode.copyID) {
+				return lightPatterns[i];
 			} else {
 				copy++;
 			}
@@ -17,26 +17,26 @@ ILightProgram *LIGHT_LAYER_CLASS::getProgram(ProgramCode programCode) {
 }
 
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::updateProgramIndex(ProgramCode programCode) {
-	if (programList[programIndex] == programCode) return;
+void LIGHT_LAYER_CLASS::updatePatternIndex(PatternCode patternCode) {
+	if (patternList[patternIndex] == patternCode) return;
 
-	for (int i = 0; i < programListLength; i++) {
-		if (programList[i] == programCode) {
-			programIndex = i;
+	for (int i = 0; i < patternListLength; i++) {
+		if (patternList[i] == patternCode) {
+			patternIndex = i;
 			break;
 		}
 	}
 }
 
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::finishProgram() {
-	if (!activeProgram) return;
+void LIGHT_LAYER_CLASS::finishPattern() {
+	if (!activePattern) return;
 
 	setPlayState(PROGRAM_FINISHED);
-	activeProgram->programFinished();
+	activePattern->patternFinished();
 
-	if (!activeProgram->isFilterProgram()) {
-		section->unlockBuffer(activeProgram->getPixelBuffer());
+	if (!activePattern->isFilterPattern()) {
+		section->unlockBuffer(activePattern->getPixelBuffer());
 	}
 }
 
@@ -44,8 +44,8 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::setPlayState(EPlayState playState) {
 	this->playState = playState;
 
-	if (programEventHandler) {
-		programEventHandler(*activeProgram, playState);
+	if (patternEventHandler) {
+		patternEventHandler(*activePattern, playState);
 	}
 }
 
@@ -57,13 +57,13 @@ void LIGHT_LAYER_CLASS::play() {
 		return;
 	}
 
-	startProgram(programList[programIndex]);
+	startPattern(patternList[patternIndex]);
 }
 
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::stop() {
 	if (playState == PROGRAM_STOPPED) return;
-	finishProgram();
+	finishPattern();
 
 	setPlayState(PROGRAM_STOPPED);
 }
@@ -84,38 +84,38 @@ void LIGHT_LAYER_CLASS::unpause() {
 	setPlayState(PROGRAM_PLAYING);
 	
 	uint32_t timeDelta = millis() - pauseStartedAt;
-	programStartedAt += timeDelta;
+	patternStartedAt += timeDelta;
 	transitionStartedAt += timeDelta;
 }
 
 LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::startProgram(ProgramCode programCode) {
+bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 #ifdef VERBOSE
-	Serial.print(F("Starting Program: 0x"));
-	Serial.print(programCode.programID, HEX);
+	Serial.print(F("Starting Pattern: 0x"));
+	Serial.print(patternCode.patternID, HEX);
 	Serial.print(F("\tMode: "));
-	if (programCode.mode == ANY_MODE) {
+	if (patternCode.mode == ANY_MODE) {
 		Serial.print(F("R"));
 	} else {
-		Serial.print(programCode.mode);
+		Serial.print(patternCode.mode);
 	}
 
-	if (programCode.copyID > 0) {
+	if (patternCode.copyID > 0) {
 		Serial.print(F("\tC: "));
-		Serial.print(programCode.copyID, DEC);
+		Serial.print(patternCode.copyID, DEC);
 	}
 	Serial.print(F("\tLayer: "));
 	Serial.println(layerID);
 #endif
 
-	bool randomMode = programCode.mode == 0xff;
-	if (randomMode) programCode.mode = 0;
+	bool randomMode = patternCode.mode == 0xff;
+	if (randomMode) patternCode.mode = 0;
 
-	ILightProgram *program = getProgram(programCode);
-	if (!program) {
+	ILightPattern *pattern = getPattern(patternCode);
+	if (!pattern) {
 #ifdef __DISPLAY_ERROR
-		Serial.print("Program not found: 0x");
-		Serial.print(programCode.programID, HEX);
+		Serial.print("Pattern not found: 0x");
+		Serial.print(patternCode.patternID, HEX);
 		Serial.print(" on Layer: ");
 		Serial.println(layerID);
 #endif
@@ -123,27 +123,27 @@ bool LIGHT_LAYER_CLASS::startProgram(ProgramCode programCode) {
 	}
 
 	if (randomMode) {
-		programCode.mode = random(program->getModeCount());
+		patternCode.mode = random(pattern->getModeCount());
 	}
 
-	finishProgram();
-	updateProgramIndex(programCode);
+	finishPattern();
+	updatePatternIndex(patternCode);
 
 	this->opacity = 255;
 
-	this->activeProgram = program;
-	this->activeProgram->setLayer(this);
+	this->activePattern = pattern;
+	this->activePattern->setLayer(this);
 
-	if (this->activeProgram->isFilterProgram()) {
-		this->activeProgram->setPixelBuffer(this->section->getOutputBuffer());
+	if (this->activePattern->isFilterPattern()) {
+		this->activePattern->setPixelBuffer(this->section->getOutputBuffer());
 	} else {
-		this->activeProgram->setPixelBuffer(this->section->lockBuffer());
+		this->activePattern->setPixelBuffer(this->section->lockBuffer());
 	}
 
 	setPlayState(PROGRAM_STARTED);
 
-	this->activeProgram->setMode(programCode.mode);
-	this->programStartedAt = millis();
+	this->activePattern->setMode(patternCode.mode);
+	this->patternStartedAt = millis();
 	this->transitionState = TRANSITION_STARTING;
 
 	runningBeginTransition = true;
@@ -154,57 +154,57 @@ bool LIGHT_LAYER_CLASS::startProgram(ProgramCode programCode) {
 }
 
 LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::startRandomProgram() {
-	programIndex = random(programListLength);
-	return nextProgram();
+bool LIGHT_LAYER_CLASS::startRandomPattern() {
+	patternIndex = random(patternListLength);
+	return nextPattern();
 }
 
 LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::nextProgram() {
-	programIndex++;
-	programIndex %= programListLength;
+bool LIGHT_LAYER_CLASS::nextPattern() {
+	patternIndex++;
+	patternIndex %= patternListLength;
 
-	return startProgram(programList[programIndex]);
+	return startPattern(patternList[patternIndex]);
 }
 
 LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::prevProgram() {
-	if (programIndex == 0) {
-		programIndex = programListLength - 1;
+bool LIGHT_LAYER_CLASS::prevPattern() {
+	if (patternIndex == 0) {
+		patternIndex = patternListLength - 1;
 	} else {
-		programIndex--;
+		patternIndex--;
 	}
 
-	return startProgram(programList[programIndex]);
+	return startPattern(patternList[patternIndex]);
 }
 
 // Shuffle from: http://benpfaff.org/writings/clc/shuffle.html
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::shufflePrograms() {
-	for (size_t i = 0; i < programListLength; i++) {
-		size_t j = (i + random() / (0xffffffff / (programListLength - 1) + 1)) % programListLength;
-		ProgramCode t = programList[j];
-		programList[j] = programList[i];
-		programList[i] = t;
+void LIGHT_LAYER_CLASS::shufflePatterns() {
+	for (size_t i = 0; i < patternListLength; i++) {
+		size_t j = (i + random() / (0xffffffff / (patternListLength - 1) + 1)) % patternListLength;
+		PatternCode t = patternList[j];
+		patternList[j] = patternList[i];
+		patternList[i] = t;
 	}
 }
 
-// TODO: This will only support up to 64 program modes currently, should really support 256
+// TODO: This will only support up to 64 pattern modes currently, should really support 256
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::addLightProgram(ILightProgram &program, uint64_t modeList) {
-	uint8_t programID = program.getProgramID();
+void LIGHT_LAYER_CLASS::addLightPattern(ILightPattern &pattern, uint64_t modeList) {
+	uint8_t patternID = pattern.getPatternID();
 
 	int copyID = 0;
-	for (int i = 0; i < programCount; i++) {
-		if (lightPrograms[i]->getProgramID() == programID) {
+	for (int i = 0; i < patternCount; i++) {
+		if (lightPatterns[i]->getPatternID() == patternID) {
 			copyID++;
 		}
 	}
 
-	lightPrograms[programCount] = &program;
-	programCount++;
+	lightPatterns[patternCount] = &pattern;
+	patternCount++;
 
-	if (!program.hideFromProgramList()) {
+	if (!pattern.hideFromPatternList()) {
 		for (uint8_t mode = 0; modeList; mode++) {
 			if ((modeList & 1) == 0) {
 				modeList >>= 1;
@@ -213,27 +213,27 @@ void LIGHT_LAYER_CLASS::addLightProgram(ILightProgram &program, uint64_t modeLis
 			modeList >>= 1;
 
 #ifdef VERBOSE
-			Serial.print(F("Adding Program Code: "));
-			Serial.print((programID << 8) | mode, HEX);
+			Serial.print(F("Adding Pattern Code: "));
+			Serial.print((patternID << 8) | mode, HEX);
 			Serial.print(" at: ");
-			Serial.println((uint32_t)&program);
+			Serial.println((uint32_t)&pattern);
 #endif
 
-			programList[programListLength] = ProgramCode(programID, copyID, mode);
-			programListLength++;
+			patternList[patternListLength] = PatternCode(patternID, copyID, mode);
+			patternListLength++;
 		}
 	}
 }
 
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::addLightProgram(ILightProgram &program) {
+void LIGHT_LAYER_CLASS::addLightPattern(ILightPattern &pattern) {
 	uint64_t modeList = 0;
 
-	for (int i = 0; i < program.getModeCount(); i++) {
+	for (int i = 0; i < pattern.getModeCount(); i++) {
 		modeList |= 1 << i;
 	}
 
-	addLightProgram(program, modeList);
+	addLightPattern(pattern, modeList);
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -249,8 +249,8 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 	
 	bool clear = false;
 
-	EProgramTransition transition = runningBeginTransition ?
-		activeProgram->getBeginTransition() : activeProgram->getEndTransition();
+	EPatternTransition transition = runningBeginTransition ?
+		activePattern->getBeginTransition() : activePattern->getEndTransition();
 	
 	switch (transition) {
 		case TRANSITION_OVERWRITE:
@@ -268,13 +268,13 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 		break;
 
 		case TRANSITION_FADE_DOWN:
-		activeProgram->update(timeDelta);
+		activePattern->update(timeDelta);
 		opacity = 255 - ratio;
 		clear = true;
 		break;
 
 		case TRANSITION_FADE_UP:
-		activeProgram->update(timeDelta);
+		activePattern->update(timeDelta);
 		opacity = ratio;
 		break;
 	}
@@ -282,7 +282,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 	if (timeElapsed >= transitionLength) {
 		transitionState = TRANSITION_DONE;
 		if (clear) {
-			activeProgram->getPixelBuffer()->clear();
+			activePattern->getPixelBuffer()->clear();
 		}
 	}
 
@@ -291,22 +291,22 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 			switch (playMode) {
 				case PLAY_MODE_CONTINUOUS:
 				{
-					ProgramCode code = activeProgram->getNextProgramCode();
-					if (code == ProgramCode(0xff, 0xff, 0xff)) {
-						nextProgram();
+					PatternCode code = activePattern->getNextPatternCode();
+					if (code == PatternCode(0xff, 0xff, 0xff)) {
+						nextPattern();
 					} else {
-						startProgram(code);
+						startPattern(code);
 					}
 				}
 				break;
 
 				case PLAY_MODE_ONCE: // Once we're done
-				finishProgram();
+				finishPattern();
 				setPlayState(PROGRAM_STOPPED);
 				break;
 			
 				case PLAY_MODE_REPEAT:
-				startProgram(programList[programIndex]);
+				startPattern(patternList[patternIndex]);
 				break;
 			}
 		} else {
@@ -320,14 +320,14 @@ void LIGHT_LAYER_CLASS::update() {
 	uint32_t time = millis(), timeDelta = time - lastTime;
 	lastTime = time;
 
-	if (!activeProgram || playState == PROGRAM_STOPPED || playState == PROGRAM_PAUSED) return;
+	if (!activePattern || playState == PROGRAM_STOPPED || playState == PROGRAM_PAUSED) return;
 
-	uint32_t programTimeDelta = time - programStartedAt;
+	uint32_t patternTimeDelta = time - patternStartedAt;
 
 	// NOTE: Should transition time adjust end time?
-	if (activeProgram->isProgramFinished() || 
-		(activeProgram->getProgramLength() > 0 && programTimeDelta > activeProgram->getProgramLength()) ||
-		(maxProgramLength > 0 && programTimeDelta > maxProgramLength))
+	if (activePattern->isPatternFinished() || 
+		(activePattern->getPatternLength() > 0 && patternTimeDelta > activePattern->getPatternLength()) ||
+		(maxPatternLength > 0 && patternTimeDelta > maxPatternLength))
 	{
 		if (transitionState == TRANSITION_DONE) {
 			transitionState = TRANSITION_STARTING;
@@ -337,7 +337,7 @@ void LIGHT_LAYER_CLASS::update() {
 	if (transitionState != TRANSITION_DONE) {
 		updateTransition(timeDelta);
 	} else {
-		activeProgram->update(timeDelta);
+		activePattern->update(timeDelta);
 	}
 }
 
@@ -401,10 +401,10 @@ void LIGHT_SECTION_CLASS::update() {
 /*
 	for (int i = 0; i < MAX_LAYERS; i++) {
 		layers[i].update();
-		ILightProgram *program = layers[i].getActiveProgram();
+		ILightPattern *pattern = layers[i].getActivePattern();
 		
-		if (program && !program->isFilterProgram() && bufferCount > 0) {
-			TPixelBuffer<RGBA> *buffer = (TPixelBuffer<RGBA> *)program->getPixelBuffer();
+		if (pattern && !pattern->isFilterPattern() && bufferCount > 0) {
+			TPixelBuffer<RGBA> *buffer = (TPixelBuffer<RGBA> *)pattern->getPixelBuffer();
 			// TODO: Fix this so it's not destructive
 			if (layers[i].getOpacity() < 255) {
 				for (uint16_t j = 0; j < buffer->getLength(); j++) {
@@ -413,14 +413,14 @@ void LIGHT_SECTION_CLASS::update() {
 			}
 			
 			// Serial.print("Blend: ");
-			// Serial.println(program->getBlendMode());
-			outputBuffer->applyBlend(*buffer, program->getBlendMode());
+			// Serial.println(pattern->getBlendMode());
+			outputBuffer->applyBlend(*buffer, pattern->getBlendMode());
 		}
 	}
 	*/
 }
 
-// ------------------------ Program Manager ------------------------
+// ------------------------ Pattern Manager ------------------------
 
 PROGRAM_MANAGER_TEMPLATE
 void PROGRAM_MANAGER_CLASS::pause(bool blackout, bool fade) {
@@ -448,34 +448,34 @@ void PROGRAM_MANAGER_CLASS::unpause() {
 	}
 }
 
-// ------------------------ Program Management ------------------------
+// ------------------------ Pattern Management ------------------------
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::setProgramEventHandler(ProgramEvent programEventHandler) {
+void PROGRAM_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler) {
 	for (int i = 0; i < sectionCount; i++) {
 		for (int j = 0; j < MAX_LAYERS; j++) {
-			sections[i].layers[j].setProgramEventHandler(programEventHandler);
+			sections[i].layers[j].setPatternEventHandler(patternEventHandler);
 		}
 	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::setProgramEventHandler(ProgramEvent programEventHandler, uint8_t layerID, uint8_t sectionID) {
-	sections[sectionID].layers[layerID].setProgramEventHandler(programEventHandler);
+void PROGRAM_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler, uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].setPatternEventHandler(patternEventHandler);
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::setMaxProgramLength(uint32_t maxProgramLength) {
+void PROGRAM_MANAGER_CLASS::setMaxPatternLength(uint32_t maxPatternLength) {
 	for (int i = 0; i < sectionCount; i++) {
 		for (int j = 0; j < MAX_LAYERS; j++) {
-			sections[i].layers[j].setMaxProgramLength(maxProgramLength);
+			sections[i].layers[j].setMaxPatternLength(maxPatternLength);
 		}
 	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::setMaxProgramLength(uint32_t maxProgramLength, uint8_t layerID, uint8_t sectionID) {
-	sections[sectionID].layers[layerID].setMaxProgramLength(maxProgramLength);
+void PROGRAM_MANAGER_CLASS::setMaxPatternLength(uint32_t maxPatternLength, uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].setMaxPatternLength(maxPatternLength);
 }
 
 PROGRAM_MANAGER_TEMPLATE
@@ -493,38 +493,38 @@ void PROGRAM_MANAGER_CLASS::setPlayMode(EPlayMode playMode, uint8_t layerID, uin
 }
 
 PROGRAM_MANAGER_TEMPLATE
-bool PROGRAM_MANAGER_CLASS::startProgram(ProgramCode programCode, uint8_t layerID, uint8_t sectionID) {
-	return sections[sectionID].layers[layerID].startProgram(programCode);
+bool PROGRAM_MANAGER_CLASS::startPattern(PatternCode patternCode, uint8_t layerID, uint8_t sectionID) {
+	return sections[sectionID].layers[layerID].startPattern(patternCode);
 }
 
 PROGRAM_MANAGER_TEMPLATE
-bool PROGRAM_MANAGER_CLASS::startProgram(uint8_t programID, uint8_t layerID) {
-	return startProgram(ProgramCode(programID), 0, 0);
+bool PROGRAM_MANAGER_CLASS::startPattern(uint8_t patternID, uint8_t layerID) {
+	return startPattern(PatternCode(patternID), 0, 0);
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::startRandomProgram() {
+void PROGRAM_MANAGER_CLASS::startRandomPattern() {
 	for (int i = 0; i < sectionCount; i++) {
 		for (int j = 0; j < MAX_LAYERS; j++) {
 			if (sections[i].layers[j].isActive()) {
-				sections[i].layers[j].startRandomProgram();
+				sections[i].layers[j].startRandomPattern();
 			}
 		}
 	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::startRandomProgramOnAllLayers() {
+void PROGRAM_MANAGER_CLASS::startRandomPatternOnAllLayers() {
 	for (int i = 0; i < sectionCount; i++) {
 		for (int j = 0; j < MAX_LAYERS; j++) {
-			sections[i].layers[j].startRandomProgram();
+			sections[i].layers[j].startRandomPattern();
 		}
 	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::startRandomProgram(uint8_t layerID, uint8_t sectionID) {
-	sections[sectionID].layers[layerID].startRandomProgram();
+void PROGRAM_MANAGER_CLASS::startRandomPattern(uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].startRandomPattern();
 }
 
 
@@ -543,59 +543,59 @@ void PROGRAM_MANAGER_CLASS::play(uint8_t layerID, uint8_t sectionID) {
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::nextProgram(uint8_t layerID, uint8_t sectionID) {
-	sections[sectionID].layers[layerID].nextProgram();
+void PROGRAM_MANAGER_CLASS::nextPattern(uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].nextPattern();
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::nextProgram() {
+void PROGRAM_MANAGER_CLASS::nextPattern() {
 	for (int j = 0; j < sectionCount; j++) {
 		for (int i = 0; i < MAX_LAYERS; i++) {
-			sections[j].layers[i].nextProgram();
+			sections[j].layers[i].nextPattern();
 		}
 	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::prevProgram(uint8_t layerID, uint8_t sectionID) {
-	sections[sectionID].layers[layerID].prevProgram();
+void PROGRAM_MANAGER_CLASS::prevPattern(uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].prevPattern();
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::prevProgram() {
+void PROGRAM_MANAGER_CLASS::prevPattern() {
 	for (int j = 0; j < sectionCount; j++) {
 		for (int i = 0; i < MAX_LAYERS; i++) {
-			sections[j].layers[i].prevProgram();
+			sections[j].layers[i].prevPattern();
 		}
 	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::shufflePrograms() {
+void PROGRAM_MANAGER_CLASS::shufflePatterns() {
 	for (int i = 0; i < sectionCount; i++) {
 		for (int j = 0; j < MAX_LAYERS; j++) {
-			sections[i].layers[j].shufflePrograms();
+			sections[i].layers[j].shufflePatterns();
 		}
 	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::addLightProgram(ILightProgram &program, uint8_t layerID) {
+void PROGRAM_MANAGER_CLASS::addLightPattern(ILightPattern &pattern, uint8_t layerID) {
 	for (int i = 0; i < sectionCount; i++) {
-		sections[i].layers[layerID].addLightProgram(program);
+		sections[i].layers[layerID].addLightPattern(pattern);
 	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::addLightProgram(ILightProgram &program, uint64_t modeList, uint8_t layerID) {
+void PROGRAM_MANAGER_CLASS::addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID) {
 	for (int i = 0; i < sectionCount; i++) {
-		sections[i].layers[layerID].addLightProgram(program, modeList);
+		sections[i].layers[layerID].addLightPattern(pattern, modeList);
 	}
 }
 
 PROGRAM_MANAGER_TEMPLATE
-void PROGRAM_MANAGER_CLASS::addLightProgram(ILightProgram &program, uint64_t modeList, uint8_t layerID, uint8_t sectionID) {
-	sections[sectionID].layers[layerID].addLightProgram(program, modeList);
+void PROGRAM_MANAGER_CLASS::addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].addLightPattern(pattern, modeList);
 }
 
 // -------------------- Adding Sections -------------------
