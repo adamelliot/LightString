@@ -11,7 +11,7 @@ const uint16_t kTotalLEDs = 144;
 // How long each program should run (in ms), set to 0 for unlimitied
 const uint32_t kProgramLength = 8000;
 
-TPixelBuffer<RGB> ledBuffer(kTotalLEDs);
+TPixelBuffer<LightString::RGB> ledBuffer(kTotalLEDs);
 TPixelBuffer<RGBA> backBuffer1(kTotalLEDs);
 TPixelBuffer<RGBA> backBuffer2(kTotalLEDs);
 

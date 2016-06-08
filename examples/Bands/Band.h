@@ -63,7 +63,7 @@ void Band<PIXEL>::update(uint32_t ms) {
 	if (sx > ex) SWAP(sx, ex);
 
 	uint16_t len = min(ex - sx, 40);
-	this->pixelBuffer->set<RGBA>s(sx, len, color);
+	this->pixelBuffer->setPixels(sx, len, color);
 }
 
 
