@@ -3,89 +3,10 @@
 #ifndef _LIGHTPROGRAM_H_
 #define _LIGHTPROGRAM_H_
 
+#include "types.h"
 #include "buffers.h"
 
 namespace LightString {
-	
-typedef enum {
-	TRANSITION_OVERWRITE = 0, // Starts playing new pattern over existing data
-	TRANSITION_WIPE, // Clears data and starts new pattern immediately
-	TRANSITION_FADE_DOWN, // Forces all lights to fade while playing
-	TRANSITION_FADE_UP, // Fades in all lights while playing
-	TRANSITION_FREEZE_FADE, // Forces just the section to freeze, then fade down
-} EPatternTransition;
-
-typedef enum {
-	MODE_0  = 1 << 0,
-	MODE_1  = 1 << 1,
-	MODE_2  = 1 << 2,
-	MODE_3  = 1 << 3,
-	MODE_4  = 1 << 4,
-	MODE_5  = 1 << 5,
-	MODE_6  = 1 << 6,
-	MODE_7  = 1 << 7,
-	MODE_8  = 1 << 8,
-	MODE_9  = 1 << 9,
-	MODE_10 = 1 << 10,
-	MODE_11 = 1 << 11,
-
-	ANY_MODE = 0xff
-
-} EPatternMode;
-
-struct PatternCode {
-	uint8_t patternID; // Name of pattern
-	uint8_t copyID; // Which copy of the pattern
-	uint8_t mode; // Which mode is specified
-
-	inline PatternCode(uint8_t patternID = 0, uint8_t copyID = 0, uint8_t mode = 0) __attribute__((always_inline))
-		: patternID(patternID), copyID(copyID), mode(mode) {}
-
-	inline bool operator== (const PatternCode &rhs) __attribute__((always_inline)) {
-		return this->patternID == rhs.patternID && this->copyID == rhs.copyID && this->mode == rhs.mode;
-	}
-};
-
-class IPalette;
-
-class ILightLayer;
-class ILightPattern;
-
-class ILightSection {
-public:
-
-	virtual IPixelBuffer *getOutputBuffer() = 0;
-
-	virtual uint8_t getMaxLayers() = 0;
-	virtual ILightLayer *getLayer(uint8_t layerID) = 0;
-
-	virtual IPixelBuffer *lockBuffer() = 0;
-	virtual void unlockBuffer(IPixelBuffer *buffer) = 0;
-	virtual bool addBuffer(IPixelBuffer *buffer) = 0;
-};
-
-class ILightLayer {
-public:
-	
-	virtual void setLayerID(uint8_t layerID) = 0;
-	virtual uint8_t getLayerID() = 0;
-	
-	virtual void setPalette(IPalette *) {}
-	
-	virtual void setLightSection(ILightSection *section) = 0;
-	virtual ILightSection *getLightSection() = 0;
-	
-	virtual ILightPattern *getActivePattern() = 0;
-
-	virtual bool startPattern(PatternCode patternCode) = 0;
-	virtual bool startRandomPattern() = 0;
-	virtual bool nextPattern() = 0;
-	virtual bool prevPattern() = 0;
-	
-	virtual void stop() = 0;
-	virtual void pause() = 0;
-	virtual void unpause() = 0;
-};
 
 class ILightPattern {
 protected:
@@ -193,6 +114,7 @@ public:
 
 // Old style light patterns are designed to write on RGBu buffers
 typedef FilterLightPattern LightPattern;
+typedef FilterLightPattern LightProgram;
 
 };
 

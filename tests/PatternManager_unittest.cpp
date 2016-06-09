@@ -6,20 +6,25 @@
 #include "../src/PatternManager.h"
 
 using namespace LightString;
-/*
-TEST(ProgramCode, equality) {
-	ProgramCode programCode1(10, 1, 3);
-	ProgramCode programCode2(11, 1, 3);
-	ProgramCode programCode3(10, 1, 3);
 
-	EXPECT_FALSE(programCode1 == programCode2);
-	EXPECT_TRUE(programCode1 == programCode3);
+TEST(PatternManager, initialization) {
+
+	PatternManager<TRGB, uint8_t, 1, 1, 1, 1> patternManager;
+
+	// PatternManager is fairly opaque so testing init 
+	// means nothing right now
+
 }
 
-TEST(LightProgram, initialization) {
-	TLightProgram<TRGB> program;
+TEST(PatternManager, sectionsExist) {
+	PatternManager<TRGB, uint8_t, 1, 1, 1, 2> patternManager;
+	TPixelBuffer<TRGB, uint8_t> buffer(30);
 
-	EXPECT_EQ(program.getModeCount(), 1);
+	uint8_t sectionID = patternManager.addLightSection(buffer);
+
+	auto section = patternManager.getLightSection(sectionID);
+	EXPECT_TRUE(section != NULL);
+
+	section = patternManager.getLightSection(1);
+	EXPECT_TRUE(section == NULL);
 }
-
-*/

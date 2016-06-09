@@ -1,21 +1,10 @@
 #pragma once
 
 #include <math.h>
+#include "types.h"
 #include "colortypes.h"
 
 namespace LightString {
-
-typedef enum {
-	BLEND_COPY = 0,
-	BLEND_ADD
-	
-} EBlendMode;
-
-// Place holder type for all generated TPixelBuffers
-struct IPixelBuffer {
-	virtual uint16_t getLength() const = 0;
-	virtual void clear() = 0;
-};
 
 template <template <typename> class T, typename FORMAT = uint8_t>
 struct TPixelBuffer : public IPixelBuffer {

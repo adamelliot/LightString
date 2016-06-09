@@ -16,14 +16,14 @@
 #include <FastLED.h>
 #endif
 
-
-
-
+#include "utils.h"
 #include "colortypes.h"
-#include "palette.h"
-#include "drawing.h"
+
+// #include "palette.h"
+// #include "drawing.h"
 
 #include "LightPattern.h"
+#include "LightLayer.h"
 #include "PatternManager.h"
 
 #define LIGHTSTRING_VERSION "0.5"
