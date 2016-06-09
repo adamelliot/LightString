@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "helpers.h"
-#include "../src/buffers.h"
+#include "../src/PixelBuffer.h"
 
 using namespace LightString;
 

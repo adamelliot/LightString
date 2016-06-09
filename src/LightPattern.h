@@ -4,7 +4,7 @@
 #define _LIGHTPROGRAM_H_
 
 #include "types.h"
-#include "buffers.h"
+#include "PixelBuffer.h"
 
 namespace LightString {
 
