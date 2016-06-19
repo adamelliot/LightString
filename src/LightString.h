@@ -20,7 +20,6 @@
 #include "PixelBuffer.h"
 
 #include "palette.h"
-#include "drawing.h"
 
 #include "LightPattern.h"
 #include "LightLayer.h"

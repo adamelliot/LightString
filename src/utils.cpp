@@ -13,7 +13,7 @@ long random(long max) {
 }
 
 long random(long min, long max) {
-    return (rand() + min) % max;
+    return (rand() % (max - min)) + min;
 }
 
 #endif

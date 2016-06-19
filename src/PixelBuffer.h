@@ -4,7 +4,9 @@
 #include <algorithm>
 #include <typeindex>
 
+#include "utils.h"
 #include "types.h"
+#include "geometry.h"
 #include "colortypes.h"
 
 namespace LightString {
@@ -43,7 +45,7 @@ public:
 	inline void setPixel(uint16_t index, T<FORMAT> col) __attribute__((always_inline)) {
 		pixels[index] = col;
 	}
-	
+
 	// FIXME: Alpha channel semantics should be reviewed
 	inline void setPixelAA(float index, T<FORMAT> col) __attribute__((always_inline)) {
 		uint16_t base = (uint16_t)index;
@@ -75,7 +77,7 @@ public:
 	}
 
 	inline void fillColor(T<FORMAT> col) __attribute__((always_inline)) {
-		for( int i = 0; i < length; i++) {
+		for ( int i = 0; i < length; i++) {
 			pixels[i] = col;
 		}
 	}
@@ -84,28 +86,28 @@ public:
 		return;
 	}
 
-/*
-	// 2d stuff should be broken out into 2d buffer
-	inline void drawRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col) {
-		::drawRect(pixels, x0, y0, x1, y1, col);
-	}
-	
-	inline void drawRect(Point<float> pt, uint8_t size, CRGB col) {
-		::drawRect(pixels, pt.x, pt.y, pt.x + size, pt.y + size, col);
-	}
-	
-	inline void lineTo(Point<float> pt1, Point<float> pt2, CRGB col) {
-		::lineTo(pixels, pt1.x, pt1.y, pt2.x, pt2.y, col);
-	}
+	/*
+		// 2d stuff should be broken out into 2d buffer
+		inline void drawRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col) {
+			::drawRect(pixels, x0, y0, x1, y1, col);
+		}
 
-	inline void drawSolidCircle(int16_t x, int16_t y, uint8_t radius, CRGB col) {
-		::drawSolidCircle(pixels, x, y, radius, col);
-	}
+		inline void drawRect(Point<float> pt, uint8_t size, CRGB col) {
+			::drawRect(pixels, pt.x, pt.y, pt.x + size, pt.y + size, col);
+		}
 
-	inline void drawSolidCircle(Point<float> pt, uint8_t radius, CRGB col) {
-		::drawSolidCircle(pixels, pt.x, pt.y, radius, col);
-	}
-*/
+		inline void lineTo(Point<float> pt1, Point<float> pt2, CRGB col) {
+			::lineTo(pixels, pt1.x, pt1.y, pt2.x, pt2.y, col);
+		}
+
+		inline void drawSolidCircle(int16_t x, int16_t y, uint8_t radius, CRGB col) {
+			::drawSolidCircle(pixels, x, y, radius, col);
+		}
+
+		inline void drawSolidCircle(Point<float> pt, uint8_t radius, CRGB col) {
+			::drawSolidCircle(pixels, pt.x, pt.y, radius, col);
+		}
+	*/
 
 	template <template <typename> class SRC_PIXEL>
 	inline TPixelBuffer<T, FORMAT> &blendCOPY(TPixelBuffer<SRC_PIXEL, FORMAT> &src) __attribute__((always_inline)) {
@@ -130,8 +132,8 @@ public:
 	template <template <typename> class SRC_PIXEL>
 	inline TPixelBuffer<T, FORMAT> &blendWith(TPixelBuffer<SRC_PIXEL, FORMAT> &src, EBlendMode blendMode)  __attribute__((always_inline)) {
 		switch (blendMode) {
-			case BLEND_COPY: return blendCOPY(src);
-			case BLEND_ADD: return blendADD(src);
+		case BLEND_COPY: return blendCOPY(src);
+		case BLEND_ADD: return blendADD(src);
 		}
 
 		return *this;
@@ -225,8 +227,43 @@ public:
 		this->pixels[xy(x, y)] = col;
 	}
 
+	void vertLine(int16_t x, int16_t y, int16_t len, T<FORMAT> col) {
+		if (len == 0) return;
+
+		if (len < 0) {
+			y += (len + 1);
+			len *= -1;
+		}
+
+		for (int i = 0; i < len; i++)
+			this->pixels[xy(x, y + i)] = col;
+	}
+
+	inline void horzLine(int16_t x, int16_t y, int16_t len, T<FORMAT> col) {
+		if (len == 0) return;
+
+		if (len < 0) {
+			x += (len + 1);
+			len *= -1;
+		}
+
+		for (int i = 0; i < len; i++)
+			this->pixels[xy(x + i, y)] = col;
+	}
+
+	inline void drawRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, T<FORMAT> col) {
+		if (y0 > y1) SWAP(y0, y1);
+
+		for (; y0 < y1; y0++) {
+			horzLine(x0, y0, x1 - x0, col);
+		}
+	}
+
+	template <typename TYPE>
+	inline void drawRect(Point<TYPE> pt, uint16_t size, T<FORMAT> col) {
+		drawRect(pt.x, pt.y, pt.x + size, pt.y + size, col);
+	}
 
 };
-
 
 };
