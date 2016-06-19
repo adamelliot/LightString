@@ -83,7 +83,7 @@ public:
 template <template <typename> class PIXEL, typename FORMAT = uint8_t>
 class TLightPattern : public ILightPattern {
 protected:
-	
+
 	// Set to which layer the pattern is being drawn on
 	uint8_t layer;
 
@@ -114,7 +114,7 @@ public:
 
 // Old style light patterns are designed to write on RGBu buffers
 typedef FilterLightPattern LightPattern;
-typedef FilterLightPattern LightProgram;
+// typedef FilterLightPattern LightProgram;
 
 };
 

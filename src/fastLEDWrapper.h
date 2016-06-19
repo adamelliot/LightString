@@ -79,5 +79,4 @@ LIB8STATIC_ALWAYS_INLINE uint8_t lerp8by8(uint8_t a, uint8_t b, fract8 frac)
     return result;
 }
 
-
 #endif

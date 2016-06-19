@@ -14,7 +14,7 @@ void SwatchManager<MAX_SWATCHES, PIXEL>::shuffle() {
 template<size_t MAX_SWATCHES, typename PIXEL>
 void SwatchManager<MAX_SWATCHES, PIXEL>::add(PIXEL color) {
 	if (swatchCount >= MAX_SWATCHES) {
-		Serial.println("ERROR: Max swatches reached.");
+		fprintf(stderr, "ERROR: Max swatches reached.\n");
 		return;
 	}
 	swatches[swatchCount++] = color;
@@ -83,7 +83,7 @@ void PaletteManager<MAX_PALETTES, PIXEL>::shuffle() {
 template<size_t MAX_PALETTES, typename PIXEL>
 void PaletteManager<MAX_PALETTES, PIXEL>::add(TPalette<PIXEL> &palette) {
 	if (paletteCount >= MAX_PALETTES) {
-		Serial.println("ERROR: Max palettes reached.");
+		fprintf(stderr, "ERROR: Max palettes reached.\n");
 		return;
 	}
 

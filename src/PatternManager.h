@@ -33,7 +33,7 @@ public:
 
 	PatternManager() : sectionCount(0), msPerFrame(20),
 		brightness(255), targetBrightness(255), adjustedBrightness(255),
-		brightnessStep(0) {}
+		brightnessStep(0) { lastTime = millis(); }
 
 	LIGHT_SECTION_CLASS *getLightSection(uint8_t sectionID);
 
@@ -85,7 +85,7 @@ public:
 	bool isTransitioning();
 	void transitionBrightness();
 
-	bool loop();
+	bool update();
 };
 
 #include "PatternManager.tpp"

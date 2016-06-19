@@ -17,7 +17,7 @@ void blink(CRGB col, int times, int timing) {
 	*FastLED.leds() = saveCol;
 }
 #endif
-
+/*
 void vertLine(CRGB *pixels, int16_t x, int16_t y, int16_t len, CRGB col) {
 	if (len == 0) return;
 	
@@ -158,7 +158,7 @@ void lineTo(CRGB *pixels, int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB c
 			e = e + ((int)dy << 1);
 		}
 	}
-}
+}*/
 
 /* --- Old Code that's still useful --- */
 

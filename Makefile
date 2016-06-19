@@ -9,7 +9,7 @@ OBJECTS = $(addsuffix .o, $(addprefix .build/, $(basename $(SOURCES))))
 
 TEST_CFLAGS = -Igoogle-test
 TEST_CORE_SOURCES = google-test/src/gtest-all.cc google-test/src/gmock-all.cc
-TEST_SOURCES = $(TEST_CORE_SOURCES) $(wildcard tests/*.cpp) src/LightPattern.cpp src/utils.cpp
+TEST_SOURCES = $(TEST_CORE_SOURCES) $(wildcard tests/*.cpp) $(wildcard src/*.cpp)
 TEST_OBJECTS = $(addsuffix .o, $(addprefix .build/, $(basename $(TEST_SOURCES))))
 
 # -I/Applications/Arduino.app/Contents/Java/hardware/tools/avr/avr/include -I/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/cores/arduino -I/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/variants/standard  

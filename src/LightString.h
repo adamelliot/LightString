@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef _LIGHTSTRING_H_
-#define _LIGHTSTRING_H_
-
 #ifdef ARDUINO
 #if (ARDUINO >= 100)
 #include <Arduino.h>
@@ -16,16 +13,17 @@
 #include <FastLED.h>
 #endif
 
+#define VERBOSE
+
 #include "utils.h"
 #include "colortypes.h"
+#include "PixelBuffer.h"
 
-// #include "palette.h"
-// #include "drawing.h"
+#include "palette.h"
+#include "drawing.h"
 
 #include "LightPattern.h"
 #include "LightLayer.h"
 #include "PatternManager.h"
 
 #define LIGHTSTRING_VERSION "0.5"
-
-#endif

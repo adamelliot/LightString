@@ -91,6 +91,7 @@ void LIGHT_LAYER_CLASS::unpause() {
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 #ifdef VERBOSE
+#ifdef ARDUINO
 	Serial.print(F("Starting Pattern: 0x"));
 	Serial.print(patternCode.patternID, HEX);
 	Serial.print(F("\tMode: "));
@@ -106,6 +107,18 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 	}
 	Serial.print(F("\tLayer: "));
 	Serial.println(layerID);
+#else
+	printf("Starting Pattern: 0x%x\tMode: ", patternCode.patternID);
+	if (patternCode.mode == ANY_MODE) {
+		printf("R");
+	} else {
+		printf("%d", patternCode.mode);
+	}
+	if (patternCode.copyID > 0) {
+		printf("\tC: %d", patternCode.copyID);
+	}
+	printf("\tLayer: %d\n", layerID);
+#endif
 #endif
 
 	bool randomMode = patternCode.mode == 0xff;
@@ -213,10 +226,14 @@ void LIGHT_LAYER_CLASS::addLightPattern(ILightPattern &pattern, uint64_t modeLis
 			modeList >>= 1;
 
 #ifdef VERBOSE
+#ifdef ARDUINO
 			Serial.print(F("Adding Pattern Code: "));
 			Serial.print((patternID << 8) | mode, HEX);
 			Serial.print(" at: ");
 			Serial.println((uint32_t)&pattern);
+#else
+			printf("Adding Pattern Code: 0x%x\n", (patternID << 8) | mode);
+#endif
 #endif
 
 			patternList[patternListLength] = PatternCode(patternID, copyID, mode);

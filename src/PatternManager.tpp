@@ -189,7 +189,11 @@ PROGRAM_MANAGER_TEMPLATE
 uint8_t PROGRAM_MANAGER_CLASS::addLightSection(TPixelBuffer<PIXEL, FORMAT> &pixelBuffer) {
 	if (sectionCount >= MAX_LIGHT_SECTIONS) {
 #ifdef VERBOSE
+#ifdef ARDUINO
 		Serial.println(F("ERROR: Maximum amount of light sections already added."));
+#else
+		fprintf(stderr, "ERROR: Maximum amount of light sections already added.");
+#endif
 #endif
 		return 0xff;
 	}
@@ -262,11 +266,12 @@ void PROGRAM_MANAGER_CLASS::transitionBrightness() {
 // -------------------- Primary Manager Loop -------------------
 
 PROGRAM_MANAGER_TEMPLATE
-bool PROGRAM_MANAGER_CLASS::loop() {
+bool PROGRAM_MANAGER_CLASS::update() {
 	uint32_t time = millis(), timeDelta = time - lastTime;
 
 	// TODO: Frame rate limiting isn't working quite right
 	if (timeDelta < msPerFrame) {
+		usleep(1000);
 		// delay(msPerFrame - timeDelta);
 		return false;
 	}

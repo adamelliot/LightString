@@ -5,6 +5,7 @@ IPixelBuffer *LIGHT_SECTION_CLASS::lockBuffer() {
 	// In the case of no buffer pool the output buffer is used.
 	// This only works if PIXEL is CRGB, and should otherwise throw an error
 	// outputBuffer
+
 	if (bufferCount == 0) return (TPixelBuffer<PIXEL> *)outputBuffer;
 	
 	for (int i = 0; i < bufferCount; i++) {
@@ -37,7 +38,7 @@ bool LIGHT_SECTION_CLASS::addBuffer(IPixelBuffer *buffer) {
 #ifdef ARDUINO
 		Serial.println(F("ERROR: Buffer added to pool needs to be the same size as the output buffer."));
 #else 
-		frprintf(stderr, "ERROR: Buffer added to pool needs to be the same size as the output buffer.");
+		fprintf(stderr, "ERROR: Buffer added to pool needs to be the same size as the output buffer.");
 #endif
 #endif
 
@@ -55,24 +56,24 @@ void LIGHT_SECTION_CLASS::update() {
 	if (bufferCount > 0) {
 		outputBuffer->clear();
 	}
-/*
+
 	for (int i = 0; i < MAX_LAYERS; i++) {
 		layers[i].update();
 		ILightPattern *pattern = layers[i].getActivePattern();
 		
 		if (pattern && !pattern->isFilterPattern() && bufferCount > 0) {
-			TPixelBuffer<RGBA> *buffer = (TPixelBuffer<RGBA> *)pattern->getPixelBuffer();
+			IPixelBuffer *buffer = pattern->getPixelBuffer();//dynamic_cast<TPixelBuffer<TRGBA, FORMAT> *>(pattern->getPixelBuffer());
 			// TODO: Fix this so it's not destructive
 			if (layers[i].getOpacity() < 255) {
 				for (uint16_t j = 0; j < buffer->getLength(); j++) {
-					buffer->pixels[j].a = scale8(buffer->pixels[j].a, layers[i].getOpacity());
+					#warning Fading is disabled
+					// buffer->pixels[j].a = scale8(buffer->pixels[j].a, layers[i].getOpacity());
 				}
 			}
 			
 			// Serial.print("Blend: ");
 			// Serial.println(pattern->getBlendMode());
-			outputBuffer->applyBlend(*buffer, pattern->getBlendMode());
+			outputBuffer->blendWith(*buffer, pattern->getBlendMode());
 		}
 	}
-	*/
 }

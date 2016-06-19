@@ -1,15 +1,17 @@
 #ifndef _PALETTE_H_
 #define _PALETTE_H_
 
-#ifdef USE_FASTLED
-#include <FastLED.h>
+#include <stdint.h>
+#include <stdio.h>
+#include "colortypes.h"
+
+// #include "drawing.h"
+
+#ifndef PROGMEM
+#define PROGMEM
 #endif
 
-#include "drawing.h"
-
 const uint16_t kPaletteSize = 256;
-
-void printColor(LightString::RGBA col);
 
 #define MAX_PALETTE_COLORS 12
 
@@ -17,7 +19,9 @@ void printColor(LightString::RGBA col);
 #define LOG2(MSG, V1, V2) {Serial.print(F(MSG " ")); Serial.print(V1); Serial.print(F(", ")); Serial.println(V2); }
 
 namespace LightString {
-	
+
+void printColor(RGBu col);
+
 struct IPalette {
 private:
 public:
@@ -46,7 +50,7 @@ struct TPalette : IPalette {
 		return col.lerp8(colors[(section + 1) % size], weight);
 	}
 	
-	TPalette<PIXEL>& operator= (const TPalette<RGB> &rhs) {
+	TPalette<PIXEL>& operator= (const TPalette<RGBu> &rhs) {
 		for (int i = 0; i < rhs.size; i++) {
 			this->colors[i] = rhs.colors[i];
 		}
@@ -54,7 +58,7 @@ struct TPalette : IPalette {
 		return *this;
 	}
 
-	TPalette<PIXEL>& operator= (const TPalette<RGBA> &rhs) {
+	TPalette<PIXEL>& operator= (const TPalette<RGBAu> &rhs) {
 		for (int i = 0; i < rhs.size; i++) {
 			this->colors[i] = rhs.colors[i];
 		}
@@ -76,9 +80,9 @@ struct TPalette : IPalette {
 	}*/
 
 	inline TPalette() : size(3) {
-		colors[0] = CRGB::Red;
-		colors[1] = CRGB::Red;
-		colors[2] = CRGB::Red;
+		colors[0] = RGBAu(255, 0, 0);
+		colors[1] = RGBAu(255, 0, 0);
+		colors[2] = RGBAu(255, 0, 0);
 	}
 
 	inline TPalette(uint8_t len, const PIXEL newColors[], bool mirrored = false)
@@ -136,39 +140,39 @@ struct TPalette : IPalette {
 	}
 };
 
-typedef TPalette<RGB> CRGBPalette;
+typedef TPalette<RGBu> CRGBPalette;
 
 //TPalette<RGBA> &testPalette() {
 //	static TPalette<RGBA> pal(CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB(0, 255, 64));
 //	return pal;
 //}
 
-extern TPalette<RGBA> PROGMEM SOLID_RED										;
-extern TPalette<RGBA> PROGMEM SOLID_GREEN									;
-extern TPalette<RGBA> PROGMEM SOLID_BLUE									;
-extern TPalette<RGBA> PROGMEM SOLID_AQUA									;
-extern TPalette<RGBA> PROGMEM SOLID_AZURE									;
-extern TPalette<RGBA> PROGMEM RAINBOW_GRADIENT 						;
-extern TPalette<RGBA> PROGMEM BLUE_GREEN_GRADIENT 				;
-extern TPalette<RGBA> PROGMEM GREEN_GRADIENT 							;
-extern TPalette<RGBA> PROGMEM LIME_GRADIENT 							;
-extern TPalette<RGBA> PROGMEM YELLOW_GRADIENT 						;
-extern TPalette<RGBA> PROGMEM WHITE_GRADIENT 							;
-extern TPalette<RGBA> PROGMEM RED_GREEN_GRADIENT 					;
-extern TPalette<RGBA> PROGMEM GREEN_BLUE_GRADIENT 				;
-extern TPalette<RGBA> PROGMEM RED_ORGANGE_GRADIENT 				;
-extern TPalette<RGBA> PROGMEM BLUE_WHITE_GRADIENT 				;
-extern TPalette<RGBA> PROGMEM BLUE_WHITISH_GRADIENT				;
-extern TPalette<RGBA> PROGMEM BLUE_WHITE_YELLOW_GRADIENT 	;
-extern TPalette<RGBA> PROGMEM BLUE_YELLOW_BLACK_GRADIENT 	;
-extern TPalette<RGBA> PROGMEM RED_WHITE_BLACK_GRADIENT 		;
-extern TPalette<RGBA> PROGMEM RED_WHITE_GRADIENT 					;
-extern TPalette<RGBA> PROGMEM GREEN_WHITE_GRADIENT 				;
-extern TPalette<RGBA> PROGMEM RED_WHITISH_GRADIENT 				;
-extern TPalette<RGBA> PROGMEM CYAN_PINK_GRADIENT 					;
-extern TPalette<RGBA> PROGMEM BLUE_YELLOW_GRADIENT 				;
-extern TPalette<RGBA> PROGMEM GREEN_YELLOW_GRADIENT 			;
-extern TPalette<RGBA> PROGMEM RAINBOW_BLACK_GRADIENT 			;
+extern TPalette<RGBAu> PROGMEM SOLID_RED										;
+extern TPalette<RGBAu> PROGMEM SOLID_GREEN									;
+extern TPalette<RGBAu> PROGMEM SOLID_BLUE									;
+extern TPalette<RGBAu> PROGMEM SOLID_AQUA									;
+extern TPalette<RGBAu> PROGMEM SOLID_AZURE									;
+extern TPalette<RGBAu> PROGMEM RAINBOW_GRADIENT 						;
+extern TPalette<RGBAu> PROGMEM BLUE_GREEN_GRADIENT 				;
+extern TPalette<RGBAu> PROGMEM GREEN_GRADIENT 							;
+extern TPalette<RGBAu> PROGMEM LIME_GRADIENT 							;
+extern TPalette<RGBAu> PROGMEM YELLOW_GRADIENT 						;
+extern TPalette<RGBAu> PROGMEM WHITE_GRADIENT 							;
+extern TPalette<RGBAu> PROGMEM RED_GREEN_GRADIENT 					;
+extern TPalette<RGBAu> PROGMEM GREEN_BLUE_GRADIENT 				;
+extern TPalette<RGBAu> PROGMEM RED_ORGANGE_GRADIENT 				;
+extern TPalette<RGBAu> PROGMEM BLUE_WHITE_GRADIENT 				;
+extern TPalette<RGBAu> PROGMEM BLUE_WHITISH_GRADIENT				;
+extern TPalette<RGBAu> PROGMEM BLUE_WHITE_YELLOW_GRADIENT 	;
+extern TPalette<RGBAu> PROGMEM BLUE_YELLOW_BLACK_GRADIENT 	;
+extern TPalette<RGBAu> PROGMEM RED_WHITE_BLACK_GRADIENT 		;
+extern TPalette<RGBAu> PROGMEM RED_WHITE_GRADIENT 					;
+extern TPalette<RGBAu> PROGMEM GREEN_WHITE_GRADIENT 				;
+extern TPalette<RGBAu> PROGMEM RED_WHITISH_GRADIENT 				;
+extern TPalette<RGBAu> PROGMEM CYAN_PINK_GRADIENT 					;
+extern TPalette<RGBAu> PROGMEM BLUE_YELLOW_GRADIENT 				;
+extern TPalette<RGBAu> PROGMEM GREEN_YELLOW_GRADIENT 			;
+extern TPalette<RGBAu> PROGMEM RAINBOW_BLACK_GRADIENT 			;
 
 // Palettes
 
@@ -245,7 +249,7 @@ public:
 
 };
 
-extern LightString::SwatchManager<10, LightString::RGBA> Swatches;
-extern LightString::PaletteManager<20, LightString::RGBA> Palettes;
+extern LightString::SwatchManager<10, LightString::RGBAu> Swatches;
+extern LightString::PaletteManager<20, LightString::RGBAu> Palettes;
 
 #endif

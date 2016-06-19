@@ -163,6 +163,9 @@ TRGBA<TYPE> blendCOPY(TRGBA<TYPE> &lhs, const TRGBA<TYPE> &rhs);
 template <typename TYPE>
 TRGB<TYPE> blendCOPY(TRGB<TYPE> &lhs, const TRGBA<TYPE> &rhs);
 
+template <typename TYPE>
+TRGB<TYPE> blendCOPY(TRGB<TYPE> &lhs, const TRGB<TYPE> &rhs);
+
 template <>
 inline TRGBA<uint8_t> blendCOPY(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
 	uint8_t a = lhs.a;
@@ -177,11 +180,20 @@ inline TRGB<uint8_t> blendCOPY(TRGB<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
 	return lhs;
 }
 
+template <>
+inline TRGB<uint8_t> blendCOPY(TRGB<uint8_t> &lhs, const TRGB<uint8_t> &rhs) {
+	lhs = rhs;
+	return lhs;
+}
+
 template <typename TYPE>
 TRGBA<TYPE> blendADD(TRGBA<TYPE> &lhs, const TRGBA<TYPE> &rhs);
 
 template <typename TYPE>
 TRGB<TYPE> blendADD(TRGB<TYPE> &lhs, const TRGBA<TYPE> &rhs);
+
+template <typename TYPE>
+TRGB<TYPE> blendADD(TRGB<TYPE> &lhs, const TRGB<TYPE> &rhs);
 
 template <>
 inline TRGBA<uint8_t> blendADD(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
@@ -192,6 +204,12 @@ inline TRGBA<uint8_t> blendADD(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
 
 template <>
 inline TRGB<uint8_t> blendADD(TRGB<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
+	lhs += rhs;
+	return lhs;
+}
+
+template <>
+inline TRGB<uint8_t> blendADD(TRGB<uint8_t> &lhs, const TRGB<uint8_t> &rhs) {
 	lhs += rhs;
 	return lhs;
 }

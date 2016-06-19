@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef __COLORTYPES_H__
-#define __COLORTYPES_H__
-
 #include <cstdlib>
 #include <stdint.h>
 #include "FastLEDWrapper.h"
@@ -84,5 +81,3 @@ typedef TRGB<float> RGBf;
 typedef TRGBA<float> RGBAf;
 
 };
-
-#endif

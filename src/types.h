@@ -88,7 +88,7 @@ struct PatternCode {
 	}
 };
 
-class IPalette;
+struct IPalette;
 
 class ILightLayer;
 class ILightPattern;
