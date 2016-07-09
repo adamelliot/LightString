@@ -12,7 +12,7 @@ using namespace LightString;
 
 namespace LightString {
 
-// PROGRAM_MANAGER_TEMPLATE
+// PATTERN_MANAGER_TEMPLATE
 template <template <typename> class PIXEL = TRGB, typename FORMAT = uint8_t, size_t MAX_LAYERS = 1, size_t MAX_LIGHT_PROGRAMS = 6, size_t MAX_MODES = 4, size_t MAX_LIGHT_SECTIONS = 1>
 class PatternManager {
 private:

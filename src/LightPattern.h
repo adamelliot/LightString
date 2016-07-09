@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef _LIGHTPROGRAM_H_
-#define _LIGHTPROGRAM_H_
+#ifndef _LIGHTPATTERN_H_
+#define _LIGHTPATTERN_H_
 
 #include "types.h"
 #include "PixelBuffer.h"

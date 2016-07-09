@@ -8,7 +8,7 @@ IPixelBuffer *LIGHT_SECTION_CLASS::lockBuffer() {
 
 	if (bufferCount == 0) return (TPixelBuffer<PIXEL> *)outputBuffer;
 	
-	for (int i = 0; i < bufferCount; i++) {
+	for (uint32_t i = 0; i < bufferCount; i++) {
 		uint8_t bit = 1 << i;
 		if ((activeBuffers & bit) == 0) {
 			activeBuffers |= bit;
@@ -23,7 +23,7 @@ LIGHT_SECTION_TEMPLATE
 void LIGHT_SECTION_CLASS::unlockBuffer(IPixelBuffer *buffer) {
 	if (buffer == (IPixelBuffer *)outputBuffer) return;
 
-	for (int i = 0; i < bufferCount; i++) {
+	for (uint32_t i = 0; i < bufferCount; i++) {
 		if (bufferPool[i] == buffer) {
 			uint8_t bit = 1 << i;
 			activeBuffers &= ~bit;
@@ -57,17 +57,20 @@ void LIGHT_SECTION_CLASS::update() {
 		outputBuffer->clear();
 	}
 
-	for (int i = 0; i < MAX_LAYERS; i++) {
+	for (uint32_t i = 0; i < MAX_LAYERS; i++) {
 		layers[i].update();
 		ILightPattern *pattern = layers[i].getActivePattern();
 		
 		if (pattern && !pattern->isFilterPattern() && bufferCount > 0) {
-			IPixelBuffer *buffer = pattern->getPixelBuffer();//dynamic_cast<TPixelBuffer<TRGBA, FORMAT> *>(pattern->getPixelBuffer());
+			IPixelBuffer *buffer = pattern->getPixelBuffer();
 			// TODO: Fix this so it's not destructive
 			if (layers[i].getOpacity() < 255) {
 				for (uint16_t j = 0; j < buffer->getLength(); j++) {
-					#warning Fading is disabled
-					// buffer->pixels[j].a = scale8(buffer->pixels[j].a, layers[i].getOpacity());
+					// FXIME: This is a hack to get fadeouts to work
+					auto alphaBuffer = dynamic_cast<TPixelBuffer<TRGBA, FORMAT> *>(pattern->getPixelBuffer());
+					if (alphaBuffer) {
+						alphaBuffer->pixels[j].a = scale8(alphaBuffer->pixels[j].a, layers[i].getOpacity());
+					}
 				}
 			}
 			

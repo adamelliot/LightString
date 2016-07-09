@@ -24,6 +24,13 @@ struct TRGBA : TRGB<TYPE> {
 		this->a = a;
 	}
 
+	inline TRGBA(uint32_t colorcode) __attribute__((always_inline)) {
+		this->r = (colorcode >> 16) & 0xff;
+		this->g = (colorcode >>  8) & 0xff;
+		this->b = (colorcode >>  0) & 0xff;
+		this->a = 0xff;
+	}
+
 	/* --------------- Casting ----------------- */
 
 	inline operator bool() const __attribute__((always_inline)) {

@@ -9,8 +9,8 @@
 #define LIGHT_SECTION_TEMPLATE template <template <typename> class PIXEL, typename FORMAT, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LAYERS>
 #define LIGHT_SECTION_CLASS LightSection<PIXEL, FORMAT, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LAYERS>
 
-#define PROGRAM_MANAGER_TEMPLATE template <template <typename> class PIXEL, typename FORMAT, size_t MAX_LAYERS, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LIGHT_SECTIONS>
-#define PROGRAM_MANAGER_CLASS PatternManager<PIXEL, FORMAT, MAX_LAYERS, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LIGHT_SECTIONS>
+#define PATTERN_MANAGER_TEMPLATE template <template <typename> class PIXEL, typename FORMAT, size_t MAX_LAYERS, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LIGHT_SECTIONS>
+#define PATTERN_MANAGER_CLASS PatternManager<PIXEL, FORMAT, MAX_LAYERS, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LIGHT_SECTIONS>
 
 namespace LightString {
 
@@ -36,11 +36,11 @@ typedef enum {
 } ETransitionState;
 
 typedef enum {
-	PROGRAM_STARTED = 0,
-	PROGRAM_PLAYING,
-	PROGRAM_FINISHED, // Happens when a pattern ends
-	PROGRAM_PAUSED,
-	PROGRAM_STOPPED // Happens after a pattern finishes, but another isn't started
+	PATTERN_STARTED = 0,
+	PATTERN_PLAYING,
+	PATTERN_FINISHED, // Happens when a pattern ends
+	PATTERN_PAUSED,
+	PATTERN_STOPPED // Happens after a pattern finishes, but another isn't started
 } EPlayState;
 
 typedef enum {

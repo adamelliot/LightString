@@ -3,7 +3,7 @@
 LIGHT_LAYER_TEMPLATE
 ILightPattern *LIGHT_LAYER_CLASS::getPattern(PatternCode patternCode) {
 	int copy = 0;
-	for (int i = 0; i < patternCount; i++) {
+	for (uint32_t i = 0; i < patternCount; i++) {
 		if (lightPatterns[i]->getPatternID() == patternCode.patternID) {
 			if (copy == patternCode.copyID) {
 				return lightPatterns[i];
@@ -20,7 +20,7 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::updatePatternIndex(PatternCode patternCode) {
 	if (patternList[patternIndex] == patternCode) return;
 
-	for (int i = 0; i < patternListLength; i++) {
+	for (uint32_t i = 0; i < patternListLength; i++) {
 		if (patternList[i] == patternCode) {
 			patternIndex = i;
 			break;
@@ -32,7 +32,7 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::finishPattern() {
 	if (!activePattern) return;
 
-	setPlayState(PROGRAM_FINISHED);
+	setPlayState(PATTERN_FINISHED);
 	activePattern->patternFinished();
 
 	if (!activePattern->isFilterPattern()) {
@@ -51,8 +51,8 @@ void LIGHT_LAYER_CLASS::setPlayState(EPlayState playState) {
 
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::play() {
-	if (playState == PROGRAM_PLAYING) return;
-	if (playState == PROGRAM_PAUSED) {
+	if (playState == PATTERN_PLAYING) return;
+	if (playState == PATTERN_PAUSED) {
 		unpause();
 		return;
 	}
@@ -62,26 +62,26 @@ void LIGHT_LAYER_CLASS::play() {
 
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::stop() {
-	if (playState == PROGRAM_STOPPED) return;
+	if (playState == PATTERN_STOPPED) return;
 	finishPattern();
 
-	setPlayState(PROGRAM_STOPPED);
+	setPlayState(PATTERN_STOPPED);
 }
 
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::pause() {
-	if (playState == PROGRAM_PAUSED || playState == PROGRAM_STOPPED) return;
+	if (playState == PATTERN_PAUSED || playState == PATTERN_STOPPED) return;
 
-	setPlayState(PROGRAM_PAUSED);
+	setPlayState(PATTERN_PAUSED);
 
 	pauseStartedAt = millis();
 }
 
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::unpause() {
-	if (playState != PROGRAM_PAUSED) return;
+	if (playState != PATTERN_PAUSED) return;
 
-	setPlayState(PROGRAM_PLAYING);
+	setPlayState(PATTERN_PLAYING);
 	
 	uint32_t timeDelta = millis() - pauseStartedAt;
 	patternStartedAt += timeDelta;
@@ -153,7 +153,7 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 		this->activePattern->setPixelBuffer(this->section->lockBuffer());
 	}
 
-	setPlayState(PROGRAM_STARTED);
+	setPlayState(PATTERN_STARTED);
 
 	this->activePattern->setMode(patternCode.mode);
 	this->patternStartedAt = millis();
@@ -161,7 +161,7 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 
 	runningBeginTransition = true;
 
-	setPlayState(PROGRAM_PLAYING);
+	setPlayState(PATTERN_PLAYING);
 
 	return true;
 }
@@ -195,7 +195,7 @@ bool LIGHT_LAYER_CLASS::prevPattern() {
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::shufflePatterns() {
 	for (size_t i = 0; i < patternListLength; i++) {
-		size_t j = (i + random() / (0xffffffff / (patternListLength - 1) + 1)) % patternListLength;
+		size_t j = (i + random() / (0xfffffff / (patternListLength - 1) + 1)) % patternListLength;
 		PatternCode t = patternList[j];
 		patternList[j] = patternList[i];
 		patternList[i] = t;
@@ -246,7 +246,7 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::addLightPattern(ILightPattern &pattern) {
 	uint64_t modeList = 0;
 
-	for (int i = 0; i < pattern.getModeCount(); i++) {
+	for (uint32_t i = 0; i < pattern.getModeCount(); i++) {
 		modeList |= 1 << i;
 	}
 
@@ -319,7 +319,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 
 				case PLAY_MODE_ONCE: // Once we're done
 				finishPattern();
-				setPlayState(PROGRAM_STOPPED);
+				setPlayState(PATTERN_STOPPED);
 				break;
 			
 				case PLAY_MODE_REPEAT:
@@ -337,13 +337,13 @@ void LIGHT_LAYER_CLASS::update() {
 	uint32_t time = millis(), timeDelta = time - lastTime;
 	lastTime = time;
 
-	if (!activePattern || playState == PROGRAM_STOPPED || playState == PROGRAM_PAUSED) return;
+	if (!activePattern || playState == PATTERN_STOPPED || playState == PATTERN_PAUSED) return;
 
 	uint32_t patternTimeDelta = time - patternStartedAt;
 
 	// NOTE: Should transition time adjust end time?
 	if (activePattern->isPatternFinished() || 
-		(activePattern->getPatternLength() > 0 && patternTimeDelta > activePattern->getPatternLength()) ||
+		(activePattern->getPatternLength() > 0 && patternTimeDelta > (uint32_t)activePattern->getPatternLength()) ||
 		(maxPatternLength > 0 && patternTimeDelta > maxPatternLength))
 	{
 		if (transitionState == TRANSITION_DONE) {

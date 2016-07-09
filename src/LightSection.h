@@ -22,7 +22,7 @@ public:
 	inline LightSection()
 		: activeBuffers(0), bufferCount(0), outputBuffer(0)
 	{
-		for (int i = 0; i < MAX_LAYERS; i++) {
+		for (uint32_t i = 0; i < MAX_LAYERS; i++) {
 			layers[i].setLayerID(i);
 			layers[i].setLightSection(this);
 		}

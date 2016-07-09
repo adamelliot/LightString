@@ -55,10 +55,10 @@ public:
 		: patternCount(0), patternListLength(0), patternIndex(0), maxPatternLength(0),
 		lastTime(0), patternStartedAt(0), pauseStartedAt(0), transitionLength(kDefaultTransitionLength),
 		transitionStartedAt(0), opacity(255), activePattern(0),
-		patternEventHandler(0), playState(PROGRAM_STOPPED), playMode(PLAY_MODE_CONTINUOUS),
+		patternEventHandler(0), playState(PATTERN_STOPPED), playMode(PLAY_MODE_CONTINUOUS),
 		transitionState(TRANSITION_DONE) {}
 
-	bool isActive() { return playState != PROGRAM_STOPPED; }
+	bool isActive() { return playState != PATTERN_STOPPED; }
 
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }
