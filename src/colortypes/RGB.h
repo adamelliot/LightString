@@ -203,6 +203,11 @@ struct TRGB {
 	void print(FILE *stream = stdout) {
 		fprintf(stream, "(%f, %f, %f)", this->r, this->g, this->b);
 	}
+
+	void println(FILE *stream = stdout) {
+		print(stream);
+		fprintf(stream, "\n");
+	}
 #endif
 };
 

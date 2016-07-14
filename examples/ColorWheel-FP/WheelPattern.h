@@ -10,7 +10,9 @@ using namespace LightString;
 // with the section and layer you are working with. All patterns in a section (and for
 // now the pattern manager) need to be of the same format.
 class WheelPattern : public TLightPattern<TRGBA, float> {
-protected:
+private:
+
+	uint32_t counter;
 
 public:
 	// Pass your parent constructor the count of modes this pattern has

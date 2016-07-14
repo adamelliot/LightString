@@ -180,6 +180,11 @@ struct TRGBA : TRGB<TYPE> {
 	void print(FILE *stream = stdout) {
 		fprintf(stream, "(%f, %f, %f, %f)", this->r, this->g, this->b, this->a);
 	}
+
+	void println(FILE *stream = stdout) {
+		print(stream);
+		fprintf(stream, "\n");
+	}
 #endif
 };
 

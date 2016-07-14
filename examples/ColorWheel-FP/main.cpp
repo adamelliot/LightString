@@ -62,8 +62,8 @@ void setup() {
 	// EG: Pattern 0-Mode:0 -> Pattern 0-Mode 1 -> Pattern 1-Mode 0, Pattern 0-Mode 1, etc
 	patternManager.shufflePatterns();
 
-	// Start a random program on all active layers
-	patternManager.startRandomPattern();
+	// Start a random program on layer 0
+	patternManager.startRandomPattern(0);
 }
 
 void loop() {
