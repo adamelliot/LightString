@@ -4,7 +4,7 @@
 template<size_t MAX_SWATCHES, typename PIXEL>
 void SwatchManager<MAX_SWATCHES, PIXEL>::shuffle() {
 	for (size_t i = 0; i < swatchCount; i++) {
-		size_t j = (i + random() / (0xffffffff / (swatchCount - 1) + 1)) % swatchCount;
+		size_t j = (i + random() / (0xffffffff / (swatchCount - i) + 1)) % swatchCount;
 		PIXEL t = swatches[j];
 		swatches[j] = swatches[i];
 		swatches[i] = t;
@@ -73,7 +73,7 @@ PIXEL SwatchManager<MAX_SWATCHES, PIXEL>::previous() {
 template<size_t MAX_PALETTES, typename PIXEL>
 void PaletteManager<MAX_PALETTES, PIXEL>::shuffle() {
 	for (size_t i = 0; i < paletteCount; i++) {
-		size_t j = (i + random() / (0xffffffff / (paletteCount - 1) + 1)) % paletteCount;
+		size_t j = (i + random() / (0xffffffff / (paletteCount - i) + 1)) % paletteCount;
 		TPalette<PIXEL> *t = palettes[j];
 		palettes[j] = palettes[i];
 		palettes[i] = t;

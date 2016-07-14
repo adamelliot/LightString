@@ -195,7 +195,7 @@ bool LIGHT_LAYER_CLASS::prevPattern() {
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::shufflePatterns() {
 	for (size_t i = 0; i < patternListLength; i++) {
-		size_t j = (i + random() / (0xfffffff / (patternListLength - 1) + 1)) % patternListLength;
+		size_t j = (i + random() / (0xfffffff / (patternListLength - i) + 1)) % patternListLength;
 		PatternCode t = patternList[j];
 		patternList[j] = patternList[i];
 		patternList[i] = t;
