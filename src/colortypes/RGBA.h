@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef ARDUINO
+#include <stdio.h>
+#endif
+
 #include "RGB.h"
 
 namespace LightString {
@@ -17,7 +21,14 @@ struct TRGBA : TRGB<TYPE> {
 		this->a = 0;
 	}
 
-	inline TRGBA(TYPE r, TYPE g, TYPE b, TYPE a = 0xff) __attribute__((always_inline)) {
+	inline TRGBA(TYPE r, TYPE g, TYPE b) __attribute__((always_inline)) {
+		this->r = r;
+		this->g = g;
+		this->b = b;
+		this->a = 0xff;
+	}
+
+	inline TRGBA(TYPE r, TYPE g, TYPE b, TYPE a) __attribute__((always_inline)) {
 		this->r = r;
 		this->g = g;
 		this->b = b;
@@ -103,6 +114,12 @@ struct TRGBA : TRGB<TYPE> {
 		return *this;
 	}
 
+	inline TRGBA operator* (const TYPE val) __attribute__((always_inline)) {
+		TRGBA<TYPE> ret = *this;
+		qmul8(ret.raw, val, 3);
+		return ret;
+	}
+
 	inline TRGBA& operator/= (const TYPE val) __attribute__((always_inline)) {
 		div<TYPE>(this->raw, val, 3);
 		return *this;
@@ -148,7 +165,7 @@ struct TRGBA : TRGB<TYPE> {
 	void print() {
 		Serial.print("(");
 		Serial.print(0);
-		for (int i = 1; i < sizeof(*this); i++) {
+		for (int i = 1; i < 4; i++) {
 			Serial.print(", ");
 			Serial.print(this->raw[i]);
 		}
@@ -159,8 +176,87 @@ struct TRGBA : TRGB<TYPE> {
 		print();
 		Serial.println();
 	}
+#else
+	void print(FILE *stream = stdout) {
+		fprintf(stream, "(%f, %f, %f, %f)", this->r, this->g, this->b, this->a);
+	}
 #endif
 };
+
+/* --------------- Specializations (float) ---------------*/ 
+
+template <>
+inline TRGBA<float>::TRGBA(float r, float g, float b) {
+	this->r = r;
+	this->g = g;
+	this->b = b;
+	this->a = 1;
+}
+
+template <>
+inline TRGBA<float>::TRGBA(float r, float g, float b, float a) {
+	this->r = r;
+	this->g = g;
+	this->b = b;
+	this->a = a;
+}
+
+template <>
+inline TRGBA<float>::TRGBA(uint32_t colorcode) {
+	this->r = (float)((colorcode >> 16) & 0xff) / 0xff;
+	this->g = (float)((colorcode >>  8) & 0xff) / 0xff;
+	this->b = (float)((colorcode >>  0) & 0xff) / 0xff;
+	this->a = 1;
+}
+
+template <>
+inline TRGBA<float>& TRGBA<float>::operator+= (const TRGB<float> &rhs) {
+	add<float>(this->raw, rhs.raw, 3);
+	return *this;
+}
+
+template <>
+inline TRGBA<float>& TRGBA<float>::operator+= (const float val) {
+	add<float>(this->raw, val, 3);
+	return *this;
+}
+
+template <>
+inline TRGBA<float>& TRGBA<float>::operator-= (const TRGB<float> &rhs) {
+	sub<float>(this->raw, rhs.raw, 3);
+	return *this;
+}
+
+template <>
+inline TRGBA<float>& TRGBA<float>::operator-= (const float val) {
+	sub<float>(this->raw, val, 3);
+	return *this;
+}
+
+template <>
+inline TRGBA<float>& TRGBA<float>::operator*= (const float val) {
+	mul<float>(this->raw, val, 3);
+	return *this;
+}
+
+template <>
+inline TRGBA<float> TRGBA<float>::operator* (const float val) {
+	TRGBA<float> ret = *this;
+	mul<float>(ret.raw, val, 3);
+	return ret;
+}
+
+template <>
+inline TRGBA<float> &TRGBA<float>::lerp(const TRGB<float> &other, float ratio) {
+	::lerp(this->raw, other.raw, 3, ratio);
+	return *this;
+}
+
+template <>
+inline TRGBA<float> &TRGBA<float>::lerp(const TRGBA<float> &other, float ratio) {
+	::lerp(this->raw, other.raw, 4, ratio);
+	return *this;
+}
 
 /* --------------- Blending ---------------*/
 
@@ -182,8 +278,22 @@ inline TRGBA<uint8_t> blendCOPY(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) 
 }
 
 template <>
+inline TRGBA<float> blendCOPY(TRGBA<float> &lhs, const TRGBA<float> &rhs) {
+	float a = lhs.a;
+	lhs.lerp(rhs, rhs.a);
+	lhs.a = a;
+	return lhs;
+}
+
+template <>
 inline TRGB<uint8_t> blendCOPY(TRGB<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
 	lhs.lerp8(rhs, rhs.a);
+	return lhs;
+}
+
+template <>
+inline TRGB<float> blendCOPY(TRGB<float> &lhs, const TRGBA<float> &rhs) {
+	lhs.lerp(rhs, rhs.a);
 	return lhs;
 }
 
@@ -193,14 +303,26 @@ inline TRGB<uint8_t> blendCOPY(TRGB<uint8_t> &lhs, const TRGB<uint8_t> &rhs) {
 	return lhs;
 }
 
+template <>
+inline TRGB<float> blendCOPY(TRGB<float> &lhs, const TRGB<float> &rhs) {
+	lhs = rhs;
+	return lhs;
+}
+
 template <typename TYPE>
 TRGBA<TYPE> blendADD(TRGBA<TYPE> &lhs, const TRGBA<TYPE> &rhs);
 
 template <typename TYPE>
-TRGB<TYPE> blendADD(TRGB<TYPE> &lhs, const TRGBA<TYPE> &rhs);
+inline TRGB<TYPE> blendADD(TRGB<TYPE> &lhs, const TRGBA<TYPE> &rhs) {
+	lhs += rhs;
+	return lhs;
+}
 
 template <typename TYPE>
-TRGB<TYPE> blendADD(TRGB<TYPE> &lhs, const TRGB<TYPE> &rhs);
+inline TRGB<TYPE> blendADD(TRGB<TYPE> &lhs, const TRGB<TYPE> &rhs) {
+	lhs += rhs;
+	return lhs;
+}
 
 template <>
 inline TRGBA<uint8_t> blendADD(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
@@ -210,35 +332,11 @@ inline TRGBA<uint8_t> blendADD(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
 }
 
 template <>
-inline TRGB<uint8_t> blendADD(TRGB<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
-	lhs += rhs;
+inline TRGBA<float> blendADD(TRGBA<float> &lhs, const TRGBA<float> &rhs) {
+	TRGBA<float> adj = TRGBA<float>(rhs) * rhs.a;
+	lhs += adj;
 	return lhs;
 }
-
-template <>
-inline TRGB<uint8_t> blendADD(TRGB<uint8_t> &lhs, const TRGB<uint8_t> &rhs) {
-	lhs += rhs;
-	return lhs;
-}
-
-/*
-inline CRGB applyCOPYTo(CRGB &other) __attribute__((always_inline)) {
-	return other.lerp8((CRGB &)*this, this->a);
-}
-
-inline RGBA applyADDTo(RGBA &other) __attribute__((always_inline)) {
-	RGBA ret = this->nscale8(this->a);
-	ret.a = this->a;
-	ret += other;
-	
-	return ret;
-}
-
-inline CRGB applyADDTo(CRGB &other) __attribute__((always_inline)) {
-	RGBA adj = this->nscale8(this->a);
-	return other + (CRGB &)adj;
-}
-*/
 
 };
 

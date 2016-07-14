@@ -29,7 +29,7 @@ TEST(TPixelBuffer, indexAccess) {
 	buffer[0] = RGBu(10, 20, 30);
 	RGBu col = buffer[0];
 
-	EXPECT_RGB_EQ(col, 10, 20, 30);
+	EXPECT_RGBu_EQ(col, 10, 20, 30);
 }
 
 TEST(TPixelBuffer, setPixel) {
@@ -38,7 +38,7 @@ TEST(TPixelBuffer, setPixel) {
 	buffer.setPixel(0, RGBu(10, 20, 30));
 	RGBu col = buffer[0];
 
-	EXPECT_RGB_EQ(buffer[0], 10, 20, 30);
+	EXPECT_RGBu_EQ(buffer[0], 10, 20, 30);
 }
 
 TEST(TPixelBuffer, setPixelAA) {
@@ -49,8 +49,8 @@ TEST(TPixelBuffer, setPixelAA) {
 
 	buffer.setPixelAA(0.75, RGBu(200, 200, 200));
 
-	EXPECT_RGB_EQ(buffer[0], 65, 80, 95);
-	EXPECT_RGB_EQ(buffer[1], 165, 170, 175);
+	EXPECT_RGBu_EQ(buffer[0], 65, 80, 95);
+	EXPECT_RGBu_EQ(buffer[1], 165, 170, 175);
 }
 
 TEST(TPixelBuffer, setPixels) {
@@ -59,7 +59,7 @@ TEST(TPixelBuffer, setPixels) {
 	buffer.setPixels(4, 10, RGBu(10, 20, 30));
 
 	for (int i = 0; i < 10; i++) {
-		EXPECT_RGB_EQ(buffer[i + 4], 10, 20, 30);
+		EXPECT_RGBu_EQ(buffer[i + 4], 10, 20, 30);
 	}
 }
 
@@ -68,8 +68,8 @@ TEST(TPixelBuffer, setMirroredPixel) {
 
 	buffer.setMirroredPixel(4, RGBu(10, 20, 30));
 
-	EXPECT_RGB_EQ(buffer[4], 10, 20, 30);
-	EXPECT_RGB_EQ(buffer[25], 10, 20, 30);
+	EXPECT_RGBu_EQ(buffer[4], 10, 20, 30);
+	EXPECT_RGBu_EQ(buffer[25], 10, 20, 30);
 }
 
 TEST(TPixelBuffer, clear) {
@@ -79,7 +79,7 @@ TEST(TPixelBuffer, clear) {
 	buffer.clear();
 
 	for (int i = 0; i < 30; i++) {
-		EXPECT_RGB_EQ(buffer[i], 0, 0, 0);
+		EXPECT_RGBu_EQ(buffer[i], 0, 0, 0);
 	}
 }
 
@@ -90,7 +90,7 @@ TEST(TPixelBuffer, fillColor) {
 	buffer.clear();
 
 	for (int i = 0; i < 30; i++) {
-		EXPECT_RGB_EQ(buffer[i], 0, 0, 0);
+		EXPECT_RGBu_EQ(buffer[i], 0, 0, 0);
 	}
 }
 
@@ -101,6 +101,6 @@ TEST(TPixelBuffer, fade) {
 	buffer.fade(191);
 
 	for (int i = 0; i < 30; i++) {
-		EXPECT_RGB_EQ(buffer[i], 75, 60, 45);
+		EXPECT_RGBu_EQ(buffer[i], 75, 60, 45);
 	}
 }

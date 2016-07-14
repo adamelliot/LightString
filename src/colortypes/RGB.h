@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef ARDUINO
+#include <stdio.h>
+#endif
+
 namespace LightString {
 
 template <typename TYPE>
@@ -67,12 +71,12 @@ struct TRGB {
 	}
 	
 	inline TRGB& operator+= (const TRGB<TYPE> &rhs) __attribute__((always_inline)) {
-		qadd8(this->raw, rhs.raw, sizeof(*this));
+		qadd8(this->raw, rhs.raw, 3);
 		return *this;
 	}
 
 	inline TRGB& operator+= (const TYPE val) __attribute__((always_inline)) {
-		qadd8(this->raw, val, sizeof(*this));
+		qadd8(this->raw, val, 3);
 		return *this;
 	}
 
@@ -88,12 +92,12 @@ struct TRGB {
 	}
 
 	inline TRGB& operator-= (const TRGB<TYPE> &rhs) __attribute__((always_inline)) {
-		qsub8(this->raw, rhs.raw, sizeof(*this));
+		qsub8(this->raw, rhs.raw, 3);
 		return *this;
 	}
 
 	inline TRGB& operator-= (const TYPE val) __attribute__((always_inline)) {
-		qsub8(this->raw, val, sizeof(*this));
+		qsub8(this->raw, val, 3);
 		return *this;
 	}
 
@@ -109,17 +113,23 @@ struct TRGB {
 	}
 
 	inline TRGB& operator*= (const TYPE val) __attribute__((always_inline)) {
-		qmul8(this->raw, val, sizeof(*this));
+		qmul8(this->raw, val, 3);
 		return *this;
 	}
 
+	inline TRGB operator* (const TYPE val) __attribute__((always_inline)) {
+		TRGB<TYPE> ret = *this;
+		qmul8(ret.raw, val, 3);
+		return ret;
+	}
+
 	inline TRGB& operator/= (const TYPE val) __attribute__((always_inline)) {
-		div<TYPE>(this->raw, val, sizeof(*this));
+		div<TYPE>(this->raw, val, 3);
 		return *this;
 	}
 
 	inline TRGB& operator%= (const uint8_t ratio) __attribute__((always_inline)) {
-		::scale8(this->raw, ratio, sizeof(*this));
+		::scale8(this->raw, ratio, 3);
 		return *this;
 	}
 
@@ -127,7 +137,7 @@ struct TRGB {
 
 	inline TRGB &lerp(const TRGB<TYPE> &other, const float ratio) __attribute__((always_inline)) {
 		if (ratio >= 1) {
-			*this = other;
+			return *this = other;
 		}
 		if (ratio <= 0) {
 			return *this;
@@ -146,11 +156,20 @@ struct TRGB {
 	// Scales by 8 bit ratio, so 128 = 0.5, 192 = 0.75, etc.
 
 	inline TRGB &scale8(const uint8_t ratio) {
-		::scale8(this->raw, ratio, sizeof(*this));
+		::scale8(this->raw, ratio, 3);
 		return *this;
 	}
 
-	inline TRGB &maximizeBrightness(const TYPE max) {
+	inline TRGB &maximizeBrightness(const TYPE limit) {
+		uint8_t max = r;
+		if (g > max) max = g;
+		if (b > max) max = b;
+		uint16_t fact = ((uint16_t)limit * 256) / max;
+
+		r = (r * fact) / 256;
+		g = (g * fact) / 256;
+		b = (b * fact) / 256;
+
 		return *this;
 	}
 
@@ -163,8 +182,7 @@ struct TRGB {
 #ifdef ARDUINO
 	void print() {
 		Serial.print("(");
-		Serial.print(0);
-		for (int i = 1; i < sizeof(*this); i++) {
+		for (int i = 1; i < 3; i++) {
 			Serial.print(", ");
 			Serial.print(this->raw[i]);
 		}
@@ -175,22 +193,63 @@ struct TRGB {
 		print();
 		Serial.println();
 	}
+#else
+	void print(FILE *stream = stdout) {
+		fprintf(stream, "(%f, %f, %f)", this->r, this->g, this->b);
+	}
 #endif
 };
 
-/* --------------- Specializations ---------------*/ 
+/* --------------- Specializations (float) ---------------*/ 
 
 template <>
-inline TRGB<uint8_t>& TRGB<uint8_t>::maximizeBrightness(const uint8_t limit) {
-	uint8_t max = r;
-	if (g > max) max = g;
-	if (b > max) max = b;
-	uint16_t fact = ((uint16_t)limit * 256) / max;
+inline TRGB<float>::TRGB(uint32_t colorcode) {
+	this->r = (float)((colorcode >> 16) & 0xff) / 0xff;
+	this->g = (float)((colorcode >>  8) & 0xff) / 0xff;
+	this->b = (float)((colorcode >>  0) & 0xff) / 0xff;
+}
 
-	r = (r * fact) / 256;
-	g = (g * fact) / 256;
-	b = (b * fact) / 256;
+template <>
+inline TRGB<float>& TRGB<float>::operator+= (const TRGB<float> &rhs) {
+	add<float>(this->raw, rhs.raw, 3);
+	return *this;
+}
 
+template <>
+inline TRGB<float>& TRGB<float>::operator+= (const float val) {
+	add<float>(this->raw, val, 3);
+	return *this;
+}
+
+template <>
+inline TRGB<float>& TRGB<float>::operator-= (const TRGB<float> &rhs) {
+	sub<float>(this->raw, rhs.raw, 3);
+	return *this;
+}
+
+template <>
+inline TRGB<float>& TRGB<float>::operator-= (const float val) {
+	sub<float>(this->raw, val, 3);
+	return *this;
+}
+
+template <>
+inline TRGB<float>& TRGB<float>::operator*= (const float val) {
+	mul<float>(this->raw, val, 3);
+	return *this;
+}
+
+template <>
+inline TRGB<float> TRGB<float>::operator* (const float val) {
+	TRGB<float> ret = *this;
+
+	mul<float>(ret.raw, val, 3);
+	return ret;
+}
+
+template <>
+inline TRGB<float>& TRGB<float>::lerp(const TRGB<float> &other, const float ratio) {
+	::lerp(this->raw, other.raw, 3, ratio);
 	return *this;
 }
 
@@ -199,7 +258,7 @@ inline TRGB<float>& TRGB<float>::maximizeBrightness(const float limit) {
 	float max = r;
 	if (g > max) max = g;
 	if (b > max) max = b;
-	uint16_t fact = 1 / max;
+	float fact = limit / max;
 
 	r *= fact;
 	g *= fact;
