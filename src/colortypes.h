@@ -104,6 +104,7 @@ inline void div(TYPE *in, const TYPE val, uint8_t count) {
 
 #include "colortypes/RGB.h"
 #include "colortypes/RGBA.h"
+#include "colortypes/HSV.h"
 
 /* ============== Actual Declarations ================ */
 
@@ -111,9 +112,11 @@ namespace LightString {
 
 typedef TRGB<uint8_t> RGBu;
 typedef TRGBA<uint8_t> RGBAu;
+typedef THSV<uint8_t> HSVu;
 
 typedef TRGB<float> RGBf;
 typedef TRGBA<float> RGBAf;
+typedef THSV<float> HSVf;
 
 // Color Codes pulled from FastLED
 typedef enum {

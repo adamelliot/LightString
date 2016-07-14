@@ -34,6 +34,20 @@ TEST(RGBf, equals) {
 	EXPECT_RGBf_EQ(col, 0.4, 0.8, 0.9);
 }
 
+TEST(RGBf, equalsHSV) {
+	HSVf col(240, 1, 1);
+	RGBf rgb = col;
+
+	EXPECT_RGBf_EQ(rgb, 0, 0, 1);
+}
+
+TEST(RGBf, toHSV) {
+	RGBf col(1, 0, 0);
+	HSVf hsv = col.toHSV();
+
+	EXPECT_HSVu_EQ(hsv, 0, 1, 1);
+}
+
 TEST(RGBf, addEqualsRBG) {
 	RGBf col1(0.20, 0.30, 0.40);
 	RGBf col2(0.10, 0.11, 0.12);

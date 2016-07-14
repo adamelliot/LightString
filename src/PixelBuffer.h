@@ -156,7 +156,11 @@ public:
 			return blendWith(*rgba, blendMode);
 		}
 
+#ifdef ARDUINO
+		Serial.println("ERROR: blendWith didn't find a suitable [src] type. Blending failed");
+#else
 		fprintf(stderr, "blendWith didn't find a suitable [src] type. Blending failed\n");
+#endif
 
 		return *this;
 	}

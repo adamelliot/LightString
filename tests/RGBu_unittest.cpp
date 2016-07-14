@@ -34,6 +34,20 @@ TEST(RGBu, equals) {
 	EXPECT_RGBu_EQ(col, 100, 150, 200);
 }
 
+TEST(RGBu, equalsHSV) {
+	HSVu col(127, 255, 255);
+	RGBu rgb = col;
+
+	EXPECT_RGBu_EQ(rgb, 0, 0, 251);
+}
+
+TEST(RGBu, toHSV) {
+	RGBu col(255, 0, 0);
+	HSVu hsv = col.toHSV();
+
+	EXPECT_HSVu_EQ(hsv, 0, 255, 255);
+}
+
 TEST(RGBu, addEqualsRBG) {
 	RGBu col1(20, 30, 40);
 	RGBu col2(10, 11, 12);

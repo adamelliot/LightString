@@ -6,6 +6,8 @@
 
 namespace LightString {
 
+template <typename TYPE> struct THSV;
+
 template <typename TYPE>
 struct TRGB {
 	union {
@@ -48,6 +50,8 @@ struct TRGB {
 		this->b = rhs.b;
 	}
 
+	inline TRGB(const THSV<TYPE> &rhs) __attribute__((always_inline));
+
 	inline TRGB(const CRGB &rhs) __attribute__((always_inline)) {
 		this->r = rhs.r;
 		this->g = rhs.g;
@@ -60,6 +64,8 @@ struct TRGB {
 		return r || g || b;
 	}
 
+	inline THSV<TYPE> toHSV() const;
+
 	/* -------------- Operators ---------------- */
 
 	inline TRGB& operator= (const TRGB<TYPE> &rhs) __attribute__((always_inline)) {
@@ -69,7 +75,7 @@ struct TRGB {
 		
 		return *this;
 	}
-	
+
 	inline TRGB& operator+= (const TRGB<TYPE> &rhs) __attribute__((always_inline)) {
 		qadd8(this->raw, rhs.raw, 3);
 		return *this;
@@ -199,6 +205,8 @@ struct TRGB {
 	}
 #endif
 };
+
+/* --------------- Specializations (uint8_t) ---------------*/ 
 
 /* --------------- Specializations (float) ---------------*/ 
 
