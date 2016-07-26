@@ -1,7 +1,7 @@
 #include "palette.h"
 
 using namespace LightString;
-
+/*
 SwatchManager<10, RGBAu> Swatches;
 PaletteManager<20, RGBAu> Palettes;
 
@@ -43,8 +43,4 @@ namespace LightString {
 	TPalette<RGBAu> PROGMEM RAINBOW_BLACK_GRADIENT 			= TPalette<RGBAu>(HTML::Red, HTML::Green, HTML::Blue, HTML::Black, HTML::Red);
 
 };
-
-void printColor(RGBAu col) {
-	printf("(%d, %d, %d, %d)", col.r, col.g, col.b, col.a);
-}
-
+*/

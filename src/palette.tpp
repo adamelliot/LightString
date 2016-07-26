@@ -1,31 +1,35 @@
-
 // ------------------- Swatch Manager ---------------------
 
-template<size_t MAX_SWATCHES, typename PIXEL>
-void SwatchManager<MAX_SWATCHES, PIXEL>::shuffle() {
+template<template <typename> class T, typename FORMAT>
+void TSwatchManager<T, FORMAT>::shuffle() {
 	for (size_t i = 0; i < swatchCount; i++) {
 		size_t j = (i + random() / (0xffffffff / (swatchCount - i) + 1)) % swatchCount;
-		PIXEL t = swatches[j];
+		T<FORMAT> t = swatches[j];
 		swatches[j] = swatches[i];
 		swatches[i] = t;
 	}
 }
 
-template<size_t MAX_SWATCHES, typename PIXEL>
-void SwatchManager<MAX_SWATCHES, PIXEL>::add(PIXEL color) {
-	if (swatchCount >= MAX_SWATCHES) {
+template<template <typename> class T, typename FORMAT>
+bool TSwatchManager<T, FORMAT>::add(T<FORMAT> color) {
+	if (swatchCount >= maxSwatches) {
+#ifdef ARDUINO
+		Serial.println("ERROR: Max swatches reached.");
+#else
 		fprintf(stderr, "ERROR: Max swatches reached.\n");
-		return;
+#endif
+		return false;
 	}
 	swatches[swatchCount++] = color;
+	return true;
 }
 
-template<size_t MAX_SWATCHES, typename PIXEL>
-TPalette<PIXEL> SwatchManager<MAX_SWATCHES, PIXEL>::generatePalette(uint8_t colorStops, uint8_t padding, bool mirrored) {
-	TPalette<PIXEL> ret;
+template<template <typename> class T, typename FORMAT>
+TPalette<T, FORMAT> TSwatchManager<T, FORMAT>::generatePalette(uint8_t colorStops, uint8_t padding, bool mirrored) {
+	TPalette<T, FORMAT> ret;
 
 	for (int i = 0; i < padding; i++) {
-		ret.colors[i] = PIXEL();
+		ret.colors[i] = T<FORMAT>();
 	}
 
 	for (int i = 0; i < colorStops; i++) {
@@ -47,16 +51,16 @@ TPalette<PIXEL> SwatchManager<MAX_SWATCHES, PIXEL>::generatePalette(uint8_t colo
 	return ret;
 }
 
-template<size_t MAX_SWATCHES, typename PIXEL>
-PIXEL SwatchManager<MAX_SWATCHES, PIXEL>::next() {
+template<template <typename> class T, typename FORMAT>
+T<FORMAT> TSwatchManager<T, FORMAT>::next() {
 	swatchIndex++;
 	swatchIndex %= swatchCount;
 
 	return swatches[swatchIndex];
 }
 
-template<size_t MAX_SWATCHES, typename PIXEL>
-PIXEL SwatchManager<MAX_SWATCHES, PIXEL>::previous() {
+template<template <typename> class T, typename FORMAT>
+T<FORMAT> TSwatchManager<T, FORMAT>::previous() {
 	if (swatchIndex == 0) {
 		swatchIndex = swatchCount - 1;
 	} else {
@@ -66,38 +70,41 @@ PIXEL SwatchManager<MAX_SWATCHES, PIXEL>::previous() {
 	return swatches[swatchIndex];
 }
 
-
-
 // ------------------- Palette Manager ---------------------
 
-template<size_t MAX_PALETTES, typename PIXEL>
-void PaletteManager<MAX_PALETTES, PIXEL>::shuffle() {
+template<template <typename> class T, typename FORMAT>
+void TPaletteManager<T, FORMAT>::shuffle() {
 	for (size_t i = 0; i < paletteCount; i++) {
 		size_t j = (i + random() / (0xffffffff / (paletteCount - i) + 1)) % paletteCount;
-		TPalette<PIXEL> *t = palettes[j];
+		TPalette<T, FORMAT> *t = palettes[j];
 		palettes[j] = palettes[i];
 		palettes[i] = t;
 	}
 }
 
-template<size_t MAX_PALETTES, typename PIXEL>
-void PaletteManager<MAX_PALETTES, PIXEL>::add(TPalette<PIXEL> &palette) {
-	if (paletteCount >= MAX_PALETTES) {
+template<template <typename> class T, typename FORMAT>
+bool TPaletteManager<T, FORMAT>::add(TPalette<T, FORMAT> &palette) {
+	if (paletteCount >= maxPalettes) {
+#ifdef ARDUINO
+		Serial.println("ERROR: Max palettes reached.");
+#else
 		fprintf(stderr, "ERROR: Max palettes reached.\n");
-		return;
+#endif
+		return false;
 	}
 
 	palettes[paletteCount++] = &palette;
+	return true;
 }
 
-template<size_t MAX_PALETTES, typename PIXEL>
-void PaletteManager<MAX_PALETTES, PIXEL>::next() {
+template<template <typename> class T, typename FORMAT>
+void TPaletteManager<T, FORMAT>::next() {
 	paletteIndex++;
 	paletteIndex %= paletteCount;
 }
 
-template<size_t MAX_PALETTES, typename PIXEL>
-void PaletteManager<MAX_PALETTES, PIXEL>::previous() {
+template<template <typename> class T, typename FORMAT>
+void TPaletteManager<T, FORMAT>::previous() {
 	if (paletteIndex == 0) {
 		paletteIndex = paletteCount - 1;
 	} else {
