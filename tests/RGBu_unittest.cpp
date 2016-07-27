@@ -40,13 +40,13 @@ TEST(RGBu, equalsHSV) {
 
 	EXPECT_RGBu_EQ(rgb, 0, 0, 251);
 }
-
+/*
 TEST(RGBu, toHSV) {
 	RGBu col(255, 0, 0);
 	HSVu hsv = col.toHSV();
 
 	EXPECT_HSVu_EQ(hsv, 0, 255, 255);
-}
+}*/
 
 TEST(RGBu, addEqualsRBG) {
 	RGBu col1(20, 30, 40);
@@ -173,11 +173,32 @@ TEST(RGBu, scale8) {
 	EXPECT_RGBu_EQ(col, 10, 15, 20);
 }
 
-TEST(RGBu, brightness) {
+TEST(RGBu, getSaturation) {
+	RGBu col(20, 60, 80);
+	EXPECT_EQ(col.s(), 191);
+
+	col = RGBu(0, 60, 80);
+	EXPECT_EQ(col.s(), 255);
+}
+
+TEST(RGBu, setSaturation) {
+	RGBu col = RGBu(10, 30, 110);
+	col.sat(255);
+
+	EXPECT_RGBu_EQ(col, 0, 22, 110);
+
+	col.sat(127);
+	EXPECT_RGBu_EQ(col, 55, 66, 110);
+}
+
+TEST(RGBu, getBrightness) {
 	RGBu col(40, 60, 100);
 
 	EXPECT_EQ(col.bri(), 100);
+}
 
+TEST(RGBu, setBrightness) {
+	RGBu col(40, 60, 100);
 	col.bri(200);
 
 	EXPECT_RGBu_EQ(col, 80, 120, 200);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #ifndef ARDUINO
 #include <stdio.h>
 #endif
@@ -166,6 +168,39 @@ struct TRGB {
 		return *this;
 	}
 
+	inline TYPE saturation() {
+		uint8_t high = brightness();
+
+		uint8_t low = r;
+		if (g < low) low = g;
+		if (b < low) low = b;
+
+		return 255 - (((uint16_t)low * 256) / high);
+	}
+
+	inline TYPE sat() { return saturation(); }
+	inline TYPE s() { return saturation(); }
+
+	inline TYPE saturation(const TYPE val) {
+		uint8_t lo = 0, mi = 1, hi = 2;
+
+		if (raw[lo] > raw[mi]) std::swap(lo, mi);
+		if (raw[mi] > raw[hi]) std::swap(mi, hi);
+		if (raw[lo] > raw[mi]) std::swap(lo, mi);
+
+		uint8_t newLo = (uint16_t)((255 - val) * raw[hi]) / 256;
+		uint16_t ratio = ((raw[mi] - raw[lo]) * 2560) / (raw[hi] - raw[lo]);
+		uint8_t newMi = ((raw[hi] - newLo) * ratio / 2560) + newLo;
+
+		raw[lo] = newLo;
+		raw[mi] = newMi;
+
+		return val;
+	}
+
+	inline TYPE sat(const TYPE limit) { return saturation(limit); }
+	inline TYPE s(const TYPE limit) { return saturation(limit); }
+
 	inline TYPE brightness() {
 		uint8_t max = r;
 		if (g > max) max = g;
@@ -304,6 +339,35 @@ template <>
 inline TRGB<float>& TRGB<float>::maximizeBrightness() {
 	brightness(1);
 	return *this;
+}
+
+template <>
+inline float TRGB<float>::saturation() {
+	float high = brightness();
+
+	float low = r;
+	if (g < low) low = g;
+	if (b < low) low = b;
+
+	return 1.0f - (low / high);
+}
+
+template <>
+inline float TRGB<float>::saturation(const float val) {
+	uint8_t lo = 0, mi = 1, hi = 2;
+
+	if (raw[lo] > raw[mi]) std::swap(lo, mi);
+	if (raw[mi] > raw[hi]) std::swap(mi, hi);
+	if (raw[lo] > raw[mi]) std::swap(lo, mi);
+
+	float newLo = (1 - val) * raw[hi];
+	float ratio = (raw[mi] - raw[lo]) / (raw[hi] - raw[lo]);
+	float newMi = (raw[hi] - newLo) * ratio + newLo;
+
+	raw[lo] = newLo;
+	raw[mi] = newMi;
+
+	return val;
 }
 
 };

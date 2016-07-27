@@ -192,16 +192,38 @@ TEST(RGBf, lerpRGBA) {
 	EXPECT_RGBf_EQ(col1, 60, 70, 80);
 }
 
-TEST(RGBAf, brightness) {
-	RGBAf col(0.20, 0.30, 0.40, 1);
+TEST(RGBAf, getSaturation) {
+	RGBAf col(0.10, 0.30, 0.40, 0.8);
+	EXPECT_EQ(col.s(), 0.75);
+
+	col = RGBAf(0, 60, 80, 0.8);
+	EXPECT_EQ(col.s(), 1.0);
+}
+
+TEST(RGBAf, setSaturation) {
+	RGBAf col = RGBAf(0.10, 0.30, 0.6, 0.8);
+	col.sat(1);
+
+	EXPECT_RGBAf_EQ(col, 0, 0.24, 0.6, 0.8);
+
+	col.sat(0.5);
+	EXPECT_RGBAf_EQ(col, 0.3, 0.42, 0.6, 0.8);
+}
+
+TEST(RGBAf, getBrightness) {
+	RGBAf col(0.20, 0.30, 0.40, 0.8);
 
 	float b = col.bri();
 	EXPECT_EQ(b, 0.4f);
+}
 
+TEST(RGBAf, setBrightness) {
+	RGBAf col(0.20, 0.30, 0.40, 0.8);
 	col.bri(0.8);
 
-	EXPECT_RGBAf_EQ(col, 0.4, 0.6, 0.8, 1);
+	EXPECT_RGBAf_EQ(col, 0.4, 0.6, 0.8, 0.8);
 }
+
 
 TEST(RGBAf, maximizeBrightness) {
 	RGBAf col = RGBAf(0.4, 0.6, 0.8, 1);

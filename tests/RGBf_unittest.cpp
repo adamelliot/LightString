@@ -145,12 +145,33 @@ TEST(RGBf, lerp) {
 	EXPECT_RGBf_EQ(col1, 0.40, 0.50, 0.60);
 }
 
-TEST(RGBf, brightness) {
+TEST(RGBf, getSaturation) {
+	RGBf col(0.10, 0.30, 0.40);
+	EXPECT_EQ(col.s(), 0.75);
+
+	col = RGBf(0, 60, 80);
+	EXPECT_EQ(col.s(), 1.0);
+}
+
+TEST(RGBf, setSaturation) {
+	RGBf col = RGBf(0.10, 0.30, 0.6);
+	col.sat(1);
+
+	EXPECT_RGBf_EQ(col, 0, 0.24, 0.6);
+
+	col.sat(0.5);
+	EXPECT_RGBf_EQ(col, 0.3, 0.42, 0.6);
+}
+
+TEST(RGBf, getBrightness) {
 	RGBf col(0.20, 0.30, 0.40);
 
 	float b = col.bri();
 	EXPECT_EQ(b, 0.4f);
+}
 
+TEST(RGBf, setBrightness) {
+	RGBf col(0.20, 0.30, 0.40);
 	col.bri(0.8);
 
 	EXPECT_RGBf_EQ(col, 0.4, 0.6, 0.8);

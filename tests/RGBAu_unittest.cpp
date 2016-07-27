@@ -264,11 +264,32 @@ TEST(RGBAu, scale8) {
 	EXPECT_RGBAu_EQ(col, 10, 15, 20, 100);
 }
 
-TEST(RGBAu, brightness) {
+TEST(RGBAu, getSaturation) {
+	RGBAu col(20, 60, 80, 200);
+	EXPECT_EQ(col.s(), 191);
+
+	col = RGBAu(0, 60, 80);
+	EXPECT_EQ(col.s(), 255);
+}
+
+TEST(RGBAu, setSaturation) {
+	RGBAu col = RGBAu(10, 30, 110, 200);
+	col.sat(255);
+
+	EXPECT_RGBAu_EQ(col, 0, 22, 110, 200);
+
+	col.sat(127);
+	EXPECT_RGBAu_EQ(col, 55, 66, 110, 200);
+}
+
+TEST(RGBAu, getBrightness) {
 	RGBAu col(40, 60, 100, 200);
 
 	EXPECT_EQ(col.bri(), 100);
+}
 
+TEST(RGBAu, setBrightness) {
+	RGBAu col(40, 60, 100, 200);
 	col.bri(200);
 
 	EXPECT_RGBAu_EQ(col, 80, 120, 200, 200);
