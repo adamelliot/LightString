@@ -145,13 +145,19 @@ TEST(RGBf, lerp) {
 	EXPECT_RGBf_EQ(col1, 0.40, 0.50, 0.60);
 }
 
-TEST(RGBf, maximizeBrightness) {
+TEST(RGBf, brightness) {
 	RGBf col(0.20, 0.30, 0.40);
-	col.maximizeBrightness(0.8);
+
+	float b = col.bri();
+	EXPECT_EQ(b, 0.4f);
+
+	col.bri(0.8);
 
 	EXPECT_RGBf_EQ(col, 0.4, 0.6, 0.8);
+}
 
-	col = RGBf(0.20, 0.30, 0.40);
+TEST(RGBf, maximizeBrightness) {
+	RGBf col = RGBf(0.20, 0.30, 0.40);
 	col.maximizeBrightness();	
 
 	EXPECT_RGBf_EQ(col, 0.5, 0.75, 1.0);

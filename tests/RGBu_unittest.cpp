@@ -173,13 +173,18 @@ TEST(RGBu, scale8) {
 	EXPECT_RGBu_EQ(col, 10, 15, 20);
 }
 
-TEST(RGBu, maximizeBrightness) {
+TEST(RGBu, brightness) {
 	RGBu col(40, 60, 100);
-	col.maximizeBrightness(200);
+
+	EXPECT_EQ(col.bri(), 100);
+
+	col.bri(200);
 
 	EXPECT_RGBu_EQ(col, 80, 120, 200);
+}
 
-	col = RGBu(40, 60, 127);
+TEST(RGBu, maximizeBrightness) {
+	RGBu col = RGBu(40, 60, 127);
 	col.maximizeBrightness();	
 
 	EXPECT_RGBu_EQ(col, 80, 120, 254);

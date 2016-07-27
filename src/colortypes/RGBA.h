@@ -39,7 +39,9 @@ struct TRGBA : TRGB<TYPE> {
 		this->r = (colorcode >> 16) & 0xff;
 		this->g = (colorcode >>  8) & 0xff;
 		this->b = (colorcode >>  0) & 0xff;
-		this->a = 0xff;
+		// Invert high values so existing color codes work, but alpha ones can be added
+		// kinda gross, but gets the job done.
+		this->a = 0xff - ((colorcode >> 24) & 0xff);
 	}
 
 	/* --------------- Casting ----------------- */

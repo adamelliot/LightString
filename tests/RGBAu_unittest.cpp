@@ -264,13 +264,18 @@ TEST(RGBAu, scale8) {
 	EXPECT_RGBAu_EQ(col, 10, 15, 20, 100);
 }
 
+TEST(RGBAu, brightness) {
+	RGBAu col(40, 60, 100, 200);
+
+	EXPECT_EQ(col.bri(), 100);
+
+	col.bri(200);
+
+	EXPECT_RGBAu_EQ(col, 80, 120, 200, 200);
+}
+
 TEST(RGBAu, maximizeBrightness) {
-	RGBAu col(40, 60, 100, 70);
-	col.maximizeBrightness(200);
-
-	EXPECT_RGBAu_EQ(col, 80, 120, 200, 70);
-
-	col = RGBAu(40, 60, 127, 200);
+	RGBAu col = RGBAu(40, 60, 127, 200);
 	col.maximizeBrightness();
 
 	EXPECT_RGBAu_EQ(col, 80, 120, 254, 200);

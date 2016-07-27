@@ -192,13 +192,19 @@ TEST(RGBf, lerpRGBA) {
 	EXPECT_RGBf_EQ(col1, 60, 70, 80);
 }
 
+TEST(RGBAf, brightness) {
+	RGBAf col(0.20, 0.30, 0.40, 1);
+
+	float b = col.bri();
+	EXPECT_EQ(b, 0.4f);
+
+	col.bri(0.8);
+
+	EXPECT_RGBAf_EQ(col, 0.4, 0.6, 0.8, 1);
+}
+
 TEST(RGBAf, maximizeBrightness) {
-	RGBAf col(40, 60, 100, 1);
-	col.maximizeBrightness(200);
-
-	EXPECT_RGBAf_EQ(col, 80, 120, 200, 1);
-
-	col = RGBAf(0.4, 0.6, 0.8, 1);
+	RGBAf col = RGBAf(0.4, 0.6, 0.8, 1);
 	col.maximizeBrightness();
 
 	EXPECT_RGBAf_EQ(col, 0.5, 0.75, 1.0, 1);

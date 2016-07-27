@@ -166,21 +166,35 @@ struct TRGB {
 		return *this;
 	}
 
-	inline TRGB &maximizeBrightness(const TYPE limit) {
+	inline TYPE brightness() {
 		uint8_t max = r;
 		if (g > max) max = g;
 		if (b > max) max = b;
+		return max;
+	}
+
+	inline TYPE bri() { return brightness(); }
+	inline TYPE val() { return brightness(); }
+	inline TYPE v() { return brightness(); }
+
+	inline TYPE brightness(const TYPE limit) {
+		uint8_t max = brightness();
 		uint16_t fact = ((uint16_t)limit * 256) / max;
 
 		r = (r * fact) / 256;
 		g = (g * fact) / 256;
 		b = (b * fact) / 256;
 
-		return *this;
+		return limit;
 	}
 
+	inline TYPE bri(const TYPE limit) { return brightness(limit); }
+	inline TYPE val(const TYPE limit) { return brightness(limit); }
+	inline TYPE v(const TYPE limit) { return brightness(limit); }
+
 	inline TRGB &maximizeBrightness() {
-		return maximizeBrightness(255);
+		brightness(255);
+		return *this;
 	}
 
 	/* ------------------- Other ----------------- */
@@ -213,7 +227,7 @@ struct TRGB {
 
 /* --------------- Specializations (uint8_t) ---------------*/ 
 
-/* --------------- Specializations (float) ---------------*/ 
+/* --------------- Specializations (float) ---------------*/
 
 template <>
 inline TRGB<float>::TRGB(uint32_t colorcode) {
@@ -267,27 +281,29 @@ inline TRGB<float>& TRGB<float>::lerp(const TRGB<float> &other, const float rati
 }
 
 template <>
-inline TRGB<float>& TRGB<float>::maximizeBrightness(const float limit) {
+inline float TRGB<float>::brightness() {
 	float max = r;
 	if (g > max) max = g;
 	if (b > max) max = b;
+	return max;
+}
+
+template <>
+inline float TRGB<float>::brightness(const float limit) {
+	float max = brightness();
 	float fact = limit / max;
 
 	r *= fact;
 	g *= fact;
 	b *= fact;
 
-	return *this;
-}
-
-template <>
-inline TRGB<uint8_t>& TRGB<uint8_t>::maximizeBrightness() {
-	return maximizeBrightness(255);
+	return limit;
 }
 
 template <>
 inline TRGB<float>& TRGB<float>::maximizeBrightness() {
-	return maximizeBrightness(1);
+	brightness(1);
+	return *this;
 }
 
 };
