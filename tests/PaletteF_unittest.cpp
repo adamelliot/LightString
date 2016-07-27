@@ -128,3 +128,11 @@ TEST(TPaletteManagerF, next) {
 	EXPECT_RGBf_EQ(col1, 1, 0, 0);
 	EXPECT_RGBf_EQ(col2, 0, 1, 0);
 }
+
+TEST(PaletteTypesF, creation) {
+	TPalette<TRGBA, float> pal = SOLID_RED;
+
+	RGBf col = pal[0];
+
+	EXPECT_RGBf_EQ(col, 1, 0, 0);
+}

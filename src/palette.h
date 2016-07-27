@@ -12,6 +12,9 @@
 // Range for 8bit palettes
 const uint16_t kPaletteSize8Bit = 256;
 
+#define RGB_HEX(R, G, B) ((R << 16) | (G << 8) | B)
+#define RGBA_HEX(R, G, B, A) (((255 - A) << 24) | (R << 16) | (G << 8) | B)
+
 namespace LightString {
 
 struct IPalette {
@@ -20,9 +23,7 @@ public:
 	virtual uint16_t getColorTotalStops() = 0;
 };
 
-typedef uint32_t ColorPaletteDataRGB4[4];
-typedef uint32_t ColorPaletteDataRGB8[8];
-// typedef uint32_t ColorPaletteDataRGB16[16];
+typedef uint32_t ColorPaletteData[];
 
 template <template <typename> class T, typename FORMAT = uint8_t>
 struct TPalette : IPalette {
@@ -113,7 +114,7 @@ public:
 	inline TPalette(uint8_t len, const T<FORMAT> newColors[], bool mirrored = false)
 		: size(mirrored ? ((len << 1) - 1) : len)
 	{
-		memcpy8(colors, newColors, len * sizeof(T<FORMAT>));
+		memcpy(colors, newColors, len * sizeof(T<FORMAT>));
 
 		if (mirrored) {
 			uint8_t end = size - 1;
@@ -143,6 +144,12 @@ public:
 
 	inline TPalette(T<FORMAT> col0, T<FORMAT> col1, T<FORMAT> col2, T<FORMAT> col3, T<FORMAT> col4, T<FORMAT> col5, T<FORMAT> col6) : size(7)
 	{ alloc(); colors[0] = col0; colors[1] = col1; colors[2] = col2; colors[3] = col3; colors[4] = col4; colors[5] = col5; colors[6] = col6; }
+
+	template <int SIZE>
+	inline TPalette(uint32_t (&data)[SIZE]) : size(SIZE) {
+		alloc();
+		for (uint8_t i = 0; i < size; i++) colors[i] = T<FORMAT>(data[i]);
+	}
 
 	~TPalette() { if (size > 0) delete colorStops; }
 	
@@ -191,58 +198,51 @@ typedef TPalette<TRGB, uint8_t> CRGBPalette;
 typedef TPalette<TRGB, uint8_t> RGBuPalette;
 typedef TPalette<TRGB, uint8_t> RGBAuPalette;
 
-//TPalette<RGBA> &testPalette() {
-//	static TPalette<RGBA> pal(CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB(0, 255, 64));
-//	return pal;
-//}
+static ColorPaletteData PROGMEM SOLID_RED 						= { HTML::Red };
+static ColorPaletteData PROGMEM SOLID_GREEN						= { HTML::Lime };
+static ColorPaletteData PROGMEM SOLID_BLUE						= { HTML::Blue };
+static ColorPaletteData PROGMEM SOLID_AQUA						= { HTML::Aqua };
+static ColorPaletteData PROGMEM SOLID_AZURE						= { HTML::Azure };
 
-extern RGBAuPalette PROGMEM SOLID_RED										;
-extern RGBAuPalette PROGMEM SOLID_GREEN									;
-extern RGBAuPalette PROGMEM SOLID_BLUE									;
-extern RGBAuPalette PROGMEM SOLID_AQUA									;
-extern RGBAuPalette PROGMEM SOLID_AZURE									;
-extern RGBAuPalette PROGMEM RAINBOW_GRADIENT 						;
-extern RGBAuPalette PROGMEM BLUE_GREEN_GRADIENT 				;
-extern RGBAuPalette PROGMEM GREEN_GRADIENT 							;
-extern RGBAuPalette PROGMEM LIME_GRADIENT 							;
-extern RGBAuPalette PROGMEM YELLOW_GRADIENT 						;
-extern RGBAuPalette PROGMEM WHITE_GRADIENT 							;
-extern RGBAuPalette PROGMEM RED_GREEN_GRADIENT 					;
-extern RGBAuPalette PROGMEM GREEN_BLUE_GRADIENT 				;
-extern RGBAuPalette PROGMEM RED_ORGANGE_GRADIENT 				;
-extern RGBAuPalette PROGMEM BLUE_WHITE_GRADIENT 				;
-extern RGBAuPalette PROGMEM BLUE_WHITISH_GRADIENT				;
-extern RGBAuPalette PROGMEM BLUE_WHITE_YELLOW_GRADIENT 	;
-extern RGBAuPalette PROGMEM BLUE_YELLOW_BLACK_GRADIENT 	;
-extern RGBAuPalette PROGMEM RED_WHITE_BLACK_GRADIENT 		;
-extern RGBAuPalette PROGMEM RED_WHITE_GRADIENT 					;
-extern RGBAuPalette PROGMEM GREEN_WHITE_GRADIENT 				;
-extern RGBAuPalette PROGMEM RED_WHITISH_GRADIENT 				;
-extern RGBAuPalette PROGMEM CYAN_PINK_GRADIENT 					;
-extern RGBAuPalette PROGMEM BLUE_YELLOW_GRADIENT 				;
-extern RGBAuPalette PROGMEM GREEN_YELLOW_GRADIENT 			;
-extern RGBAuPalette PROGMEM RAINBOW_BLACK_GRADIENT 			;
+static ColorPaletteData PROGMEM HSV_GRADIENT					= { HTML::Red, 0xffff00, HTML::Lime, 0x00ffff, HTML::Blue, 0xff00ff, HTML::Red };
+static ColorPaletteData PROGMEM RAINBOW_GRADIENT 				= { HTML::Red, HTML::Lime, HTML::Blue, HTML::Red };
 
-// Palettes
+static ColorPaletteData PROGMEM BLUE_GREEN_GRADIENT 			= { HTML::Blue, RGB_HEX(0, 255, 64), HTML::Blue };
+static ColorPaletteData PROGMEM GREEN_GRADIENT 					= { HTML::Lime, RGB_HEX(0, 32, 0), HTML::Lime };
+static ColorPaletteData PROGMEM LIME_GRADIENT 					= { HTML::Lime, HTML::Green, HTML::Lime };
+static ColorPaletteData PROGMEM YELLOW_GRADIENT 				= { RGB_HEX(255, 191, 63), RGB_HEX(63, 47, 15), RGB_HEX(255, 191, 63) };
+static ColorPaletteData PROGMEM WHITE_GRADIENT 					= { HTML::White, HTML::Black, HTML::White };
 
-/*
+static ColorPaletteData PROGMEM RED_GREEN_GRADIENT 				= { HTML::Red, HTML::Green };
+static ColorPaletteData PROGMEM GREEN_BLUE_GRADIENT 			= { RGB_HEX(0, 255, 64), RGB_HEX(0, 0, 255), RGB_HEX(0, 255, 64) };
+static ColorPaletteData PROGMEM RED_ORGANGE_GRADIENT 			= { RGB_HEX(128, 128, 128), RGB_HEX(128, 31, 0), RGB_HEX(128, 95, 0), RGB_HEX(128, 31, 0), RGB_HEX(128, 128, 128) };
+static ColorPaletteData PROGMEM BLUE_WHITE_GRADIENT 			= { RGB_HEX(0, 31, 255), RGB_HEX(255, 255, 255), RGB_HEX(0, 31, 255) };
+static ColorPaletteData PROGMEM BLUE_WHITISH_GRADIENT			= { RGB_HEX(0, 31, 255), RGB_HEX(191, 191, 191), RGB_HEX(0, 31, 255) };
 
-PALLETE_2_M(pinkPurpleGradient, CRGB(255, 0, 128), CRGB(96, 0, 192));
-PALLETE_2_M(solidRedGradient, CRGB(255, 192, 0), CRGB(255, 192, 0));
+static ColorPaletteData PROGMEM BLUE_WHITE_YELLOW_GRADIENT 		= { RGB_HEX(0, 95, 255), RGB_HEX(255, 255, 0), HTML::White, RGB_HEX(0, 31, 255) };
 
-PALLETE_5(pinkPurpleBlackGradient, CRGB(255, 0, 128), CRGB(96, 0, 192), CRGB::Black, CRGB::Black, CRGB(255, 0, 128));
+static ColorPaletteData PROGMEM BLUE_YELLOW_BLACK_GRADIENT 		= { RGB_HEX(0, 95, 255), RGB_HEX(255, 255, 0), HTML::White, HTML::Black, RGB_HEX(0, 31, 255) };
+static ColorPaletteData PROGMEM RED_WHITE_BLACK_GRADIENT 		= { RGB_HEX(255, 0, 31), RGB_HEX(255, 0, 0), HTML::White, HTML::Black, RGB_HEX(255, 0, 31) };
 
-PALLETE_5(cyanPinkBlackGradient, CRGB(0, 255, 192), CRGB::Black, CRGB(255, 16, 64), CRGB::Black, CRGB(0, 255, 192));
+static ColorPaletteData PROGMEM RED_WHITE_GRADIENT 				= { RGB_HEX(255, 31, 0), RGB_HEX(255, 0, 0), RGB_HEX(255, 255, 255), RGB_HEX(255, 31, 0) };
+static ColorPaletteData PROGMEM GREEN_WHITE_GRADIENT 			= { RGB_HEX(0, 255, 31), RGB_HEX(0, 255, 0), RGB_HEX(255, 255, 255), RGB_HEX(0, 255, 31) };
+static ColorPaletteData PROGMEM RED_WHITISH_GRADIENT 			= { RGB_HEX(255, 31, 0), RGB_HEX(255, 0, 0), RGB_HEX(191, 191, 191), RGB_HEX(255, 31, 0) };
 
-PALLETE_5(greenBlueBlackGradient, CRGB(0, 255, 64), CRGB(0, 0, 255), CRGB::Black, CRGB::Black, CRGB(0, 255, 64));
+static ColorPaletteData PROGMEM CYAN_PINK_GRADIENT 				= { RGB_HEX(0, 255, 255), RGB_HEX(255, 0, 96), RGB_HEX(0, 255, 255) };
+static ColorPaletteData PROGMEM BLUE_YELLOW_GRADIENT 			= { RGB_HEX(0, 95, 255), RGB_HEX(255, 255, 0), RGB_HEX(0, 31, 255) };
+static ColorPaletteData PROGMEM GREEN_YELLOW_GRADIENT 			= { RGB_HEX(31, 255, 31), RGB_HEX(255, 191, 63), RGB_HEX(31, 255, 31) };
+static ColorPaletteData PROGMEM RAINBOW_BLACK_GRADIENT 			= { HTML::Red, HTML::Green, HTML::Blue, HTML::Black, HTML::Red };
 
-PALLETE_5(redOrgangeBlackGradient, CRGB(255, 31, 0), CRGB(255, 191, 0), CRGB::Black, CRGB::Black, CRGB(255, 31, 0));
+static ColorPaletteData PROGMEM PINK_PURPLE_GRADIENT			= { RGB_HEX(255, 0, 128), RGB_HEX(96, 0, 192), RGB_HEX(255, 0, 128) };
+static ColorPaletteData PROGMEM PINK_PURPLE_BLACK_GRADIENT		= { RGB_HEX(255, 0, 128), RGB_HEX(96, 0, 192), HTML::Black, HTML::Black, RGB_HEX(255, 0, 128) };
+static ColorPaletteData PROGMEM CYAN_PINK_BLACK_GRADIENT		= { RGB_HEX(0, 255, 192), HTML::Black, RGB_HEX(255, 16, 64), HTML::Black, RGB_HEX(0, 255, 192) };
+static ColorPaletteData PROGMEM GREEN_BLUE_BLACK_GRADIENT		= { RGB_HEX(0, 255, 64), RGB_HEX(0, 0, 255), HTML::Black, HTML::Black, RGB_HEX(0, 255, 64) };
+static ColorPaletteData PROGMEM RED_ORGANGE_BLACK_GRADIENT		= { RGB_HEX(255, 31, 0), RGB_HEX(255, 191, 0), HTML::Black, HTML::Black, RGB_HEX(255, 31, 0) };
+static ColorPaletteData PROGMEM BLUE_WHITE_BLACK_GRADIENT		= { RGB_HEX(0, 31, 25), RGB_HEX(255, 255, 255), HTML::White, HTML::Black, RGB_HEX(0, 31, 255) };
+static ColorPaletteData PROGMEM BLUE_YELLOW_BLACK_HARD_GRADIENT = { RGB_HEX(0, 0, 0), RGB_HEX(16, 16, 0), RGB_HEX(255, 255, 0), RGB_HEX(0, 95, 255) };
+static ColorPaletteData PROGMEM WHITE_SOLID_GRADIENT			= { RGB_HEX(64, 64, 64), RGB_HEX(64, 64, 64) };
 
-PALLETE_5(blueWhiteBlackGradient, CRGB(0, 31, 25), CRGB(255, 255, 255), CRGB::White, CRGB::Black, CRGB(0, 31, 255));
-PALLETE_4(blueYellowBlackHardGradient, CRGB(0, 0, 0), CRGB(16, 16, 0), CRGB(255, 255, 0), CRGB(0, 95, 255));
-
-PALLETE_2(whiteSolidGradient, CRGB(64, 64, 64), CRGB(64, 64, 64));
-*/
+/* --------------- Swatch Manager --------------- */ 
 
 template<template <typename> class T, typename FORMAT = uint8_t>
 class TSwatchManager {
@@ -272,6 +272,7 @@ public:
 	T<FORMAT> previous();
 };
 
+/* --------------- Palette Manager --------------- */ 
 
 // Manages a reference list of palettes
 template<template <typename> class T, typename FORMAT = uint8_t>
@@ -308,7 +309,9 @@ public:
 
 };
 
-// extern LightString::SwatchManager<10, LightString::RGBAu> Swatches;
-// extern LightString::PaletteManager<20, LightString::RGBAu> Palettes;
+using namespace LightString;
+
+extern TSwatchManager<TRGBA, uint8_t> Swatches;
+extern TPaletteManager<TRGBA, uint8_t> Palettes;
 
 #endif
