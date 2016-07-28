@@ -35,6 +35,27 @@ public:
 		if (shouldDelete) delete pixels;
 	}
 
+	inline bool resize(uint16_t length) {
+		if (!shouldDelete && length > 0) {
+#ifdef ARDUINO
+			Serial.println("ERROR: Cannot resize buffer that is not owned by pixel buffer.");
+#else
+			fprintf(stderr, "ERROR: Cannot resize buffer that is not owned by pixel buffer.\n");
+#endif
+			return false;
+		}
+
+		if (shouldDelete) {
+			free(pixels);
+		}
+
+		this->length = length;
+		pixels = (T<FORMAT> *) malloc(sizeof(T<FORMAT>) * length);
+		memset(pixels, 0, sizeof(T<FORMAT>) * length);
+
+		return true;
+	}
+
 	inline uint16_t getLength() const {
 		return length;
 	}

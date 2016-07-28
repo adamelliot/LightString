@@ -23,6 +23,19 @@ TEST(TPixelBuffer, creationExternalMemory) {
 	EXPECT_FALSE(buffer.shouldDelete);
 }
 
+TEST(TPixelBuffer, resize) {
+	TPixelBuffer<TRGB, uint8_t> buffer(30);
+
+	EXPECT_EQ(buffer.length, 30);
+	buffer.resize(40);
+
+	buffer[35] = RGBu(100, 200, 50);
+
+	EXPECT_EQ(buffer.length, 40);
+
+	EXPECT_RGBu_EQ(buffer[35], 100, 200, 50);
+}
+
 TEST(TPixelBuffer, indexAccess) {
 	TPixelBuffer<TRGB> buffer(30);
 
