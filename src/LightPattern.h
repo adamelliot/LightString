@@ -19,6 +19,7 @@ protected:
 
 public:
 	ILightPattern(uint8_t modeCount = 1) : modeCount(modeCount), blendMode(BLEND_COPY) {}
+	virtual ~ILightPattern() {}
 	
 	void setLayer(ILightLayer *layer) { this->layer = layer; }
 	ILightLayer* getLayer() { return layer; }
