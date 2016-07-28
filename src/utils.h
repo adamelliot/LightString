@@ -21,6 +21,10 @@ T map(T x, T in_min, T in_max, T out_min, T out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+inline float clamp(float value, float min, float max)
+  return ((value < min)? min : (value > max)? max : value);
+}
+
 // Older tools
 
 // #define SWAP(x, y) do { decltype(x) SWAP = x; x = y; y = SWAP; } while (0)
