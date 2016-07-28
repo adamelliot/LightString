@@ -23,7 +23,7 @@ T map(T x, T in_min, T in_max, T out_min, T out_max) {
 
 // Older tools
 
-#define SWAP(x, y) do { decltype(x) SWAP = x; x = y; y = SWAP; } while (0)
+// #define SWAP(x, y) do { decltype(x) SWAP = x; x = y; y = SWAP; } while (0)
 
 // extern const uint8_t kMatrixWidth;
 // extern const uint8_t kMatrixHeight;

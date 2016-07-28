@@ -257,7 +257,7 @@ public:
 	}
 
 	inline void drawRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, T<FORMAT> col) {
-		if (y0 > y1) SWAP(y0, y1);
+		if (y0 > y1) std::swap(y0, y1);
 
 		for (; y0 < y1; y0++) {
 			horzLine(x0, y0, x1 - x0, col);
