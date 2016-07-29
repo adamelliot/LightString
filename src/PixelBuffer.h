@@ -135,7 +135,9 @@ public:
 	inline TPixelBuffer<T, FORMAT> &blendCOPY(TPixelBuffer<SRC_PIXEL, FORMAT> &src) {
 		uint16_t len = std::min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
-			LightString::blendCOPY(this->pixels[i], src.pixels[i]);
+			// BUG: FP Blending isn't fully working with copying
+			// LightString::blendCOPY(this->pixels[i], src.pixels[i]);
+			this->pixels[i] = src.pixels[i];
 		}
 
 		return *this;

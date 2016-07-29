@@ -9,7 +9,7 @@ using namespace LightString;
 
 TEST(RGBAu, creation) {
 	RGBAu col;
-	EXPECT_RGBAu_EQ(col, 0, 0, 0, 0);
+	EXPECT_RGBAu_EQ(col, 0, 0, 0, 255);
 }
 
 TEST(RGBAu, initialization) {

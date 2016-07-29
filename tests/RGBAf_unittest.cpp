@@ -9,7 +9,7 @@ using namespace LightString;
 
 TEST(RGBAf, creation) {
 	RGBAf col;
-	EXPECT_RGBAf_EQ(col, 0, 0, 0, 0);
+	EXPECT_RGBAf_EQ(col, 0, 0, 0, 1);
 }
 
 TEST(RGBAf, initialization) {

@@ -18,7 +18,7 @@ struct TRGBA : TRGB<TYPE> {
 	/* ------------- Constructors ------------ */
 
 	inline TRGBA() __attribute__((always_inline)) : TRGB<TYPE>(0, 0, 0) {
-		this->a = 0;
+		this->a = 255;
 	}
 
 	inline TRGBA(TYPE r, TYPE g, TYPE b) __attribute__((always_inline)) {
@@ -191,6 +191,11 @@ struct TRGBA : TRGB<TYPE> {
 };
 
 /* --------------- Specializations (float) ---------------*/ 
+
+template <>
+inline TRGBA<float>::TRGBA() : TRGB<float>(0, 0, 0) {
+	this->a = 1;
+}
 
 template <>
 inline TRGBA<float>::TRGBA(float r, float g, float b) {

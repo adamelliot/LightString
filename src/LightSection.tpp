@@ -63,7 +63,8 @@ void LIGHT_SECTION_CLASS::update() {
 		
 		if (pattern && !pattern->isFilterPattern() && bufferCount > 0) {
 			IPixelBuffer *buffer = pattern->getPixelBuffer();
-			// TODO: Fix this so it's not destructive
+			// TODO: Fix this so it's not destructive and works with FP
+			/*
 			if (layers[i].getOpacity() < 255) {
 				for (uint16_t j = 0; j < buffer->getLength(); j++) {
 					// FXIME: This is a hack to get fadeouts to work
@@ -73,6 +74,7 @@ void LIGHT_SECTION_CLASS::update() {
 					}
 				}
 			}
+			*/
 			
 			// Serial.print("Blend: ");
 			// Serial.println(pattern->getBlendMode());
