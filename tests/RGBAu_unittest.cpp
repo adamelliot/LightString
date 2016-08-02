@@ -41,7 +41,7 @@ TEST(RGBAu, equalsRGB) {
 
 	col = col3;
 
-	EXPECT_RGBAu_EQ(col, 5, 6, 7, 100);
+	EXPECT_RGBAu_EQ(col, 5, 6, 7, 255);
 }
 
 TEST(RGBAu, addEqualsRBGA) {

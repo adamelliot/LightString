@@ -135,9 +135,7 @@ public:
 	inline TPixelBuffer<T, FORMAT> &blendCOPY(TPixelBuffer<SRC_PIXEL, FORMAT> &src) {
 		uint16_t len = std::min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
-			// BUG: FP Blending isn't fully working with copying
-			// LightString::blendCOPY(this->pixels[i], src.pixels[i]);
-			this->pixels[i] = src.pixels[i];
+			LightString::blendCOPY(this->pixels[i], src.pixels[i]);
 		}
 
 		return *this;
@@ -162,31 +160,6 @@ public:
 
 		return *this;
 	}
-
-	inline TPixelBuffer<T, FORMAT> &blendWith(IPixelBuffer &src, EBlendMode blendMode) {
-		static TPixelBuffer<TRGB, FORMAT> rgbType;
-		static TPixelBuffer<TRGBA, FORMAT> rgbaType;
-
-		// TODO: This method is heavy and needs to be rethought, dynamic_cast is heavy and brittle
-
-		TPixelBuffer<TRGB, FORMAT> *rgb = dynamic_cast<TPixelBuffer<TRGB, FORMAT> *>(&src);
-		if (rgb) {
-			return blendWith(*rgb, blendMode);
-		}
-
-		TPixelBuffer<TRGBA, FORMAT> *rgba = dynamic_cast<TPixelBuffer<TRGBA, FORMAT> *>(&src);
-		if (rgba) {
-			return blendWith(*rgba, blendMode);
-		}
-
-#ifdef ARDUINO
-		Serial.println("ERROR: blendWith didn't find a suitable [src] type. Blending failed");
-#else
-		fprintf(stderr, "blendWith didn't find a suitable [src] type. Blending failed\n");
-#endif
-
-		return *this;
-	}
 };
 
 template <>
@@ -202,11 +175,11 @@ inline void TPixelBuffer<TRGBA, uint8_t>::fade(const uint8_t scale) {
 		pixels[i].scale8(scale);
 	}
 }
-/*
+
 template <>
 inline void TPixelBuffer<TRGB, float>::fade(const float scale) {
 	for (uint16_t i = 0; i < this->length; i++) {
-		pixels[i] *= scale
+		pixels[i] *= scale;
 	}
 }
 
@@ -216,7 +189,7 @@ inline void TPixelBuffer<TRGBA, float>::fade(const float scale) {
 		pixels[i] *= scale;
 	}
 }
-*/
+
 typedef TPixelBuffer<TRGB, uint8_t> RGBuBuffer;
 typedef TPixelBuffer<TRGB, uint8_t> RGBBuffer;
 typedef TPixelBuffer<TRGBA, uint8_t> RGBABuffer;

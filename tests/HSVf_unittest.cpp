@@ -32,3 +32,10 @@ TEST(HSVf, toRGB) {
 
 	EXPECT_RGBf_EQ(rgb, 0, 1, 0);
 }
+
+TEST(HSVf, toRGBA) {
+	HSVf col(120, 1, 1);
+	RGBAf rgb = col;
+
+	EXPECT_RGBAf_EQ(rgb, 0, 1, 0, 1);
+}

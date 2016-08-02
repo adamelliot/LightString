@@ -21,6 +21,15 @@ struct TRGBA : TRGB<TYPE> {
 		this->a = 255;
 	}
 
+	inline TRGBA(const THSV<TYPE> &rhs) __attribute__((always_inline));
+
+	inline TRGBA(const TRGB<TYPE> &rhs) {
+		this->r = rhs.r;
+		this->g = rhs.g;
+		this->b = rhs.b;
+		this->a = 0xff;
+	}
+
 	inline TRGBA(TYPE r, TYPE g, TYPE b) __attribute__((always_inline)) {
 		this->r = r;
 		this->g = g;
@@ -51,23 +60,6 @@ struct TRGBA : TRGB<TYPE> {
 	}
 
 	/* -------------- Operators ---------------- */
-
-	inline TRGBA& operator= (const TRGB<TYPE> &rhs) __attribute__((always_inline)) {
-		this->r = rhs.r;
-		this->g = rhs.g;
-		this->b = rhs.b;
-		
-		return *this;
-	}
-
-	inline TRGBA& operator= (const TRGBA<TYPE> &rhs) __attribute__((always_inline)) {
-		this->r = rhs.r;
-		this->g = rhs.g;
-		this->b = rhs.b;
-		this->a = rhs.a;
-		
-		return *this;
-	}
 
 	inline TRGBA& operator+= (const TRGB<TYPE> &rhs) __attribute__((always_inline)) {
 		qadd8(this->raw, rhs.raw, 3);
@@ -190,10 +182,27 @@ struct TRGBA : TRGB<TYPE> {
 #endif
 };
 
+/* --------------- Specializations ---------------*/ 
+
+template <typename TYPE>
+inline TRGB<TYPE>::TRGB(const TRGBA<TYPE> &rhs) {
+	this->r = rhs.r;
+	this->g = rhs.g;
+	this->b = rhs.b;
+}
+
 /* --------------- Specializations (float) ---------------*/ 
 
 template <>
 inline TRGBA<float>::TRGBA() : TRGB<float>(0, 0, 0) {
+	this->a = 1;
+}
+
+template <>
+inline TRGBA<float>::TRGBA(const TRGB<float> &rhs) {
+	this->r = rhs.r;
+	this->g = rhs.g;
+	this->b = rhs.b;
 	this->a = 1;
 }
 
@@ -215,10 +224,10 @@ inline TRGBA<float>::TRGBA(float r, float g, float b, float a) {
 
 template <>
 inline TRGBA<float>::TRGBA(uint32_t colorcode) {
-	this->r = (float)((colorcode >> 16) & 0xff) / 0xff;
-	this->g = (float)((colorcode >>  8) & 0xff) / 0xff;
-	this->b = (float)((colorcode >>  0) & 0xff) / 0xff;
-	this->a = 1;
+	this->r = (float)((colorcode >> 16) & 0xff) / 255.0f;
+	this->g = (float)((colorcode >>  8) & 0xff) / 255.0f;
+	this->b = (float)((colorcode >>  0) & 0xff) / 255.0f;
+	this->a = (float)(0xff - ((colorcode >> 24) & 0xff)) / 255.0f;
 }
 
 template <>
