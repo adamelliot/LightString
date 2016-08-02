@@ -162,6 +162,11 @@ struct TRGB {
 		return *this;
 	}
 
+	inline TRGB &fade(const TYPE ratio) {
+		::scale8(this->raw, ratio, 3);
+		return *this;
+	}
+
 	inline TYPE saturation() {
 		uint8_t high = brightness();
 
@@ -308,6 +313,13 @@ inline TRGB<float>& TRGB<float>::lerp(const TRGB<float> &other, const float rati
 	::lerp(this->raw, other.raw, 3, ratio);
 	return *this;
 }
+
+template <>
+inline TRGB<float>& TRGB<float>::fade(const float ratio) {
+	::mul(this->raw, ratio, 3);
+	return *this;
+}
+
 
 template <>
 inline float TRGB<float>::brightness() {

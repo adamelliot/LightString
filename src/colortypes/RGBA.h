@@ -153,6 +153,11 @@ struct TRGBA : TRGB<TYPE> {
 		return *this;
 	}
 
+	inline TRGBA &fade(const TYPE ratio) {
+		this->a = ::scale8(this->a, ratio);
+		return *this;
+	}
+
 	/* ------------------- Other ----------------- */
 
 #ifdef ARDUINO
@@ -278,6 +283,13 @@ inline TRGBA<float> &TRGBA<float>::lerp(const TRGBA<float> &other, float ratio) 
 	::lerp(this->raw, other.raw, 4, ratio);
 	return *this;
 }
+
+template <>
+inline TRGBA<float> &TRGBA<float>::fade(const float ratio) {
+	this->a *= ratio;
+	return *this;
+}
+
 
 /* --------------- Blending ---------------*/
 

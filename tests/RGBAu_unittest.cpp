@@ -158,6 +158,13 @@ TEST(RGBAu, modEquals) {
 	EXPECT_RGBAu_EQ(col, 10, 15, 20, 50);
 }
 
+TEST(RGBAu, fade) {
+	RGBAu col(20, 30, 40);
+	col.fade(127); // half
+
+	EXPECT_RGBAu_EQ(col, 20, 30, 40, 127);
+}
+
 TEST(RGBAu, lerp) {
 	RGBAu col1(20, 30, 40, 50);
 	RGBAu col2(60, 70, 80, 90);

@@ -141,6 +141,13 @@ TEST(RGBAf, divEquals) {
 	EXPECT_RGBAf_EQ(col, 4, 6, 8, 50);
 }
 
+TEST(RGBAf, fade) {
+	RGBAf col(0.20, 0.30, 0.40);
+	col.fade(0.5); // half
+
+	EXPECT_RGBAf_EQ(col, 0.20, 0.30, 0.40, 0.5);
+}
+
 TEST(RGBAf, lerp) {
 	RGBAf col1(20, 30, 40, 50);
 	RGBAf col2(60, 70, 80, 90);

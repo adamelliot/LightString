@@ -145,6 +145,13 @@ TEST(RGBf, lerp) {
 	EXPECT_RGBf_EQ(col1, 0.40, 0.50, 0.60);
 }
 
+TEST(RGBf, fade) {
+	RGBf col(0.20, 0.30, 0.40);
+	col.fade(0.5); // half
+
+	EXPECT_RGBf_EQ(col, 0.1, 0.15, 0.20);
+}
+
 TEST(RGBf, getSaturation) {
 	RGBf col(0.10, 0.30, 0.40);
 	EXPECT_EQ(col.s(), 0.75);
