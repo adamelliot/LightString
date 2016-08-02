@@ -70,22 +70,12 @@ void LIGHT_SECTION_CLASS::update() {
 
 		if (pattern && !pattern->isFilterPattern()) {
 			TPixelBuffer<PIXEL, FORMAT> *buffer = (TPixelBuffer<PIXEL, FORMAT> *)pattern->getPixelBuffer();
-			// TODO: Fix this so it's not destructive and works with FP
-			/*
-			if (layers[i].getOpacity() < 255) {
-				for (uint16_t j = 0; j < buffer->getLength(); j++) {
-					// FXIME: This is a hack to get fadeouts to work
-					auto alphaBuffer = dynamic_cast<TPixelBuffer<TRGBA, FORMAT> *>(pattern->getPixelBuffer());
-					if (alphaBuffer) {
-						alphaBuffer->pixels[j].a = scale8(alphaBuffer->pixels[j].a, layers[i].getOpacity());
-					}
-				}
-			}
-			*/
 
-			// Serial.print("Blend: ");
-			// Serial.println(pattern->getBlendMode());
-			outputBuffer->blendWith(*buffer, pattern->getBlendMode());
+			if (layers[i].getOpacity() < layers[i].getMaxOpacity()) {
+				outputBuffer->blendWith(*buffer, pattern->getBlendMode(), layers[i].getOpacity());
+			} else {
+				outputBuffer->blendWith(*buffer, pattern->getBlendMode());
+			}
 		}
 	}
 }

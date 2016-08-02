@@ -47,7 +47,6 @@ private:
 	void setPlayState(EPlayState playState);
 
 	inline FORMAT getElapsedTimeRatio();
-	inline FORMAT getMaxOpacity();
 
 public:
 
@@ -59,6 +58,7 @@ public:
 		patternEventHandler(0), playState(PATTERN_STOPPED), playMode(PLAY_MODE_CONTINUOUS),
 		transitionState(TRANSITION_DONE) {}
 
+	inline FORMAT getMaxOpacity();
 	bool isActive() { return playState != PATTERN_STOPPED; }
 
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
