@@ -8,16 +8,15 @@
 using namespace LightString;
 
 TEST(PatternManager, initialization) {
+	PatternManager<TRGB, uint8_t> patternManager;
 
-	PatternManager<TRGB, uint8_t, 1, 1, 1, 1> patternManager;
+	auto section = patternManager.getLightSection(0);
 
-	// PatternManager is fairly opaque so testing init 
-	// means nothing right now
-
+	EXPECT_TRUE(section == NULL);
 }
 
 TEST(PatternManager, sectionsExist) {
-	PatternManager<TRGB, uint8_t, 1, 1, 1, 2> patternManager;
+	PatternManager<TRGB, uint8_t> patternManager;
 	TPixelBuffer<TRGB, uint8_t> buffer(30);
 
 	uint8_t sectionID = patternManager.addLightSection(buffer);
@@ -27,4 +26,48 @@ TEST(PatternManager, sectionsExist) {
 
 	section = patternManager.getLightSection(1);
 	EXPECT_TRUE(section == NULL);
+}
+
+TEST(PatternManager, startRunningUsingPlay) {
+	PatternManager<TRGB, uint8_t> patternManager;
+	TPixelBuffer<TRGB, uint8_t> leds(30);
+	TPixelBuffer<TRGB, uint8_t> buffer(30);
+
+	uint8_t sectionID = patternManager.addLightSection(leds);
+	patternManager.addBufferToLightSection(sectionID, buffer);
+
+	auto section = patternManager.getLightSection(sectionID);
+	EXPECT_TRUE(section != NULL);
+
+	section = patternManager.getLightSection(1);
+	EXPECT_TRUE(section == NULL);
+
+	TLightPattern<TRGB, uint8_t> testPattern;
+
+	patternManager.addLightPattern(testPattern);
+	patternManager.play();
+
+	patternManager.update();
+}
+
+TEST(PatternManager, startRunningUsingRandom) {
+	PatternManager<TRGB, uint8_t> patternManager;
+	TPixelBuffer<TRGB, uint8_t> leds(30);
+	TPixelBuffer<TRGB, uint8_t> buffer(30);
+
+	uint8_t sectionID = patternManager.addLightSection(leds);
+	patternManager.addBufferToLightSection(sectionID, buffer);
+
+	auto section = patternManager.getLightSection(sectionID);
+	EXPECT_TRUE(section != NULL);
+
+	section = patternManager.getLightSection(1);
+	EXPECT_TRUE(section == NULL);
+
+	TLightPattern<TRGB, uint8_t> testPattern;
+
+	patternManager.addLightPattern(testPattern);
+	patternManager.startRandomPattern();
+
+	patternManager.update();
 }

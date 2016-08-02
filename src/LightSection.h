@@ -1,37 +1,33 @@
 #pragma once
 
+#include <vector>
+
 #include "utils.h"
 #include "types.h"
 #include "LightLayer.h"
 
 namespace LightString {
 
-LIGHT_SECTION_TEMPLATE
+template <template <typename> class PIXEL, typename FORMAT, template <typename> class OUTPUT_PIXEL = TRGB>
 class LightSection : public ILightSection {
 private:
-	
-	IPixelBuffer *bufferPool[MAX_LAYERS];
+
+	std::vector<IPixelBuffer *> bufferPool;
 	uint8_t activeBuffers;
-	uint8_t bufferCount;
 
 public:
 
-	TPixelBuffer<PIXEL, FORMAT> *outputBuffer;
-	LIGHT_LAYER_CLASS layers[MAX_LAYERS];
+	TPixelBuffer<OUTPUT_PIXEL, FORMAT> *outputBuffer;
+	std::vector<LightLayer<FORMAT>> layers;
 
 	inline LightSection()
-		: activeBuffers(0), bufferCount(0), outputBuffer(0)
-	{
-		for (uint32_t i = 0; i < MAX_LAYERS; i++) {
-			layers[i].setLayerID(i);
-			layers[i].setLightSection(this);
-		}
-	}
+		: activeBuffers(0), outputBuffer(0) {}
 
-	TPixelBuffer<PIXEL, FORMAT> *getOutputBuffer() { return outputBuffer; }
+	IPixelBuffer *getOutputBuffer() { return outputBuffer; }
 
-	uint8_t getMaxLayers() { return MAX_LAYERS; }
+	inline uint8_t getTotalLayers() { return layers.size(); }
 	ILightLayer *getLayer(uint8_t layerID) { return &layers[layerID]; }
+	void ensureLayerExists(uint8_t layerID);
 
 	IPixelBuffer *lockBuffer();
 	void unlockBuffer(IPixelBuffer *buffer);

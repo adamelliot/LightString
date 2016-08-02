@@ -3,6 +3,8 @@
 #ifndef _LIGHTPROGRAMMANAGER_H_
 #define _LIGHTPROGRAMMANAGER_H_
 
+#include <vector>
+
 #include "types.h"
 #include "LightPattern.h"
 #include "LightLayer.h"
@@ -12,26 +14,22 @@ using namespace LightString;
 
 namespace LightString {
 
-// PATTERN_MANAGER_TEMPLATE
-template <template <typename> class PIXEL = TRGB, typename FORMAT = uint8_t, size_t MAX_LAYERS = 1, size_t MAX_LIGHT_PROGRAMS = 6, size_t MAX_MODES = 4, size_t MAX_LIGHT_SECTIONS = 1>
+template <template <typename> class PIXEL = TRGB, typename FORMAT = uint8_t, template <typename> class OUTPUT_PIXEL = TRGB>
 class PatternManager {
 private:
-	LIGHT_SECTION_CLASS sections[MAX_LIGHT_SECTIONS];
-	uint8_t sectionCount;
+	std::vector<LIGHT_SECTION_CLASS> sections;
 
 	uint32_t lastTime;
 	uint16_t msPerFrame;
-	/*
-	bool paused;
-	uint32_t pauseStartedAt;
-*/
+
 	uint8_t brightness;
 	int16_t targetBrightness, adjustedBrightness;
 	int16_t brightnessStep;
 
 public:
 
-	PatternManager() : sectionCount(0), msPerFrame(20),
+	PatternManager() :
+		msPerFrame(20),
 		brightness(255), targetBrightness(255), adjustedBrightness(255),
 		brightnessStep(0) { lastTime = millis(); }
 
@@ -76,8 +74,8 @@ public:
 	void addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID);
 	void addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID, uint8_t sectionID);
 
-	uint8_t addLightSection(TPixelBuffer<PIXEL, FORMAT> &pixelBuffer);
-	bool addBufferToLightSection(uint8_t sectionID, IPixelBuffer &buffer);
+	uint8_t addLightSection(TPixelBuffer<OUTPUT_PIXEL, FORMAT> &pixelBuffer);
+	bool addBufferToLightSection(uint8_t sectionID, TPixelBuffer<PIXEL, FORMAT> &buffer);
 
 	void fadeDown();
 	void fadeUp(bool forceZero = true);

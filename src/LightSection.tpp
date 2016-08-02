@@ -1,4 +1,12 @@
-// ------------------------- Light Section -------------------------
+LIGHT_SECTION_TEMPLATE
+void LIGHT_SECTION_CLASS::ensureLayerExists(uint8_t layerID) {
+	while (layerID >= layers.size()) {
+		auto i = layers.size();
+		layers.push_back(LightLayer<FORMAT>());
+		layers[i].setLayerID(i);
+		layers[i].setLightSection(this);
+	}
+}
 
 LIGHT_SECTION_TEMPLATE
 IPixelBuffer *LIGHT_SECTION_CLASS::lockBuffer() {
@@ -6,9 +14,9 @@ IPixelBuffer *LIGHT_SECTION_CLASS::lockBuffer() {
 	// This only works if PIXEL is CRGB, and should otherwise throw an error
 	// outputBuffer
 
-	if (bufferCount == 0) return (TPixelBuffer<PIXEL> *)outputBuffer;
-	
-	for (uint32_t i = 0; i < bufferCount; i++) {
+	if (bufferPool.size() == 0) return (TPixelBuffer<PIXEL, FORMAT> *)outputBuffer;
+
+	for (uint32_t i = 0; i < bufferPool.size(); i++) {
 		uint8_t bit = 1 << i;
 		if ((activeBuffers & bit) == 0) {
 			activeBuffers |= bit;
@@ -21,9 +29,9 @@ IPixelBuffer *LIGHT_SECTION_CLASS::lockBuffer() {
 
 LIGHT_SECTION_TEMPLATE
 void LIGHT_SECTION_CLASS::unlockBuffer(IPixelBuffer *buffer) {
-	if (buffer == (IPixelBuffer *)outputBuffer) return;
+	if (buffer == outputBuffer) return;
 
-	for (uint32_t i = 0; i < bufferCount; i++) {
+	for (uint32_t i = 0; i < bufferPool.size(); i++) {
 		if (bufferPool[i] == buffer) {
 			uint8_t bit = 1 << i;
 			activeBuffers &= ~bit;
@@ -37,7 +45,7 @@ bool LIGHT_SECTION_CLASS::addBuffer(IPixelBuffer *buffer) {
 #ifdef VERBOSE
 #ifdef ARDUINO
 		Serial.println(F("ERROR: Buffer added to pool needs to be the same size as the output buffer."));
-#else 
+#else
 		fprintf(stderr, "ERROR: Buffer added to pool needs to be the same size as the output buffer.");
 #endif
 #endif
@@ -45,24 +53,23 @@ bool LIGHT_SECTION_CLASS::addBuffer(IPixelBuffer *buffer) {
 		return false;
 	}
 
-	if (bufferCount >= (MAX_LAYERS * 2)) return false;
-	bufferPool[bufferCount++] = buffer;
+	bufferPool.push_back(buffer);
 
 	return true;
 }
 
 LIGHT_SECTION_TEMPLATE
 void LIGHT_SECTION_CLASS::update() {
-	if (bufferCount > 0) {
+	if (bufferPool.size() > 0) {
 		outputBuffer->clear();
 	}
 
-	for (uint32_t i = 0; i < MAX_LAYERS; i++) {
+	for (uint32_t i = 0; i < getTotalLayers(); i++) {
 		layers[i].update();
 		ILightPattern *pattern = layers[i].getActivePattern();
-		
-		if (pattern && !pattern->isFilterPattern() && bufferCount > 0) {
-			IPixelBuffer *buffer = pattern->getPixelBuffer();
+
+		if (pattern && !pattern->isFilterPattern()) {
+			TPixelBuffer<PIXEL, FORMAT> *buffer = (TPixelBuffer<PIXEL, FORMAT> *)pattern->getPixelBuffer();
 			// TODO: Fix this so it's not destructive and works with FP
 			/*
 			if (layers[i].getOpacity() < 255) {
@@ -75,7 +82,7 @@ void LIGHT_SECTION_CLASS::update() {
 				}
 			}
 			*/
-			
+
 			// Serial.print("Blend: ");
 			// Serial.println(pattern->getBlendMode());
 			outputBuffer->blendWith(*buffer, pattern->getBlendMode());

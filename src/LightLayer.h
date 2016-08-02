@@ -6,19 +6,16 @@
 
 namespace LightString {
 
-LIGHT_LAYER_TEMPLATE
+template <typename FORMAT>
 class LightLayer : public ILightLayer {
 private:
 	uint8_t layerID;
 
-	// TODO: Implement with virtual interface to remove the MAX_LAYER dependence 
 	ILightSection *section;
 
-	ILightPattern *lightPatterns[MAX_LIGHT_PROGRAMS];
-	uint8_t patternCount;
+	std::vector<ILightPattern *> lightPatterns;
+	std::vector<PatternCode> patternList;
 
-	PatternCode patternList[MAX_LIGHT_PROGRAMS * MAX_MODES];
-	uint8_t patternListLength;
 	uint8_t patternIndex; // Index in the pattern order
 
 	// Pattern Manager Timing
@@ -32,8 +29,8 @@ private:
 	uint32_t transitionLength;
 	uint32_t transitionStartedAt;
 	bool runningBeginTransition;
-	
-	uint8_t opacity;
+
+	FORMAT opacity;
 
 	ILightPattern *activePattern;
 
@@ -49,12 +46,16 @@ private:
 
 	void setPlayState(EPlayState playState);
 
+	inline FORMAT getElapsedTimeRatio();
+	inline FORMAT getMaxOpacity();
+
 public:
 
-	inline LightLayer()
-		: patternCount(0), patternListLength(0), patternIndex(0), maxPatternLength(0),
+	// Max Patterns is the upper limit for patterns, this only really applies to ARDUINO
+	inline LightLayer(uint8_t maxPatterns = 5, uint8_t maxModes = 4) :
+		patternIndex(0), maxPatternLength(0),
 		lastTime(0), patternStartedAt(0), pauseStartedAt(0), transitionLength(kDefaultTransitionLength),
-		transitionStartedAt(0), opacity(255), activePattern(0),
+		transitionStartedAt(0), opacity(getMaxOpacity()), activePattern(0),
 		patternEventHandler(0), playState(PATTERN_STOPPED), playMode(PLAY_MODE_CONTINUOUS),
 		transitionState(TRANSITION_DONE) {}
 
@@ -62,11 +63,11 @@ public:
 
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }
-	
+
 	void setLightSection(ILightSection *section) { this->section = section; }
 	ILightSection *getLightSection() { return section; }
 	ILightPattern *getActivePattern() { return activePattern; }
-	
+
 	inline uint8_t getOpacity() { return opacity; }
 	void setPalette(IPalette *palette) { if (activePattern) activePattern->setPalette(palette); }
 
@@ -75,7 +76,7 @@ public:
 
 	void setPatternEventHandler(PatternEvent patternEventHandler) { this->patternEventHandler = patternEventHandler; }
 	PatternEvent getPatternEventHandler() { return patternEventHandler; }
-	
+
 	void setPlayMode(EPlayMode playMode) { this->playMode = playMode; }
 	uint32_t getPlayMode() { return playMode; }
 
@@ -94,7 +95,7 @@ public:
 
 	void addLightPattern(ILightPattern &pattern, uint64_t modeList);
 	void addLightPattern(ILightPattern &pattern);
-	
+
 	void updateTransition(uint32_t timeDelta);
 	void update();
 };
