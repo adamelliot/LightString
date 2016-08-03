@@ -26,8 +26,7 @@ private:
 	int16_t targetBrightness, adjustedBrightness;
 	int16_t brightnessStep;
 
-	PatternEvent patternEventHandler;
-	uint32_t maxPatternLength;
+	LightLayerConfig layerConfig;
 
 	void ensureLayerIsSetup(uint8_t sectionID, uint8_t layerID);
 
@@ -36,7 +35,7 @@ public:
 	PatternManager() :
 		msPerFrame(20),
 		brightness(255), targetBrightness(255), adjustedBrightness(255),
-		brightnessStep(0), patternEventHandler(0), maxPatternLength(0)
+		brightnessStep(0)
 		{ lastTime = millis(); }
 
 	LIGHT_SECTION_CLASS *getLightSection(uint8_t sectionID);

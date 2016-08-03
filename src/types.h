@@ -112,14 +112,37 @@ public:
 	virtual bool addBuffer(IPixelBuffer *buffer) = 0;
 };
 
+struct LightLayerConfig {
+	// Pattern Manager Timing
+	// 0 - lets the pattern choose it's own timing
+	// If the pattern specifies a time and this is set, the pattern will take precedent
+	uint32_t maxPatternLength;
+
+	// How long a transition takes at the start or end of a pattern
+	uint32_t transitionLength;
+
+	// Method called when a pattern event happens
+	PatternEvent patternEventHandler;
+
+	// What playback mode the layer is in
+	EPlayMode playMode;
+
+	LightLayerConfig() :
+		maxPatternLength(0), transitionLength(kDefaultTransitionLength),
+		patternEventHandler(NULL), playMode(PLAY_MODE_CONTINUOUS) {}
+};
+
 class ILightLayer {
 public:
 	
 	virtual void setLayerID(uint8_t layerID) = 0;
 	virtual uint8_t getLayerID() = 0;
-	
+
+	virtual void setConfig(LightLayerConfig &config) = 0;
+	virtual LightLayerConfig &getConfig() = 0;
+
 	virtual void setPalette(IPalette *) {}
-	
+
 	virtual void setLightSection(ILightSection *section) = 0;
 	virtual ILightSection *getLightSection() = 0;
 	

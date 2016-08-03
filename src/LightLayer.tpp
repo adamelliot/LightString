@@ -42,8 +42,8 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::setPlayState(EPlayState playState) {
 	this->playState = playState;
 
-	if (patternEventHandler) {
-		patternEventHandler(*activePattern, playState);
+	if (config.patternEventHandler) {
+		config.patternEventHandler(*activePattern, playState);
 	}
 }
 
@@ -252,7 +252,7 @@ void LIGHT_LAYER_CLASS::addLightPattern(ILightPattern &pattern) {
 template <>
 inline float LightLayer<float>::getElapsedTimeRatio() {
 	uint32_t timeElapsed = millis() - transitionStartedAt;
-	float ratio = timeElapsed / transitionLength;
+	float ratio = (float)timeElapsed / (float)config.transitionLength;
 	if (ratio > 1.0f) ratio = 1.0f;
 
 	return ratio;
@@ -261,7 +261,7 @@ inline float LightLayer<float>::getElapsedTimeRatio() {
 template <>
 inline uint8_t LightLayer<uint8_t>::getElapsedTimeRatio() {
 	uint32_t timeElapsed = millis() - transitionStartedAt;
-	uint32_t ratio = timeElapsed * 256 / transitionLength;
+	uint32_t ratio = timeElapsed * 256 / config.transitionLength;
 	if (ratio > 255) ratio = 255;
 	return (uint8_t)ratio;
 }
@@ -288,11 +288,11 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 	
 	switch (transition) {
 		case TRANSITION_OVERWRITE:
-		timeElapsed = transitionLength;
+		timeElapsed = config.transitionLength;
 		break;
 
 		case TRANSITION_WIPE:
-		timeElapsed = transitionLength;
+		timeElapsed = config.transitionLength;
 		clear = true;
 		break;
 
@@ -313,7 +313,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 		break;
 	}
 
-	if (timeElapsed >= transitionLength) {
+	if (timeElapsed >= config.transitionLength) {
 		transitionState = TRANSITION_DONE;
 		if (clear) {
 			activePattern->getPixelBuffer()->clear();
@@ -322,7 +322,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 
 	if (transitionState == TRANSITION_DONE) {
 		if (!runningBeginTransition) {
-			switch (playMode) {
+			switch (config.playMode) {
 				case PLAY_MODE_CONTINUOUS:
 				{
 					PatternCode code = activePattern->getNextPatternCode();
@@ -357,12 +357,11 @@ void LIGHT_LAYER_CLASS::update() {
 	if (!activePattern || playState == PATTERN_STOPPED || playState == PATTERN_PAUSED) return;
 
 	uint32_t patternTimeDelta = time - patternStartedAt;
-	printf("Delta: %u\n", patternTimeDelta);
 
 	// NOTE: Should transition time adjust end time?
 	if (activePattern->isPatternFinished() || 
 		(activePattern->getPatternLength() > 0 && patternTimeDelta > (uint32_t)activePattern->getPatternLength()) ||
-		(maxPatternLength > 0 && patternTimeDelta > maxPatternLength))
+		(config.maxPatternLength > 0 && patternTimeDelta > config.maxPatternLength))
 	{
 		if (transitionState == TRANSITION_DONE) {
 			transitionState = TRANSITION_STARTING;

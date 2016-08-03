@@ -30,7 +30,7 @@ void PATTERN_MANAGER_CLASS::unpause() {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler) {
-	this->patternEventHandler = patternEventHandler;
+	this->layerConfig.patternEventHandler = patternEventHandler;
 
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
@@ -46,7 +46,7 @@ void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHand
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setMaxPatternLength(uint32_t maxPatternLength) {
-	this->maxPatternLength = maxPatternLength;
+	this->layerConfig.maxPatternLength = maxPatternLength;
 
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
@@ -169,15 +169,13 @@ void PATTERN_MANAGER_CLASS::ensureLayerIsSetup(uint8_t sectionID, uint8_t layerI
 	section.ensureLayerExists(layerID);
 	auto &layer = section.layers[layerID];
 
-	layer.setMaxPatternLength(maxPatternLength);
-	layer.setPatternEventHandler(patternEventHandler);
+	layer.setConfig(layerConfig);
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::addLightPattern(ILightPattern &pattern, uint8_t layerID) {
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		ensureLayerIsSetup(i, layerID);
-		// sections[i].ensureLayerExists(layerID);
 		sections[i].layers[layerID].addLightPattern(pattern);
 	}
 }
@@ -206,18 +204,7 @@ LIGHT_SECTION_CLASS *PATTERN_MANAGER_CLASS::getLightSection(uint8_t sectionID) {
 }
 
 PATTERN_MANAGER_TEMPLATE
-uint8_t PATTERN_MANAGER_CLASS::addLightSection(TPixelBuffer<OUTPUT_PIXEL, FORMAT> &pixelBuffer) {/*
-	if (sectionCount >= MAX_LIGHT_SECTIONS) {
-#ifdef VERBOSE
-#ifdef ARDUINO
-		Serial.println(F("ERROR: Maximum amount of light sections already added."));
-#else
-		fprintf(stderr, "ERROR: Maximum amount of light sections already added.");
-#endif
-#endif
-		return 0xff;
-	}*/
-
+uint8_t PATTERN_MANAGER_CLASS::addLightSection(TPixelBuffer<OUTPUT_PIXEL, FORMAT> &pixelBuffer) {
 	auto id = sections.size();
 
 	sections.push_back(LIGHT_SECTION_CLASS());
