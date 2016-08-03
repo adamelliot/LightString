@@ -72,7 +72,7 @@ public:
 	virtual bool isPatternFinished() { return false; }
 
 	// Returns how long this pattern should run in ms
-	virtual int32_t getPatternLength() { return -1; /* -1 means forever */ }
+	virtual int32_t getPatternDuration() { return -1; /* -1 means forever */ }
 
 	// Used to pass data into a running pattern via the pattern manager
 	// TODO: Is there a better way to handle this?

@@ -26,7 +26,7 @@ struct IPixelBuffer {
 	virtual void clear() = 0;
 };
 
-const uint32_t kDefaultTransitionLength = 1000;
+const uint32_t kDefaultTransitionDuration = 1000;
 const uint8_t kTransitionFrames = 30;
 
 typedef enum {
@@ -116,10 +116,10 @@ struct LightLayerConfig {
 	// Pattern Manager Timing
 	// 0 - lets the pattern choose it's own timing
 	// If the pattern specifies a time and this is set, the pattern will take precedent
-	uint32_t maxPatternLength;
+	uint32_t maxPatternDuration;
 
 	// How long a transition takes at the start or end of a pattern
-	uint32_t transitionLength;
+	uint32_t transitionDuration;
 
 	// Method called when a pattern event happens
 	PatternEvent patternEventHandler;
@@ -128,7 +128,7 @@ struct LightLayerConfig {
 	EPlayMode playMode;
 
 	LightLayerConfig() :
-		maxPatternLength(0), transitionLength(kDefaultTransitionLength),
+		maxPatternDuration(0), transitionDuration(kDefaultTransitionDuration),
 		patternEventHandler(NULL), playMode(PLAY_MODE_CONTINUOUS) {}
 };
 

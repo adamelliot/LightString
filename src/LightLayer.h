@@ -20,12 +20,10 @@ private:
 
 	uint8_t patternIndex; // Index in the pattern order
 
-	// uint32_t maxPatternLength;
 	uint32_t lastTime;
 	uint32_t patternStartedAt;
 	uint32_t pauseStartedAt;
 
-	// uint32_t transitionLength;
 	uint32_t transitionStartedAt;
 	bool runningBeginTransition;
 
@@ -50,11 +48,10 @@ private:
 public:
 
 	inline LightLayer() :
-		patternIndex(0),// maxPatternLength(0),
-		lastTime(0), patternStartedAt(0), pauseStartedAt(0),// transitionLength(kDefaultTransitionLength),
+		patternIndex(0),
+		lastTime(0), patternStartedAt(0), pauseStartedAt(0),
 		transitionStartedAt(0), opacity(getMaxOpacity()), activePattern(0),
-		/*patternEventHandler(0), */playState(PATTERN_STOPPED),// playMode(PLAY_MODE_CONTINUOUS),
-		transitionState(TRANSITION_DONE) {}
+		playState(PATTERN_STOPPED), transitionState(TRANSITION_DONE) {}
 
 	inline FORMAT getMaxOpacity();
 	bool isActive() { return playState != PATTERN_STOPPED; }
@@ -72,8 +69,8 @@ public:
 	inline FORMAT getOpacity() { return opacity; }
 	void setPalette(IPalette *palette) { if (activePattern) activePattern->setPalette(palette); }
 
-	void setMaxPatternLength(uint32_t maxPatternLength) { this->config.maxPatternLength = maxPatternLength; }
-	uint32_t getMaxPatternLength() { return config.maxPatternLength; }
+	void setMaxPatternDuration(uint32_t maxPatternDuration) { this->config.maxPatternDuration = maxPatternDuration; }
+	uint32_t getMaxPatternDuration() { return config.maxPatternDuration; }
 
 	void setPatternEventHandler(PatternEvent patternEventHandler) { this->config.patternEventHandler = patternEventHandler; }
 	PatternEvent getPatternEventHandler() { return config.patternEventHandler; }

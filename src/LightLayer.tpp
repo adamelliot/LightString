@@ -252,7 +252,7 @@ void LIGHT_LAYER_CLASS::addLightPattern(ILightPattern &pattern) {
 template <>
 inline float LightLayer<float>::getElapsedTimeRatio() {
 	uint32_t timeElapsed = millis() - transitionStartedAt;
-	float ratio = (float)timeElapsed / (float)config.transitionLength;
+	float ratio = (float)timeElapsed / (float)config.transitionDuration;
 	if (ratio > 1.0f) ratio = 1.0f;
 
 	return ratio;
@@ -261,7 +261,7 @@ inline float LightLayer<float>::getElapsedTimeRatio() {
 template <>
 inline uint8_t LightLayer<uint8_t>::getElapsedTimeRatio() {
 	uint32_t timeElapsed = millis() - transitionStartedAt;
-	uint32_t ratio = timeElapsed * 256 / config.transitionLength;
+	uint32_t ratio = timeElapsed * 256 / config.transitionDuration;
 	if (ratio > 255) ratio = 255;
 	return (uint8_t)ratio;
 }
@@ -288,11 +288,11 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 	
 	switch (transition) {
 		case TRANSITION_OVERWRITE:
-		timeElapsed = config.transitionLength;
+		timeElapsed = config.transitionDuration;
 		break;
 
 		case TRANSITION_WIPE:
-		timeElapsed = config.transitionLength;
+		timeElapsed = config.transitionDuration;
 		clear = true;
 		break;
 
@@ -313,7 +313,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 		break;
 	}
 
-	if (timeElapsed >= config.transitionLength) {
+	if (timeElapsed >= config.transitionDuration) {
 		transitionState = TRANSITION_DONE;
 		if (clear) {
 			activePattern->getPixelBuffer()->clear();
@@ -360,8 +360,8 @@ void LIGHT_LAYER_CLASS::update() {
 
 	// NOTE: Should transition time adjust end time?
 	if (activePattern->isPatternFinished() || 
-		(activePattern->getPatternLength() > 0 && patternTimeDelta > (uint32_t)activePattern->getPatternLength()) ||
-		(config.maxPatternLength > 0 && patternTimeDelta > config.maxPatternLength))
+		(activePattern->getPatternDuration() > 0 && patternTimeDelta > (uint32_t)activePattern->getPatternDuration()) ||
+		(config.maxPatternDuration > 0 && patternTimeDelta > config.maxPatternDuration))
 	{
 		if (transitionState == TRANSITION_DONE) {
 			transitionState = TRANSITION_STARTING;

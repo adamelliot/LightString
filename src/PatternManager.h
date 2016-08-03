@@ -43,8 +43,11 @@ public:
 	void setPatternEventHandler(PatternEvent patternEventHandler);
 	void setPatternEventHandler(PatternEvent patternEventHandler, uint8_t layerID, uint8_t sectionID = 0);
 
-	void setMaxPatternLength(uint32_t maxPatternLength);
-	void setMaxPatternLength(uint32_t maxPatternLength, uint8_t layerID, uint8_t sectionID = 0);
+	void setMaxPatternDuration(uint32_t maxPatternDuration);
+	void setMaxPatternDuration(uint32_t maxPatternDuration, uint8_t layerID, uint8_t sectionID = 0);
+
+	void setTransitionDuration(uint32_t transitionDuration);
+	void setTransitionDuration(uint32_t transitionDuration, uint8_t layerID, uint8_t sectionID = 0);
 	
 	void setPlayMode(EPlayMode playMode);
 	void setPlayMode(EPlayMode playMode, uint8_t layerID, uint8_t sectionID = 0);
