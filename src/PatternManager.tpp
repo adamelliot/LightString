@@ -30,6 +30,8 @@ void PATTERN_MANAGER_CLASS::unpause() {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler) {
+	this->patternEventHandler = patternEventHandler;
+
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
 			sections[i].layers[j].setPatternEventHandler(patternEventHandler);
@@ -44,6 +46,8 @@ void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHand
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setMaxPatternLength(uint32_t maxPatternLength) {
+	this->maxPatternLength = maxPatternLength;
+
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
 			sections[i].layers[j].setMaxPatternLength(maxPatternLength);
@@ -158,9 +162,22 @@ void PATTERN_MANAGER_CLASS::shufflePatterns() {
 }
 
 PATTERN_MANAGER_TEMPLATE
+void PATTERN_MANAGER_CLASS::ensureLayerIsSetup(uint8_t sectionID, uint8_t layerID) {
+	auto &section = sections[sectionID];
+	if (section.getTotalLayers() > layerID) return;
+
+	section.ensureLayerExists(layerID);
+	auto &layer = section.layers[layerID];
+
+	layer.setMaxPatternLength(maxPatternLength);
+	layer.setPatternEventHandler(patternEventHandler);
+}
+
+PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::addLightPattern(ILightPattern &pattern, uint8_t layerID) {
 	for (uint32_t i = 0; i < sections.size(); i++) {
-		sections[i].ensureLayerExists(layerID);
+		ensureLayerIsSetup(i, layerID);
+		// sections[i].ensureLayerExists(layerID);
 		sections[i].layers[layerID].addLightPattern(pattern);
 	}
 }
@@ -168,14 +185,14 @@ void PATTERN_MANAGER_CLASS::addLightPattern(ILightPattern &pattern, uint8_t laye
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID) {
 	for (uint32_t i = 0; i < sections.size(); i++) {
-		sections[i].ensureLayerExists(layerID);
+		ensureLayerIsSetup(i, layerID);
 		sections[i].layers[layerID].addLightPattern(pattern, modeList);
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID, uint8_t sectionID) {
-	sections[sectionID].ensureLayerExists(layerID);
+	ensureLayerIsSetup(sectionID, layerID);
 	sections[sectionID].layers[layerID].addLightPattern(pattern, modeList);
 }
 

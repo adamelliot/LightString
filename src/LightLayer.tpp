@@ -357,6 +357,7 @@ void LIGHT_LAYER_CLASS::update() {
 	if (!activePattern || playState == PATTERN_STOPPED || playState == PATTERN_PAUSED) return;
 
 	uint32_t patternTimeDelta = time - patternStartedAt;
+	printf("Delta: %u\n", patternTimeDelta);
 
 	// NOTE: Should transition time adjust end time?
 	if (activePattern->isPatternFinished() || 

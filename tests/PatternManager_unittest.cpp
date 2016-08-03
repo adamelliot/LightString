@@ -17,7 +17,7 @@ TEST(PatternManager, initialization) {
 
 TEST(PatternManager, sectionsExist) {
 	PatternManager<TRGB, uint8_t> patternManager;
-	TPixelBuffer<TRGB, uint8_t> buffer(30);
+	TPixelBuffer<TRGB, uint8_t> buffer(5);
 
 	uint8_t sectionID = patternManager.addLightSection(buffer);
 
@@ -30,8 +30,8 @@ TEST(PatternManager, sectionsExist) {
 
 TEST(PatternManager, startRunningUsingPlay) {
 	PatternManager<TRGB, uint8_t> patternManager;
-	TPixelBuffer<TRGB, uint8_t> leds(30);
-	TPixelBuffer<TRGB, uint8_t> buffer(30);
+	TPixelBuffer<TRGB, uint8_t> leds(5);
+	TPixelBuffer<TRGB, uint8_t> buffer(5);
 
 	uint8_t sectionID = patternManager.addLightSection(leds);
 	patternManager.addBufferToLightSection(sectionID, buffer);
@@ -52,8 +52,8 @@ TEST(PatternManager, startRunningUsingPlay) {
 
 TEST(PatternManager, startRunningUsingRandom) {
 	PatternManager<TRGB, uint8_t> patternManager;
-	TPixelBuffer<TRGB, uint8_t> leds(30);
-	TPixelBuffer<TRGB, uint8_t> buffer(30);
+	TPixelBuffer<TRGB, uint8_t> leds(5);
+	TPixelBuffer<TRGB, uint8_t> buffer(5);
 
 	uint8_t sectionID = patternManager.addLightSection(leds);
 	patternManager.addBufferToLightSection(sectionID, buffer);
@@ -71,3 +71,29 @@ TEST(PatternManager, startRunningUsingRandom) {
 
 	patternManager.update();
 }
+
+TEST(PatternManager, ensureLayersGetConfigured) {
+	PatternManager<TRGB, uint8_t> patternManager;
+	TPixelBuffer<TRGB, uint8_t> leds(5);
+	TPixelBuffer<TRGB, uint8_t> buffer(5);
+
+	uint8_t sectionID = patternManager.addLightSection(leds);
+	patternManager.addBufferToLightSection(sectionID, buffer);
+
+	patternManager.setMaxPatternLength(500);
+
+	auto section = patternManager.getLightSection(sectionID);
+	EXPECT_TRUE(section != NULL);
+
+	TLightPattern<TRGB, uint8_t> testPattern;
+
+	patternManager.addLightPattern(testPattern);
+
+	EXPECT_EQ(section->getTotalLayers(), 1);
+	EXPECT_EQ(section->layers[0].getMaxPatternLength(), 500);
+
+	patternManager.play();
+
+	patternManager.update();
+}
+
