@@ -105,6 +105,47 @@ TEST(TMappingPixelBuffer3d, lineZ) {
 	EXPECT_RGBf_EQ(buffer[ 22], 1.0f, 0.0f, 0.0f);
 }
 
+TEST(TMappingPixelBuffer3d, lineTo) {
+	TMappingPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
+
+	buffer.clear();
+	buffer.lineTo(2, 2, 2, 5, 5, 5, HTML::Red);
+
+	EXPECT_RGBf_EQ(buffer[222], 1.0f, 0.0f, 0.0f);
+	EXPECT_RGBf_EQ(buffer[333], 1.0f, 0.0f, 0.0f);
+	EXPECT_RGBf_EQ(buffer[444], 1.0f, 0.0f, 0.0f);
+	EXPECT_RGBf_EQ(buffer[555], 1.0f, 0.0f, 0.0f);
+
+	buffer.clear();
+	buffer.lineTo(2, 2, 2, 5, 5, 2, HTML::Red);
+
+	EXPECT_RGBf_EQ(buffer[222], 1.0f, 0.0f, 0.0f);
+	EXPECT_RGBf_EQ(buffer[233], 1.0f, 0.0f, 0.0f);
+	EXPECT_RGBf_EQ(buffer[244], 1.0f, 0.0f, 0.0f);
+	EXPECT_RGBf_EQ(buffer[255], 1.0f, 0.0f, 0.0f);
+
+	buffer.clear();
+	buffer.lineTo(2, 2, 2, 5, 5, 3, HTML::Red);
+
+	EXPECT_RGBf_EQ(buffer[222], 1.0f, 0.0f, 0.0f);
+	EXPECT_RGBf_EQ(buffer[233], 1.0f, 0.0f, 0.0f);
+	EXPECT_RGBf_EQ(buffer[344], 1.0f, 0.0f, 0.0f);
+	EXPECT_RGBf_EQ(buffer[355], 1.0f, 0.0f, 0.0f);
+
+	buffer.clear();
+	buffer.lineTo(6, 6, 6, 2, 6, 2, HTML::Red);
+
+	EXPECT_RGBf_EQ(buffer[666], 1.0f, 0.0f, 0.0f);
+	EXPECT_RGBf_EQ(buffer[565], 1.0f, 0.0f, 0.0f);
+	EXPECT_RGBf_EQ(buffer[464], 1.0f, 0.0f, 0.0f);
+	EXPECT_RGBf_EQ(buffer[363], 1.0f, 0.0f, 0.0f);
+	EXPECT_RGBf_EQ(buffer[262], 1.0f, 0.0f, 0.0f);
+
+	buffer.clear();
+	buffer.lineTo(6, 6, 6, 6, 6, 6, HTML::Red);
+
+	EXPECT_RGBf_EQ(buffer[666], 1.0f, 0.0f, 0.0f);
+}
 
 /*
 TEST(TPixelBuffer, resize) {
