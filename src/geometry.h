@@ -5,16 +5,7 @@
 #endif
 
 #include "colortypes.h"
-/*
-void vertLine(CRGB *pixels, int16_t x, int16_t y, int16_t len, CRGB col);
-void horzLine(CRGB *pixels, int16_t x, int16_t y, int16_t len, CRGB col);
-void lineTo(CRGB *pixels, int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col);
 
-void drawRect(CRGB *pixels, int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col);
-void drawSolidCircle(CRGB *pixels, int16_t x, int16_t y, uint8_t radius, CRGB col);
-
-extern void hsv2rgb_rainbow(const CHSV& hsv, CRGB& rgb);
-*/
 namespace LightString {
 
 struct Rect {
@@ -156,44 +147,3 @@ struct MovingPoint {
 };
 
 };
-
-/*
-struct MovingPoint8 : Point<uint16_t> {
-	Point raw;
-	Point vec;
-	Rect *bounds;
-
-	inline MovingPoint8() {}
-
-	inline MovingPoint8(const int16_t x, const int16_t y, const int16_t vecx, const int16_t vecy, Rect *bounds = NULL) 
-		: Point(x, y), raw(x << 8, y << 8), vec(Point(vecx, vecy)), bounds(bounds) {}
-
-	void update() {
-		raw += vec;
-		if (bounds) {
-			int16_t left = bounds->x << 8;
-			int16_t top = bounds->y << 8;
-			int16_t right = (bounds->x + bounds->width) << 8;
-			int16_t bottom = (bounds->y + bounds->height) << 8;
-
-		  if (raw.x >= right) {
-		    raw.x = right - (raw.x - right);
-		    vec.x *= -1;
-		  } else if (raw.x < left) {
-		    raw.x = left + (left - raw.x);
-		    vec.x *= -1;
-		  }
-
-		  if (raw.y >= bottom) {
-		    raw.y = bottom - (raw.y - bottom);
-		    vec.y *= -1;
-		  } else if (raw.y < top) {
-		    raw.y = top + (top - raw.y);
-		    vec.y *= -1;
-		  }
-		}
-
-		x = raw.x >> 8;
-		y = raw.y >> 8;
-	}
-};*/
