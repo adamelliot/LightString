@@ -11,4 +11,5 @@ TEST(LightLayer, initialization) {
 	LightLayer<float> lightLayer;
 
 	EXPECT_EQ(lightLayer.isActive(), false);
+	EXPECT_EQ(lightLayer.getOpacity(), 1.0f);
 }

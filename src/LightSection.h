@@ -13,15 +13,12 @@ class LightSection : public ILightSection {
 private:
 
 	std::vector<IPixelBuffer *> bufferPool;
-	uint8_t activeBuffers;
+	uint8_t activeBuffers = 0;
 
 public:
 
-	TPixelBuffer<OUTPUT_PIXEL, FORMAT> *outputBuffer;
+	TPixelBuffer<OUTPUT_PIXEL, FORMAT> *outputBuffer = NULL;
 	std::vector<LightLayer<FORMAT>> layers;
-
-	inline LightSection()
-		: activeBuffers(0), outputBuffer(0) {}
 
 	IPixelBuffer *getOutputBuffer() { return outputBuffer; }
 

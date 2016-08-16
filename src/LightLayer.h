@@ -18,24 +18,21 @@ private:
 	std::vector<ILightPattern *> lightPatterns;
 	std::vector<PatternCode> patternList;
 
-	uint8_t patternIndex; // Index in the pattern order
+	uint8_t patternIndex = 0; // Index in the pattern order
 
-	uint32_t lastTime;
-	uint32_t patternStartedAt;
-	uint32_t pauseStartedAt;
+	uint32_t lastTime = 0;
+	uint32_t patternStartedAt = 0;
+	uint32_t pauseStartedAt = 0;
 
-	uint32_t transitionStartedAt;
-	bool runningBeginTransition;
+	uint32_t transitionStartedAt = 0;
+	bool runningBeginTransition = false;
 
-	FORMAT opacity;
+	FORMAT opacity = getMaxOpacity();
 
-	ILightPattern *activePattern;
+	ILightPattern *activePattern = NULL;
 
-	// PatternEvent patternEventHandler;
-
-	EPlayState playState;
-	// EPlayMode playMode;
-	ETransitionState transitionState;
+	EPlayState playState = PATTERN_STOPPED;
+	ETransitionState transitionState = TRANSITION_DONE;
 
 	ILightPattern *getPattern(PatternCode patternCode);
 	void updatePatternIndex(PatternCode patternCode);
@@ -47,11 +44,7 @@ private:
 
 public:
 
-	inline LightLayer() :
-		patternIndex(0),
-		lastTime(0), patternStartedAt(0), pauseStartedAt(0),
-		transitionStartedAt(0), opacity(getMaxOpacity()), activePattern(0),
-		playState(PATTERN_STOPPED), transitionState(TRANSITION_DONE) {}
+	inline LightLayer() {}
 
 	inline FORMAT getMaxOpacity();
 	bool isActive() { return playState != PATTERN_STOPPED; }

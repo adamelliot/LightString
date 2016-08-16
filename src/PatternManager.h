@@ -19,12 +19,12 @@ class PatternManager {
 private:
 	std::vector<LIGHT_SECTION_CLASS> sections;
 
-	uint32_t lastTime;
-	uint16_t msPerFrame;
+	uint32_t lastTime = 0;
+	uint16_t msPerFrame = 25;
 
-	uint8_t brightness;
-	int16_t targetBrightness, adjustedBrightness;
-	int16_t brightnessStep;
+	uint8_t brightness = 255;
+	int16_t targetBrightness = 255, adjustedBrightness = 255;
+	int16_t brightnessStep = 0;
 
 	LightLayerConfig layerConfig;
 
@@ -32,10 +32,7 @@ private:
 
 public:
 
-	PatternManager() :
-		msPerFrame(20),
-		brightness(255), targetBrightness(255), adjustedBrightness(255),
-		brightnessStep(0)
+	PatternManager()
 		{ lastTime = millis(); }
 
 	LIGHT_SECTION_CLASS *getLightSection(uint8_t sectionID);

@@ -116,20 +116,16 @@ struct LightLayerConfig {
 	// Pattern Manager Timing
 	// 0 - lets the pattern choose it's own timing
 	// If the pattern specifies a time and this is set, the pattern will take precedent
-	uint32_t maxPatternDuration;
+	uint32_t maxPatternDuration = 0;
 
 	// How long a transition takes at the start or end of a pattern
-	uint32_t transitionDuration;
+	uint32_t transitionDuration = kDefaultTransitionDuration;
 
 	// Method called when a pattern event happens
-	PatternEvent patternEventHandler;
+	PatternEvent patternEventHandler = NULL;
 
 	// What playback mode the layer is in
-	EPlayMode playMode;
-
-	LightLayerConfig() :
-		maxPatternDuration(0), transitionDuration(kDefaultTransitionDuration),
-		patternEventHandler(NULL), playMode(PLAY_MODE_CONTINUOUS) {}
+	EPlayMode playMode = PLAY_MODE_CONTINUOUS;
 };
 
 class ILightLayer {
