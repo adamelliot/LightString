@@ -9,6 +9,7 @@
 namespace LightString {
 
 template <typename TYPE> struct THSV;
+template <typename TYPE> struct TRGBA;
 
 template <typename TYPE>
 struct TRGB {
@@ -53,6 +54,7 @@ struct TRGB {
 	}
 
 	inline TRGB(const THSV<TYPE> &rhs) __attribute__((always_inline));
+	inline TRGB(const TRGBA<TYPE> &rhs) __attribute__((always_inline));
 
 	inline TRGB(const CRGB &rhs) __attribute__((always_inline)) {
 		this->r = rhs.r;
@@ -69,14 +71,6 @@ struct TRGB {
 	inline THSV<TYPE> toHSV() const;
 
 	/* -------------- Operators ---------------- */
-
-	inline TRGB& operator= (const TRGB<TYPE> &rhs) __attribute__((always_inline)) {
-		this->r = rhs.r;
-		this->g = rhs.g;
-		this->b = rhs.b;
-		
-		return *this;
-	}
 
 	inline TRGB& operator+= (const TRGB<TYPE> &rhs) __attribute__((always_inline)) {
 		qadd8(this->raw, rhs.raw, 3);
@@ -164,6 +158,11 @@ struct TRGB {
 	// Scales by 8 bit ratio, so 128 = 0.5, 192 = 0.75, etc.
 
 	inline TRGB &scale8(const uint8_t ratio) {
+		::scale8(this->raw, ratio, 3);
+		return *this;
+	}
+
+	inline TRGB &fade(const TYPE ratio) {
 		::scale8(this->raw, ratio, 3);
 		return *this;
 	}
@@ -314,6 +313,13 @@ inline TRGB<float>& TRGB<float>::lerp(const TRGB<float> &other, const float rati
 	::lerp(this->raw, other.raw, 3, ratio);
 	return *this;
 }
+
+template <>
+inline TRGB<float>& TRGB<float>::fade(const float ratio) {
+	::mul(this->raw, ratio, 3);
+	return *this;
+}
+
 
 template <>
 inline float TRGB<float>::brightness() {

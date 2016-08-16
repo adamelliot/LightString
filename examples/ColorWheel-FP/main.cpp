@@ -4,7 +4,7 @@
 using namespace LightString;
 
 const uint16_t kTotalLEDs = 100;
-const uint32_t kPatternLength = 10000; // 10 seconds
+const uint32_t kPatternDuration = 10000; // 10 seconds
 
 TPixelBuffer<TRGB, float> ledBuffer(kTotalLEDs);
 TPixelBuffer<TRGBA, float> backBuffer(kTotalLEDs);
@@ -52,7 +52,7 @@ void setup() {
 	patternManager.setPatternEventHandler(patternEvent);
 
 	// Set how long our patterns run for by default. This can be over-ridden by the pattern
-	patternManager.setMaxPatternLength(kPatternLength);
+	patternManager.setMaxPatternDuration(kPatternDuration);
 
 	// Add a light pattern (by default it adds to Section 0, Layer 0)
 	patternManager.addLightPattern(wheelPattern);

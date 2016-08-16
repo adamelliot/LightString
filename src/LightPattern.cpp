@@ -7,7 +7,7 @@ ILightLayer *ILightPattern::layerAbove() {
 		ILightSection *section = layer->getLightSection();
 		uint8_t targetLayerID = layer->getLayerID() + 1;
 
-		if (targetLayerID < section->getMaxLayers()) {
+		if (targetLayerID < section->getTotalLayers()) {
 			return section->getLayer(targetLayerID);
 		}
 	}

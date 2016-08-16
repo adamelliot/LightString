@@ -173,6 +173,13 @@ TEST(RGBu, scale8) {
 	EXPECT_RGBu_EQ(col, 10, 15, 20);
 }
 
+TEST(RGBu, fade) {
+	RGBu col(40, 60, 80);
+	col.fade(64); // Scale by quarter
+
+	EXPECT_RGBu_EQ(col, 10, 15, 20);
+}
+
 TEST(RGBu, getSaturation) {
 	RGBu col(20, 60, 80);
 	EXPECT_EQ(col.s(), 191);

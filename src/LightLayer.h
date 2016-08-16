@@ -6,41 +6,35 @@
 
 namespace LightString {
 
-LIGHT_LAYER_TEMPLATE
+template <typename FORMAT>
 class LightLayer : public ILightLayer {
 private:
+	LightLayerConfig config;
+
 	uint8_t layerID;
 
-	// TODO: Implement with virtual interface to remove the MAX_LAYER dependence 
 	ILightSection *section;
 
-	ILightPattern *lightPatterns[MAX_LIGHT_PROGRAMS];
-	uint8_t patternCount;
+	std::vector<ILightPattern *> lightPatterns;
+	std::vector<PatternCode> patternList;
 
-	PatternCode patternList[MAX_LIGHT_PROGRAMS * MAX_MODES];
-	uint8_t patternListLength;
 	uint8_t patternIndex; // Index in the pattern order
 
-	// Pattern Manager Timing
-	// 0 -> let the pattern choose it's own timing
-	// If the pattern specifies a time and this is set, the pattern will take precedent
-	uint32_t maxPatternLength;
 	uint32_t lastTime;
 	uint32_t patternStartedAt;
 	uint32_t pauseStartedAt;
 
-	uint32_t transitionLength;
 	uint32_t transitionStartedAt;
 	bool runningBeginTransition;
-	
-	uint8_t opacity;
+
+	FORMAT opacity;
 
 	ILightPattern *activePattern;
 
-	PatternEvent patternEventHandler;
+	// PatternEvent patternEventHandler;
 
 	EPlayState playState;
-	EPlayMode playMode;
+	// EPlayMode playMode;
 	ETransitionState transitionState;
 
 	ILightPattern *getPattern(PatternCode patternCode);
@@ -49,35 +43,40 @@ private:
 
 	void setPlayState(EPlayState playState);
 
+	inline FORMAT getElapsedTimeRatio();
+
 public:
 
-	inline LightLayer()
-		: patternCount(0), patternListLength(0), patternIndex(0), maxPatternLength(0),
-		lastTime(0), patternStartedAt(0), pauseStartedAt(0), transitionLength(kDefaultTransitionLength),
-		transitionStartedAt(0), opacity(255), activePattern(0),
-		patternEventHandler(0), playState(PATTERN_STOPPED), playMode(PLAY_MODE_CONTINUOUS),
-		transitionState(TRANSITION_DONE) {}
+	inline LightLayer() :
+		patternIndex(0),
+		lastTime(0), patternStartedAt(0), pauseStartedAt(0),
+		transitionStartedAt(0), opacity(getMaxOpacity()), activePattern(0),
+		playState(PATTERN_STOPPED), transitionState(TRANSITION_DONE) {}
 
+	inline FORMAT getMaxOpacity();
 	bool isActive() { return playState != PATTERN_STOPPED; }
 
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }
-	
+
+	void setConfig(LightLayerConfig &config) { this->config = config; }
+	LightLayerConfig &getConfig() { return config; }
+
 	void setLightSection(ILightSection *section) { this->section = section; }
 	ILightSection *getLightSection() { return section; }
 	ILightPattern *getActivePattern() { return activePattern; }
-	
-	inline uint8_t getOpacity() { return opacity; }
+
+	inline FORMAT getOpacity() { return opacity; }
 	void setPalette(IPalette *palette) { if (activePattern) activePattern->setPalette(palette); }
 
-	void setMaxPatternLength(uint32_t maxPatternLength) { this->maxPatternLength = maxPatternLength; }
-	uint32_t getMaxPatternLength() { return maxPatternLength; }
+	void setMaxPatternDuration(uint32_t maxPatternDuration) { this->config.maxPatternDuration = maxPatternDuration; }
+	uint32_t getMaxPatternDuration() { return config.maxPatternDuration; }
 
-	void setPatternEventHandler(PatternEvent patternEventHandler) { this->patternEventHandler = patternEventHandler; }
-	PatternEvent getPatternEventHandler() { return patternEventHandler; }
-	
-	void setPlayMode(EPlayMode playMode) { this->playMode = playMode; }
-	uint32_t getPlayMode() { return playMode; }
+	void setPatternEventHandler(PatternEvent patternEventHandler) { this->config.patternEventHandler = patternEventHandler; }
+	PatternEvent getPatternEventHandler() { return config.patternEventHandler; }
+
+	void setPlayMode(EPlayMode playMode) { this->config.playMode = playMode; }
+	uint32_t getPlayMode() { return config.playMode; }
 
 	// Play control
 	void play(); // Starts from a stopped state, or unpauses.
@@ -94,7 +93,7 @@ public:
 
 	void addLightPattern(ILightPattern &pattern, uint64_t modeList);
 	void addLightPattern(ILightPattern &pattern);
-	
+
 	void updateTransition(uint32_t timeDelta);
 	void update();
 };

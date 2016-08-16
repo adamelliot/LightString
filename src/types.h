@@ -3,14 +3,14 @@
 #include <cstdlib>
 #include <stdint.h>
 
-#define LIGHT_LAYER_TEMPLATE template <size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES>
-#define LIGHT_LAYER_CLASS LightLayer<MAX_LIGHT_PROGRAMS, MAX_MODES>
+#define LIGHT_LAYER_TEMPLATE template <typename FORMAT>//, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES>
+#define LIGHT_LAYER_CLASS LightLayer<FORMAT>//, MAX_LIGHT_PROGRAMS, MAX_MODES>
 
-#define LIGHT_SECTION_TEMPLATE template <template <typename> class PIXEL, typename FORMAT, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LAYERS>
-#define LIGHT_SECTION_CLASS LightSection<PIXEL, FORMAT, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LAYERS>
+#define LIGHT_SECTION_TEMPLATE template <template <typename> class PIXEL, typename FORMAT, template <typename> class OUTPUT_PIXEL>//size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LAYERS>
+#define LIGHT_SECTION_CLASS LightSection<PIXEL, FORMAT, OUTPUT_PIXEL>//MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LAYERS>
 
-#define PATTERN_MANAGER_TEMPLATE template <template <typename> class PIXEL, typename FORMAT, size_t MAX_LAYERS, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LIGHT_SECTIONS>
-#define PATTERN_MANAGER_CLASS PatternManager<PIXEL, FORMAT, MAX_LAYERS, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LIGHT_SECTIONS>
+#define PATTERN_MANAGER_TEMPLATE template <template <typename> class PIXEL, typename FORMAT, template <typename> class OUTPUT_PIXEL>
+#define PATTERN_MANAGER_CLASS PatternManager<PIXEL, FORMAT, OUTPUT_PIXEL>//MAX_LAYERS, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LIGHT_SECTIONS>
 
 namespace LightString {
 
@@ -26,7 +26,7 @@ struct IPixelBuffer {
 	virtual void clear() = 0;
 };
 
-const uint32_t kDefaultTransitionLength = 1000;
+const uint32_t kDefaultTransitionDuration = 1000;
 const uint8_t kTransitionFrames = 30;
 
 typedef enum {
@@ -80,8 +80,11 @@ struct PatternCode {
 	uint8_t copyID; // Which copy of the pattern
 	uint8_t mode; // Which mode is specified
 
-	inline PatternCode(uint8_t patternID = 0, uint8_t copyID = 0, uint8_t mode = 0) __attribute__((always_inline))
-		: patternID(patternID), copyID(copyID), mode(mode) {}
+	inline PatternCode(uint8_t patternID = 0, uint8_t copyID = 0, uint8_t mode = 0) :
+		patternID(patternID), copyID(copyID), mode(mode) {}
+
+	inline PatternCode(const PatternCode& code) :
+		patternID(code.patternID), copyID(code.copyID), mode(code.mode) {}
 
 	inline bool operator== (const PatternCode &rhs) __attribute__((always_inline)) {
 		return this->patternID == rhs.patternID && this->copyID == rhs.copyID && this->mode == rhs.mode;
@@ -100,12 +103,33 @@ public:
 
 	virtual IPixelBuffer *getOutputBuffer() = 0;
 
-	virtual uint8_t getMaxLayers() = 0;
+	virtual uint8_t getTotalLayers() = 0;
 	virtual ILightLayer *getLayer(uint8_t layerID) = 0;
+	virtual void ensureLayerExists(uint8_t layerID) = 0;
 
 	virtual IPixelBuffer *lockBuffer() = 0;
 	virtual void unlockBuffer(IPixelBuffer *buffer) = 0;
 	virtual bool addBuffer(IPixelBuffer *buffer) = 0;
+};
+
+struct LightLayerConfig {
+	// Pattern Manager Timing
+	// 0 - lets the pattern choose it's own timing
+	// If the pattern specifies a time and this is set, the pattern will take precedent
+	uint32_t maxPatternDuration;
+
+	// How long a transition takes at the start or end of a pattern
+	uint32_t transitionDuration;
+
+	// Method called when a pattern event happens
+	PatternEvent patternEventHandler;
+
+	// What playback mode the layer is in
+	EPlayMode playMode;
+
+	LightLayerConfig() :
+		maxPatternDuration(0), transitionDuration(kDefaultTransitionDuration),
+		patternEventHandler(NULL), playMode(PLAY_MODE_CONTINUOUS) {}
 };
 
 class ILightLayer {
@@ -113,9 +137,12 @@ public:
 	
 	virtual void setLayerID(uint8_t layerID) = 0;
 	virtual uint8_t getLayerID() = 0;
-	
+
+	virtual void setConfig(LightLayerConfig &config) = 0;
+	virtual LightLayerConfig &getConfig() = 0;
+
 	virtual void setPalette(IPalette *) {}
-	
+
 	virtual void setLightSection(ILightSection *section) = 0;
 	virtual ILightSection *getLightSection() = 0;
 	

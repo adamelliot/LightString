@@ -65,7 +65,28 @@ struct THSV {
 
 template <typename TYPE>
 inline TRGB<TYPE>::TRGB(const THSV<TYPE> &rhs) {
-	*this = rhs.toRGB();
+	auto rgb = rhs.toRGB();
+	this->r = rgb.r;
+	this->g = rgb.g;
+	this->b = rgb.b;
+}
+
+template <>
+inline TRGBA<uint8_t>::TRGBA(const THSV<uint8_t> &rhs) {
+	auto rgb = rhs.toRGB();
+	this->r = rgb.r;
+	this->g = rgb.g;
+	this->b = rgb.b;
+	this->a = 0xff;
+}
+
+template <>
+inline TRGBA<float>::TRGBA(const THSV<float> &rhs) {
+	auto rgb = rhs.toRGB();
+	this->r = rgb.r;
+	this->g = rgb.g;
+	this->b = rgb.b;
+	this->a = 1.0f;
 }
 
 template <typename TYPE>

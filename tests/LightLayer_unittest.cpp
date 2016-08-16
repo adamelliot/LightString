@@ -8,7 +8,7 @@
 using namespace LightString;
 
 TEST(LightLayer, initialization) {
-	LightLayer<3, 5> lightLayer;
+	LightLayer<float> lightLayer;
 
 	EXPECT_EQ(lightLayer.isActive(), false);
 }

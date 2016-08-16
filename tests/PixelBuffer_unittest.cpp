@@ -117,3 +117,120 @@ TEST(TPixelBuffer, fade) {
 		EXPECT_RGBu_EQ(buffer[i], 75, 60, 45);
 	}
 }
+
+// ---------------- Blending Tests -------------------
+
+TEST(TPixelBuffer, blendWith_RGB_RGB_u8_copy) {
+	TPixelBuffer<TRGB, uint8_t> dst(5);
+	TPixelBuffer<TRGBA, uint8_t> src(5);
+
+	dst.fillColor(HTML::Black);
+	src.fillColor(HTML::Red);
+
+	dst.blendWith(src, BLEND_COPY);
+
+	for (int i = 0; i < 5; i++) {
+		EXPECT_RGBu_EQ(dst[i], 0xff, 0, 0);
+	}
+}
+
+TEST(TPixelBuffer, blendWith_RGB_RGBA_u8_copy) {
+	TPixelBuffer<TRGB, uint8_t> dst(5);
+	TPixelBuffer<TRGBA, uint8_t> src(5);
+
+	dst.fillColor(HTML::Black);
+	src.fillColor(0x80ff0000);
+
+	dst.blendWith(src, BLEND_COPY);
+
+	for (int i = 0; i < 5; i++) {
+		EXPECT_RGBu_EQ(dst[i], 127, 0, 0);
+	}
+}
+
+
+TEST(TPixelBuffer, blendWith_RGB_RGB_f_copy) {
+	TPixelBuffer<TRGB, float> dst(5);
+	TPixelBuffer<TRGBA, float> src(5);
+
+	dst.fillColor(HTML::Black);
+	src.fillColor(HTML::Red);
+
+	dst.blendWith(src, BLEND_COPY);
+
+	for (int i = 0; i < 5; i++) {
+		EXPECT_RGBf_EQ(dst[i], 1, 0, 0);
+	}
+}
+
+TEST(TPixelBuffer, blendWith_RGB_RGBA_f_copy) {
+	TPixelBuffer<TRGB, float> dst(5);
+	TPixelBuffer<TRGBA, float> src(5);
+
+	dst.fillColor(HTML::Black);
+	src.fillColor(0x80ff0000);
+
+	dst.blendWith(src, BLEND_COPY);
+
+	for (int i = 0; i < 5; i++) {
+		EXPECT_RGBf_EQ(dst[i], 0.5, 0, 0);
+	}
+}
+
+TEST(TPixelBuffer, blendWith_RGB_RGB_alpha_u8_copy) {
+	TPixelBuffer<TRGB, uint8_t> dst(5);
+	TPixelBuffer<TRGBA, uint8_t> src(5);
+
+	dst.fillColor(HTML::Black);
+	src.fillColor(HTML::Red);
+
+	dst.blendWith(src, BLEND_COPY, 63);
+
+	for (int i = 0; i < 5; i++) {
+		EXPECT_RGBu_EQ(dst[i], 63, 0, 0);
+	}
+}
+
+TEST(TPixelBuffer, blendWith_RGB_RGBA_alpha_u8_copy) {
+	TPixelBuffer<TRGB, uint8_t> dst(5);
+	TPixelBuffer<TRGBA, uint8_t> src(5);
+
+	dst.fillColor(HTML::Black);
+	src.fillColor(0x80ff0000);
+
+	dst.blendWith(src, BLEND_COPY, 63);
+
+	for (int i = 0; i < 5; i++) {
+		EXPECT_RGBu_EQ(dst[i], 31, 0, 0);
+	}
+}
+
+
+TEST(TPixelBuffer, blendWith_RGB_RGB_alpha_f_copy) {
+	TPixelBuffer<TRGB, float> dst(5);
+	TPixelBuffer<TRGBA, float> src(5);
+
+	dst.fillColor(HTML::Black);
+	src.fillColor(HTML::Red);
+
+	dst.blendWith(src, BLEND_COPY, 0.25);
+
+	for (int i = 0; i < 5; i++) {
+		EXPECT_RGBf_EQ(dst[i], 0.25, 0, 0);
+	}
+}
+
+TEST(TPixelBuffer, blendWith_RGB_RGBA_alpha_f_copy) {
+	TPixelBuffer<TRGB, float> dst(5);
+	TPixelBuffer<TRGBA, float> src(5);
+
+	dst.fillColor(HTML::Black);
+	src.fillColor(0x80ff0000);
+
+	dst.blendWith(src, BLEND_COPY, 0.25);
+
+	for (int i = 0; i < 5; i++) {
+		EXPECT_RGBf_EQ(dst[i], 0.125, 0, 0);
+	}
+}
+

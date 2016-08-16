@@ -36,12 +36,12 @@ TEST(RGBAf, equalsRGBA) {
 
 TEST(RGBAf, equalsRGB) {
 	RGBAf col;
-	col.a = 100;
+	col.a = 0.5;
 	RGBf col3(5, 6, 7);
 
 	col = col3;
 
-	EXPECT_RGBAf_EQ(col, 5, 6, 7, 100);
+	EXPECT_RGBAf_EQ(col, 5, 6, 7, 1);
 }
 
 TEST(RGBAf, addEqualsRBGA) {
@@ -139,6 +139,13 @@ TEST(RGBAf, divEquals) {
 	col /= 5;
 
 	EXPECT_RGBAf_EQ(col, 4, 6, 8, 50);
+}
+
+TEST(RGBAf, fade) {
+	RGBAf col(0.20, 0.30, 0.40);
+	col.fade(0.5); // half
+
+	EXPECT_RGBAf_EQ(col, 0.20, 0.30, 0.40, 0.5);
 }
 
 TEST(RGBAf, lerp) {

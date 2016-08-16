@@ -15,8 +15,8 @@ TEST_OBJECTS = $(addsuffix .o, $(addprefix .build/, $(basename $(TEST_SOURCES)))
 all: $(OBJECTS)
 
 clean:
-	rm -rf .build
-	rm $(APP_NAME)_tests
+	@rm -rf .build
+	@rm $(APP_NAME)_tests
 
 test: $(TEST_OBJECTS)
 	$(CC) $(LDFLAGS) $(TEST_OBJECTS) -o $(APP_NAME)_tests

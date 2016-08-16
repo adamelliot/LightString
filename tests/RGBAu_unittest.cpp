@@ -41,7 +41,7 @@ TEST(RGBAu, equalsRGB) {
 
 	col = col3;
 
-	EXPECT_RGBAu_EQ(col, 5, 6, 7, 100);
+	EXPECT_RGBAu_EQ(col, 5, 6, 7, 255);
 }
 
 TEST(RGBAu, addEqualsRBGA) {
@@ -156,6 +156,13 @@ TEST(RGBAu, modEquals) {
 	col %= 128; // Scale by half
 
 	EXPECT_RGBAu_EQ(col, 10, 15, 20, 50);
+}
+
+TEST(RGBAu, fade) {
+	RGBAu col(20, 30, 40);
+	col.fade(127); // half
+
+	EXPECT_RGBAu_EQ(col, 20, 30, 40, 127);
 }
 
 TEST(RGBAu, lerp) {
