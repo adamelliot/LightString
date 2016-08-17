@@ -1,7 +1,15 @@
 #pragma once
 
+#ifndef ARDUINO
 #include <cstdlib>
 #include <stdint.h>
+
+#else
+
+#include <arduino.h>
+
+#endif
+
 #include "FastLEDWrapper.h"
 
 /* ==================== Common Helpers =================== */

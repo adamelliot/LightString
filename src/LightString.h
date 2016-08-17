@@ -24,5 +24,6 @@
 #include "LightPattern.h"
 #include "LightLayer.h"
 #include "PatternManager.h"
+#include "ThinPatternManager.h"
 
-#define LIGHTSTRING_VERSION "0.5"
+#define LIGHTSTRING_VERSION "0.6"

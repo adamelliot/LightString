@@ -10,6 +10,10 @@
 #include "geometry.h"
 #include "colortypes.h"
 
+#ifndef ARDUINO
+using namespace std;
+#endif
+
 namespace LightString {
 
 template <template <typename> class T, typename FORMAT = uint8_t>
@@ -136,7 +140,7 @@ public:
 
 	template <template <typename> class SRC_PIXEL>
 	inline TPixelBuffer<T, FORMAT> &blendCOPY(TPixelBuffer<SRC_PIXEL, FORMAT> &src) {
-		uint16_t len = std::min(this->length, src.length);
+		uint16_t len = min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
 			LightString::blendCOPY(this->pixels[i], src.pixels[i]);
 		}
@@ -146,7 +150,7 @@ public:
 
 	template <template <typename> class SRC_PIXEL>
 	inline TPixelBuffer<T, FORMAT> &blendCOPY(TPixelBuffer<SRC_PIXEL, FORMAT> &src, FORMAT alpha) {
-		uint16_t len = std::min(this->length, src.length);
+		uint16_t len = min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
 			SRC_PIXEL<FORMAT> srcPixel = src.pixels[i].fade(alpha);
 			LightString::blendCOPY(this->pixels[i], srcPixel);
@@ -157,7 +161,7 @@ public:
 
 	template <template <typename> class SRC_PIXEL>
 	inline TPixelBuffer<T, FORMAT> &blendADD(TPixelBuffer<SRC_PIXEL, FORMAT> &src) {
-		uint16_t len = std::min(this->length, src.length);
+		uint16_t len = min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
 			LightString::blendADD(this->pixels[i], src.pixels[i]);
 		}
@@ -167,7 +171,7 @@ public:
 
 	template <template <typename> class SRC_PIXEL>
 	inline TPixelBuffer<T, FORMAT> &blendADD(TPixelBuffer<SRC_PIXEL, FORMAT> &src, FORMAT alpha) {
-		uint16_t len = std::min(this->length, src.length);
+		uint16_t len = min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
 			SRC_PIXEL<FORMAT> srcPixel = src.pixels[i].fade(alpha);
 			LightString::blendADD(this->pixels[i], srcPixel);

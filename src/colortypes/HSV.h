@@ -298,7 +298,9 @@ inline void rgb2hsv(const TRGB<uint8_t> &in, THSV<uint8_t> &out) {
 
 #else
 
-#warning Need to add mapping to FastLED hsv2rgb
+inline void hsv2rgb(const THSV<uint8_t> &hsv, TRGB<uint8_t> &rgb) {
+	hsv2rgb_rainbow((CHSV *)&hsv, (CRGB *)&rgb);
+}
 
 #endif
 

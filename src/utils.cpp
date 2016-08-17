@@ -16,4 +16,22 @@ long random(long min, long max) {
     return (rand() % (max - min)) + min;
 }
 
+#else
+
+#include <Arduino.h>
+
+// Fix Teensy issues with stl
+namespace std {
+void __throw_bad_alloc()
+{
+	Serial.println("Unable to allocate memory");
+}
+
+void __throw_length_error(char const *e)
+{
+	Serial.print("Length Error :");
+	Serial.println(e);
+}
+};
+
 #endif

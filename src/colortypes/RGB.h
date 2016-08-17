@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+using namespace std;
 
 #ifndef ARDUINO
 #include <stdio.h>
@@ -183,9 +184,9 @@ struct TRGB {
 	inline TYPE saturation(const TYPE val) {
 		uint8_t lo = 0, mi = 1, hi = 2;
 
-		if (raw[lo] > raw[mi]) std::swap(lo, mi);
-		if (raw[mi] > raw[hi]) std::swap(mi, hi);
-		if (raw[lo] > raw[mi]) std::swap(lo, mi);
+		if (raw[lo] > raw[mi]) swap(lo, mi);
+		if (raw[mi] > raw[hi]) swap(mi, hi);
+		if (raw[lo] > raw[mi]) swap(lo, mi);
 
 		uint8_t newLo = (uint16_t)((255 - val) * raw[hi]) / 256;
 		uint16_t ratio = ((raw[mi] - raw[lo]) * 2560) / (raw[hi] - raw[lo]);
@@ -362,9 +363,9 @@ template <>
 inline float TRGB<float>::saturation(const float val) {
 	uint8_t lo = 0, mi = 1, hi = 2;
 
-	if (raw[lo] > raw[mi]) std::swap(lo, mi);
-	if (raw[mi] > raw[hi]) std::swap(mi, hi);
-	if (raw[lo] > raw[mi]) std::swap(lo, mi);
+	if (raw[lo] > raw[mi]) swap(lo, mi);
+	if (raw[mi] > raw[hi]) swap(mi, hi);
+	if (raw[lo] > raw[mi]) swap(lo, mi);
 
 	float newLo = (1 - val) * raw[hi];
 	float ratio = (raw[mi] - raw[lo]) / (raw[hi] - raw[lo]);
