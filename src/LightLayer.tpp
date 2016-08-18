@@ -93,7 +93,7 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 	Serial.print(F("Starting Pattern: 0x"));
 	Serial.print(patternCode.patternID, HEX);
 	Serial.print(F("\tMode: "));
-	if (patternCode.mode == ANY_MODE) {
+	if (patternCode.mode == ALL_MODES) {
 		Serial.print(F("R"));
 	} else {
 		Serial.print(patternCode.mode);
@@ -107,7 +107,7 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 	Serial.println(layerID);
 #else
 	printf("Starting Pattern: 0x%x\tMode: ", patternCode.patternID);
-	if (patternCode.mode == ANY_MODE) {
+	if (patternCode.mode == ALL_MODES) {
 		printf("R");
 	} else {
 		printf("%d", patternCode.mode);
@@ -251,6 +251,8 @@ void LIGHT_LAYER_CLASS::addLightPattern(ILightPattern &pattern) {
 
 template <>
 inline float LightLayer<float>::getElapsedTimeRatio() {
+	if (config.transitionDuration <= 0.0f) return 1.0f;
+
 	uint32_t timeElapsed = millis() - transitionStartedAt;
 	float ratio = (float)timeElapsed / (float)config.transitionDuration;
 	if (ratio > 1.0f) ratio = 1.0f;
@@ -260,6 +262,8 @@ inline float LightLayer<float>::getElapsedTimeRatio() {
 
 template <>
 inline uint8_t LightLayer<uint8_t>::getElapsedTimeRatio() {
+	if (config.transitionDuration == 0) return 255;
+
 	uint32_t timeElapsed = millis() - transitionStartedAt;
 	uint32_t ratio = timeElapsed * 256 / config.transitionDuration;
 	if (ratio > 255) ratio = 255;

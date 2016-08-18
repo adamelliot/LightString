@@ -146,7 +146,7 @@ public:
 	{ alloc(); colors[0] = col0; colors[1] = col1; colors[2] = col2; colors[3] = col3; colors[4] = col4; colors[5] = col5; colors[6] = col6; }
 
 	template <int SIZE>
-	inline TPalette(uint32_t (&data)[SIZE]) : size(SIZE) {
+	inline TPalette(const uint32_t (&data)[SIZE]) : size(SIZE) {
 		alloc();
 		for (uint8_t i = 0; i < size; i++) colors[i] = T<FORMAT>(data[i]);
 	}

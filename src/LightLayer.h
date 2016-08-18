@@ -62,6 +62,8 @@ public:
 	inline FORMAT getOpacity() { return opacity; }
 	void setPalette(IPalette *palette) { if (activePattern) activePattern->setPalette(palette); }
 
+	void setTransitionDuration(uint32_t transitionDuration) { this->config.transitionDuration = transitionDuration; }
+
 	void setMaxPatternDuration(uint32_t maxPatternDuration) { this->config.maxPatternDuration = maxPatternDuration; }
 	uint32_t getMaxPatternDuration() { return config.maxPatternDuration; }
 

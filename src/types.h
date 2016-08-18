@@ -71,7 +71,7 @@ typedef enum {
 	MODE_10 = 1 << 10,
 	MODE_11 = 1 << 11,
 
-	ANY_MODE = 0xff
+	ALL_MODES = 0xff
 
 } EPatternMode;
 
