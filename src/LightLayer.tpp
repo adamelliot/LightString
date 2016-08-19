@@ -319,7 +319,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 
 	if (timeElapsed >= config.transitionDuration) {
 		transitionState = TRANSITION_DONE;
-		if (clear) {
+		if (clear && (config.transitionDuration > 0)) {
 			activePattern->getPixelBuffer()->clear();
 		}
 	}

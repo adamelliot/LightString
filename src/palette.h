@@ -24,6 +24,13 @@ public:
 };
 
 typedef uint32_t ColorPaletteData[];
+typedef uint32_t ColorPaletteData1[1];
+typedef uint32_t ColorPaletteData2[2];
+typedef uint32_t ColorPaletteData3[3];
+typedef uint32_t ColorPaletteData4[4];
+typedef uint32_t ColorPaletteData5[5];
+typedef uint32_t ColorPaletteData6[6];
+typedef uint32_t ColorPaletteData7[7];
 
 template <template <typename> class T, typename FORMAT = uint8_t>
 struct TPalette : IPalette {
@@ -198,41 +205,41 @@ typedef TPalette<TRGB, uint8_t> CRGBPalette;
 typedef TPalette<TRGB, uint8_t> RGBuPalette;
 typedef TPalette<TRGB, uint8_t> RGBAuPalette;
 
-extern const ColorPaletteData PROGMEM SOLID_RED;
-extern const ColorPaletteData PROGMEM SOLID_GREEN;
-extern const ColorPaletteData PROGMEM SOLID_BLUE;
-extern const ColorPaletteData PROGMEM SOLID_AQUA;
-extern const ColorPaletteData PROGMEM SOLID_AZURE;
-extern const ColorPaletteData PROGMEM HSV_GRADIENT;
-extern const ColorPaletteData PROGMEM RAINBOW_GRADIENT;
-extern const ColorPaletteData PROGMEM BLUE_GREEN_GRADIENT;
-extern const ColorPaletteData PROGMEM GREEN_GRADIENT;
-extern const ColorPaletteData PROGMEM LIME_GRADIENT;
-extern const ColorPaletteData PROGMEM YELLOW_GRADIENT;
-extern const ColorPaletteData PROGMEM WHITE_GRADIENT;
-extern const ColorPaletteData PROGMEM RED_GREEN_GRADIENT;
-extern const ColorPaletteData PROGMEM GREEN_BLUE_GRADIENT;
-extern const ColorPaletteData PROGMEM RED_ORGANGE_GRADIENT;
-extern const ColorPaletteData PROGMEM BLUE_WHITE_GRADIENT;
-extern const ColorPaletteData PROGMEM BLUE_WHITISH_GRADIENT;
-extern const ColorPaletteData PROGMEM BLUE_WHITE_YELLOW_GRADIENT;
-extern const ColorPaletteData PROGMEM BLUE_YELLOW_BLACK_GRADIENT;
-extern const ColorPaletteData PROGMEM RED_WHITE_BLACK_GRADIENT;
-extern const ColorPaletteData PROGMEM RED_WHITE_GRADIENT;
-extern const ColorPaletteData PROGMEM GREEN_WHITE_GRADIENT;
-extern const ColorPaletteData PROGMEM RED_WHITISH_GRADIENT;
-extern const ColorPaletteData PROGMEM CYAN_PINK_GRADIENT;
-extern const ColorPaletteData PROGMEM BLUE_YELLOW_GRADIENT;
-extern const ColorPaletteData PROGMEM GREEN_YELLOW_GRADIENT;
-extern const ColorPaletteData PROGMEM RAINBOW_BLACK_GRADIENT;
-extern const ColorPaletteData PROGMEM PINK_PURPLE_GRADIENT;
-extern const ColorPaletteData PROGMEM PINK_PURPLE_BLACK_GRADIENT;
-extern const ColorPaletteData PROGMEM CYAN_PINK_BLACK_GRADIENT;
-extern const ColorPaletteData PROGMEM GREEN_BLUE_BLACK_GRADIENT;
-extern const ColorPaletteData PROGMEM RED_ORGANGE_BLACK_GRADIENT;
-extern const ColorPaletteData PROGMEM BLUE_WHITE_BLACK_GRADIENT;
-extern const ColorPaletteData PROGMEM BLUE_YELLOW_BLACK_HARD_GRADIENT;
-extern const ColorPaletteData PROGMEM WHITE_SOLID_GRADIENT;
+extern const ColorPaletteData1 PROGMEM SOLID_RED;
+extern const ColorPaletteData1 PROGMEM SOLID_GREEN;
+extern const ColorPaletteData1 PROGMEM SOLID_BLUE;
+extern const ColorPaletteData1 PROGMEM SOLID_AQUA;
+extern const ColorPaletteData1 PROGMEM SOLID_AZURE;
+extern const ColorPaletteData7 PROGMEM HSV_GRADIENT;
+extern const ColorPaletteData4 PROGMEM RAINBOW_GRADIENT;
+extern const ColorPaletteData3 PROGMEM BLUE_GREEN_GRADIENT;
+extern const ColorPaletteData3 PROGMEM GREEN_GRADIENT;
+extern const ColorPaletteData3 PROGMEM LIME_GRADIENT;
+extern const ColorPaletteData3 PROGMEM YELLOW_GRADIENT;
+extern const ColorPaletteData3 PROGMEM WHITE_GRADIENT;
+extern const ColorPaletteData2 PROGMEM RED_GREEN_GRADIENT;
+extern const ColorPaletteData3 PROGMEM GREEN_BLUE_GRADIENT;
+extern const ColorPaletteData5 PROGMEM RED_ORGANGE_GRADIENT;
+extern const ColorPaletteData3 PROGMEM BLUE_WHITE_GRADIENT;
+extern const ColorPaletteData3 PROGMEM BLUE_WHITISH_GRADIENT;
+extern const ColorPaletteData4 PROGMEM BLUE_WHITE_YELLOW_GRADIENT;
+extern const ColorPaletteData5 PROGMEM BLUE_YELLOW_BLACK_GRADIENT;
+extern const ColorPaletteData5 PROGMEM RED_WHITE_BLACK_GRADIENT;
+extern const ColorPaletteData4 PROGMEM RED_WHITE_GRADIENT;
+extern const ColorPaletteData4 PROGMEM GREEN_WHITE_GRADIENT;
+extern const ColorPaletteData4 PROGMEM RED_WHITISH_GRADIENT;
+extern const ColorPaletteData3 PROGMEM CYAN_PINK_GRADIENT;
+extern const ColorPaletteData3 PROGMEM BLUE_YELLOW_GRADIENT;
+extern const ColorPaletteData3 PROGMEM GREEN_YELLOW_GRADIENT;
+extern const ColorPaletteData5 PROGMEM RAINBOW_BLACK_GRADIENT;
+extern const ColorPaletteData3 PROGMEM PINK_PURPLE_GRADIENT;
+extern const ColorPaletteData5 PROGMEM PINK_PURPLE_BLACK_GRADIENT;
+extern const ColorPaletteData5 PROGMEM CYAN_PINK_BLACK_GRADIENT;
+extern const ColorPaletteData5 PROGMEM GREEN_BLUE_BLACK_GRADIENT;
+extern const ColorPaletteData5 PROGMEM RED_ORGANGE_BLACK_GRADIENT;
+extern const ColorPaletteData5 PROGMEM BLUE_WHITE_BLACK_GRADIENT;
+extern const ColorPaletteData4 PROGMEM BLUE_YELLOW_BLACK_HARD_GRADIENT;
+extern const ColorPaletteData2 PROGMEM WHITE_SOLID_GRADIENT;
 
 /* --------------- Swatch Manager --------------- */ 
 
