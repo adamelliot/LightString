@@ -1,6 +1,7 @@
 #ifndef _PALETTE_H_
 #define _PALETTE_H_
 
+#include <vector>
 #include <stdint.h>
 #include <stdio.h>
 #include "colortypes.h"
@@ -56,7 +57,7 @@ public:
 		}
 	}
 
-	inline T<FORMAT> valueAt8(uint8_t index) {
+	inline T<FORMAT> valueAt8(uint8_t index) const {
 		uint16_t indexSections = index * (size - 1);
 		uint8_t section = indexSections / kPaletteSize8Bit;
 		uint32_t weight = indexSections % kPaletteSize8Bit;
@@ -66,7 +67,7 @@ public:
 		return col.lerp8(colors[(section + 1) % size], weight);
 	}
 
-	inline T<FORMAT> valueAt(float index) {
+	inline T<FORMAT> valueAt(float index) const {
 		float indexSections = index * (size - 1);
 		uint8_t section = indexSections;
 		float weight = indexSections - section;
@@ -76,7 +77,7 @@ public:
 		return col.lerp(colors[(section + 1) % size], weight);
 	}
 
-	inline T<FORMAT> operator[] (FORMAT index) {
+	inline T<FORMAT> operator[] (FORMAT index) const {
 		return valueAt(index);
 	}
 
@@ -180,22 +181,22 @@ public:
 /* ----------------- Specializations ----------------- */
 
 template <>
-inline TRGB<uint8_t> TPalette<TRGB, uint8_t>::operator[] (uint8_t index) {
+inline TRGB<uint8_t> TPalette<TRGB, uint8_t>::operator[] (uint8_t index) const {
 	return valueAt8(index);
 };
 
 template <>
-inline TRGBA<uint8_t> TPalette<TRGBA, uint8_t>::operator[] (uint8_t index) {
+inline TRGBA<uint8_t> TPalette<TRGBA, uint8_t>::operator[] (uint8_t index) const {
 	return valueAt8(index);
 };
 
 template <>
-inline TRGB<float> TPalette<TRGB, float>::operator[] (float index) {
+inline TRGB<float> TPalette<TRGB, float>::operator[] (float index) const {
 	return valueAt(index);
 };
 
 template <>
-inline TRGBA<float> TPalette<TRGBA, float>::operator[] (float index) {
+inline TRGBA<float> TPalette<TRGBA, float>::operator[] (float index) const {
 	return valueAt(index);
 };
 
@@ -277,28 +278,22 @@ public:
 template<template <typename> class T, typename FORMAT = uint8_t>
 class TPaletteManager {
 protected:
-	TPalette<T, FORMAT> **palettes;
-	uint8_t maxPalettes;
-	uint8_t paletteCount;
-	uint8_t paletteIndex;
+	std::vector<TPalette<T, FORMAT>> palettes;
+	uint8_t paletteIndex = 0;
 
 public:
 
-	TPaletteManager(uint8_t maxPalettes)
-	: maxPalettes(maxPalettes), paletteCount(0), paletteIndex(0) {
-		palettes = new TPalette<T, FORMAT>*[maxPalettes];
-	}
-	~TPaletteManager() { delete palettes; }
+	TPaletteManager() {}
 
 	void shuffle();
-	uint8_t getPaletteCount() { return paletteCount; }
+	uint8_t getPaletteCount() { return palettes.size(); }
 
-	T<FORMAT> getColor(FORMAT index) { return (*palettes[paletteIndex])[index]; }
-	inline TPalette<T, FORMAT> getPalette() { return *palettes[paletteIndex]; }
+	T<FORMAT> getColor(FORMAT index) const { return (palettes[paletteIndex])[index]; }
+	inline TPalette<T, FORMAT> &getPalette() const { return palettes[paletteIndex]; }
 
 	void loadPalette(uint8_t index) { paletteIndex = index; }
 
-	bool add(TPalette<T, FORMAT> &palette);
+	void add(const TPalette<T, FORMAT> &palette) { palettes.push_back(palette); }
 
 	void next();
 	void previous();

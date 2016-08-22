@@ -84,13 +84,13 @@ TEST(TSwatchManagerF, getColor) {
 // ------------------- Palette Manager ---------------------
 
 TEST(TPaletteManagerF, creation) {
-	TPaletteManager<TRGB, float> palettes(10);
+	TPaletteManager<TRGB, float> palettes;
 
 	EXPECT_EQ(palettes.getPaletteCount(), 0);
 }
 
 TEST(TPaletteManagerF, add) {
-	TPaletteManager<TRGB, float> palettes(10);
+	TPaletteManager<TRGB, float> palettes;
 	TPalette<TRGB, float> pal(HTML::Red, HTML::Lime);
 
 	palettes.add(pal);
@@ -99,7 +99,7 @@ TEST(TPaletteManagerF, add) {
 }
 
 TEST(TPaletteManagerF, getColor) {
-	TPaletteManager<TRGB, float> palettes(10);
+	TPaletteManager<TRGB, float> palettes;
 	TPalette<TRGB, float> pal(HTML::Red, HTML::Lime);
 
 	palettes.add(pal);
@@ -112,7 +112,7 @@ TEST(TPaletteManagerF, getColor) {
 }
 
 TEST(TPaletteManagerF, next) {
-	TPaletteManager<TRGB, float> palettes(10);
+	TPaletteManager<TRGB, float> palettes;
 
 	TPalette<TRGB, float> pal1(HTML::Blue, HTML::Yellow);
 	TPalette<TRGB, float> pal2(HTML::Red, HTML::Lime);
@@ -127,6 +127,21 @@ TEST(TPaletteManagerF, next) {
 
 	EXPECT_RGBf_EQ(col1, 1, 0, 0);
 	EXPECT_RGBf_EQ(col2, 0, 1, 0);
+}
+
+TEST(TPaletteManagerF, createDirectlyFromColorData) {
+	TPaletteManager<TRGB, float> palettes;
+
+	palettes.add(SOLID_RED);
+	palettes.add(HSV_GRADIENT);
+
+	RGBf col1 = palettes.getColor(0);
+
+	palettes.next();
+	RGBf col2 = palettes.getColor(0.5);
+
+	EXPECT_RGBf_EQ(col1, 1, 0, 0);
+	EXPECT_RGBf_EQ(col2, 0, 1, 1);
 }
 
 TEST(PaletteTypesF, creation) {

@@ -74,8 +74,10 @@ T<FORMAT> TSwatchManager<T, FORMAT>::previous() {
 
 template<template <typename> class T, typename FORMAT>
 void TPaletteManager<T, FORMAT>::shuffle() {
-	for (size_t i = 0; i < paletteCount; i++) {
-		size_t j = (i + random() / (0xffffffff / (paletteCount - i) + 1)) % paletteCount;
+	auto size = palettes.size();
+
+	for (size_t i = 0; i < size; i++) {
+		size_t j = (i + random() / (0xffffffff / (size - i) + 1)) % size;
 		TPalette<T, FORMAT> *t = palettes[j];
 		palettes[j] = palettes[i];
 		palettes[i] = t;
@@ -83,30 +85,15 @@ void TPaletteManager<T, FORMAT>::shuffle() {
 }
 
 template<template <typename> class T, typename FORMAT>
-bool TPaletteManager<T, FORMAT>::add(TPalette<T, FORMAT> &palette) {
-	if (paletteCount >= maxPalettes) {
-#ifdef ARDUINO
-		Serial.println("ERROR: Max palettes reached.");
-#else
-		fprintf(stderr, "ERROR: Max palettes reached.\n");
-#endif
-		return false;
-	}
-
-	palettes[paletteCount++] = &palette;
-	return true;
-}
-
-template<template <typename> class T, typename FORMAT>
 void TPaletteManager<T, FORMAT>::next() {
 	paletteIndex++;
-	paletteIndex %= paletteCount;
+	paletteIndex %= palettes.size();
 }
 
 template<template <typename> class T, typename FORMAT>
 void TPaletteManager<T, FORMAT>::previous() {
 	if (paletteIndex == 0) {
-		paletteIndex = paletteCount - 1;
+		paletteIndex = palettes.size() - 1;
 	} else {
 		paletteIndex--;
 	}
