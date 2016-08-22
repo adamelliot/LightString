@@ -2,7 +2,7 @@
 
 using namespace LightString;
 
-TSwatchManager<TRGBA, uint8_t> Swatches(20);
+TSwatchManager<TRGBA, uint8_t> Swatches;
 TPaletteManager<TRGBA, uint8_t> Palettes;
 
 namespace LightString {

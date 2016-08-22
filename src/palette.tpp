@@ -2,8 +2,10 @@
 
 template<template <typename> class T, typename FORMAT>
 void TSwatchManager<T, FORMAT>::shuffle() {
-	for (size_t i = 0; i < swatchCount; i++) {
-		size_t j = (i + random() / (0xffffffff / (swatchCount - i) + 1)) % swatchCount;
+	auto size = swatches.size();
+
+	for (size_t i = 0; i < size; i++) {
+		size_t j = (i + random() / (0xffffffff / (size - i) + 1)) % size;
 		T<FORMAT> t = swatches[j];
 		swatches[j] = swatches[i];
 		swatches[i] = t;
@@ -12,15 +14,7 @@ void TSwatchManager<T, FORMAT>::shuffle() {
 
 template<template <typename> class T, typename FORMAT>
 bool TSwatchManager<T, FORMAT>::add(T<FORMAT> color) {
-	if (swatchCount >= maxSwatches) {
-#ifdef ARDUINO
-		Serial.println("ERROR: Max swatches reached.");
-#else
-		fprintf(stderr, "ERROR: Max swatches reached.\n");
-#endif
-		return false;
-	}
-	swatches[swatchCount++] = color;
+	swatches.push_back(color);
 	return true;
 }
 
@@ -54,7 +48,7 @@ TPalette<T, FORMAT> TSwatchManager<T, FORMAT>::generatePalette(uint8_t colorStop
 template<template <typename> class T, typename FORMAT>
 T<FORMAT> TSwatchManager<T, FORMAT>::next() {
 	swatchIndex++;
-	swatchIndex %= swatchCount;
+	swatchIndex %= swatches.size();
 
 	return swatches[swatchIndex];
 }
@@ -62,7 +56,7 @@ T<FORMAT> TSwatchManager<T, FORMAT>::next() {
 template<template <typename> class T, typename FORMAT>
 T<FORMAT> TSwatchManager<T, FORMAT>::previous() {
 	if (swatchIndex == 0) {
-		swatchIndex = swatchCount - 1;
+		swatchIndex = swatches.size() - 1;
 	} else {
 		swatchIndex--;
 	}

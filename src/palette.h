@@ -247,22 +247,15 @@ extern const ColorPaletteData2 PROGMEM WHITE_SOLID_GRADIENT;
 template<template <typename> class T, typename FORMAT = uint8_t>
 class TSwatchManager {
 protected:
-	T<FORMAT> *swatches;
-	uint8_t maxSwatches;
-	uint8_t swatchCount;
-	uint8_t swatchIndex;
+	std::vector<T<FORMAT>> swatches;
+	uint8_t swatchIndex = 0;
 
 public:
 
-	TSwatchManager(uint8_t maxSwatches)
-	: maxSwatches(maxSwatches), swatchCount(0), swatchIndex(0) {
-		swatches = new T<FORMAT>[maxSwatches];
-	}
-
-	~TSwatchManager() { delete swatches; }
+	TSwatchManager() {}
 
 	void shuffle();
-	uint8_t getSwatchCount() { return swatchCount; }
+	uint8_t getSwatchCount() { return swatches.size(); }
 
 	T<FORMAT> getColor() { return swatches[swatchIndex]; }
 	TPalette<T, FORMAT> generatePalette(uint8_t colorStops, uint8_t padding = 1, bool mirrored = true);

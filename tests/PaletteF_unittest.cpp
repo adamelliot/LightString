@@ -38,13 +38,13 @@ TEST(TPaletteF, scale) {
 // ------------------- Swatch Manager ---------------------
 
 TEST(TSwatchManagerF, creation) {
-	TSwatchManager<TRGB, float> swatches(10);
+	TSwatchManager<TRGB, float> swatches;
 
 	EXPECT_EQ(swatches.getSwatchCount(), 0);
 }
 
 TEST(TSwatchManagerF, add) {
-	TSwatchManager<TRGB, float> swatches(10);
+	TSwatchManager<TRGB, float> swatches;
 
 	swatches.add(HTML::Red);
 
@@ -53,7 +53,7 @@ TEST(TSwatchManagerF, add) {
 }
 
 TEST(TSwatchManagerF, next) {
-	TSwatchManager<TRGB, float> swatches(10);
+	TSwatchManager<TRGB, float> swatches;
 
 	swatches.add(HTML::Red);
 	swatches.add(HTML::Lime);
@@ -67,7 +67,7 @@ TEST(TSwatchManagerF, next) {
 }
 
 TEST(TSwatchManagerF, getColor) {
-	TSwatchManager<TRGB, float> swatches(10);
+	TSwatchManager<TRGB, float> swatches;
 
 	swatches.add(HTML::Red);
 	swatches.add(HTML::Lime);
