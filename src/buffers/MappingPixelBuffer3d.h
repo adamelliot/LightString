@@ -20,7 +20,14 @@ public:
 	inline TMappingPixelBuffer3d(const uint16_t width, const uint16_t height, const uint16_t depth)
 		: TMappingPixelBuffer3d(width, height, depth, width * height * depth) {}
 
-	inline ~TMappingPixelBuffer3d() {
+	// Pixels here should represent the whole plane + 1 pixel
+	inline TMappingPixelBuffer3d(T<FORMAT> *pixels, const uint16_t width, const uint16_t height, const uint16_t depth)
+		: TPixelBuffer<T, FORMAT>(pixels + 1, width * height), width(width), height(height), depth(depth)
+	{
+		this->rawPixels = pixels;
+	}
+
+	virtual inline ~TMappingPixelBuffer3d() {
 		// Put pixels back so it deletes properly.
 		this->pixels = rawPixels;
 	}

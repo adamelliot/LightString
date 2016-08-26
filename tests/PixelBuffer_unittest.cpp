@@ -118,6 +118,33 @@ TEST(TPixelBuffer, fade) {
 	}
 }
 
+// ------------------ Mapping Buffers ---------------------
+
+TEST(TMappingPixelBuffer2d, creationExternalMemory) {
+	RGBu rawBuff[51];
+
+	TMappingPixelBuffer2d<TRGB> buffer(rawBuff, 10, 5);
+
+	EXPECT_EQ(buffer.width, 10);
+	EXPECT_EQ(buffer.height, 5);
+	EXPECT_EQ(buffer.pixels, (rawBuff + 1));
+	EXPECT_FALSE(buffer.shouldDelete);
+}
+
+TEST(TMappingPixelBuffer3d, creationExternalMemory) {
+	RGBu rawBuff[201];
+
+	TMappingPixelBuffer3d<TRGB> buffer(rawBuff, 20, 5, 4);
+
+	EXPECT_EQ(buffer.width, 20);
+	EXPECT_EQ(buffer.height, 5);
+	EXPECT_EQ(buffer.depth, 4);
+	EXPECT_EQ(buffer.pixels, (rawBuff + 1));
+	EXPECT_FALSE(buffer.shouldDelete);
+}
+
+
+
 // ---------------- Blending Tests -------------------
 
 TEST(TPixelBuffer, blendWith_RGB_RGB_u8_copy) {

@@ -36,7 +36,7 @@ public:
 		shouldDelete = true;
 	}
 
-	inline ~TPixelBuffer() {
+	virtual inline ~TPixelBuffer() {
 		if (shouldDelete) delete pixels;
 	}
 
