@@ -51,11 +51,11 @@ public:
 		}
 
 		if (shouldDelete) {
-			free(pixels);
+			delete pixels;
 		}
 
 		this->length = length;
-		pixels = (T<FORMAT> *) malloc(sizeof(T<FORMAT>) * length);
+		pixels = new T<FORMAT>[length];
 		memset(pixels, 0, sizeof(T<FORMAT>) * length);
 
 		return true;

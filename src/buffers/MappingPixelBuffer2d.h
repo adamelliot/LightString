@@ -39,6 +39,36 @@ public:
 		this->pixels = rawPixels;
 	}
 
+	inline bool resize(uint16_t width, uint16_t height) {
+		uint32_t length = width * height;
+
+		if (!this->shouldDelete && length > 0) {
+#ifdef ARDUINO
+			Serial.println("ERROR: Cannot resize buffer that is not owned by pixel buffer.");
+#else
+			fprintf(stderr, "ERROR: Cannot resize buffer that is not owned by pixel buffer.\n");
+#endif
+			return false;
+		}
+
+		if (this->shouldDelete) {
+			delete this->rawPixels;
+		}
+
+		this->width = width;
+		this->height = height;
+
+		this->length = length;
+		this->pixels = new T<FORMAT>[length + 1];
+		memset(this->pixels, 0, sizeof(T<FORMAT>) * length);
+		rawPixels = this->pixels;
+		this->pixels++;
+
+		return true;
+	}
+
+
+
 	virtual int16_t xy(int16_t x, int16_t y) {
 		if (x < 0 || y < 0) return -1;
 		return (y * width) + x;

@@ -131,6 +131,25 @@ TEST(TMappingPixelBuffer2d, creationExternalMemory) {
 	EXPECT_FALSE(buffer.shouldDelete);
 }
 
+TEST(TMappingPixelBuffer2d, resize) {
+	TMappingPixelBuffer2d<TRGB, uint8_t> buffer(10, 20);
+
+	EXPECT_EQ(buffer.length, 200);
+
+	buffer[buffer.xy(5, 5)] = RGBu(100, 200, 50);
+	EXPECT_RGBu_EQ(buffer[55], 100, 200, 50);
+
+	buffer.resize(30, 30);
+	EXPECT_EQ(buffer.length, 900);
+
+	uint32_t i = buffer.xy(5, 5);
+
+	EXPECT_EQ(i, 155);
+
+	buffer[i] = RGBu(0, 200, 50);
+	EXPECT_RGBu_EQ(buffer[155], 0, 200, 50);
+}
+
 TEST(TMappingPixelBuffer3d, creationExternalMemory) {
 	RGBu rawBuff[201];
 
