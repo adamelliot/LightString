@@ -29,9 +29,10 @@ public:
 
 	// Pixels here should represent the whole plane + 1 pixel
 	inline TMappingPixelBuffer2d(T<FORMAT> *pixels, const uint16_t width, const uint16_t height)
-		: TPixelBuffer<T, FORMAT>(pixels + 1, width * height), width(width), height(height)
+		: TPixelBuffer<T, FORMAT>(pixels, width * height), width(width), height(height)
 	{
 		this->rawPixels = pixels;
+		this->pixels++;
 	}
 
 	virtual inline ~TMappingPixelBuffer2d() {

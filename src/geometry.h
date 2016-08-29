@@ -70,6 +70,62 @@ struct Vector {
 };
 
 template <typename T>
+struct Vector3d {
+	T x, y, z;
+
+	Vector3d() : x(0), y(0), z(0) {}
+	Vector3d(const T x, const T y, const T z) : x(x), y(y), z(z) {}
+
+	inline Vector3d &operator+=(const Vector3d<T> &rhs) __attribute__((always_inline))
+	{
+		this->x += rhs.x;
+		this->y += rhs.y;
+		this->z += rhs.z;
+
+		return *this;
+	}
+
+	inline Vector3d &operator-=(const Vector3d<T> &rhs) __attribute__((always_inline))
+	{
+		this->x -= rhs.x;
+		this->y -= rhs.y;
+		this->z -= rhs.z;
+
+		return *this;
+	}
+
+	inline Vector3d &operator*=(const T &rhs) __attribute__((always_inline))
+	{
+		this->x *= rhs;
+		this->y *= rhs;
+		this->z *= rhs;
+
+		return *this;
+	}
+
+	inline Vector3d &operator/=(const T &rhs) __attribute__((always_inline))
+	{
+		this->x /= rhs;
+		this->y /= rhs;
+		this->z /= rhs;
+
+		return *this;
+	}
+	
+	void print() {
+#ifdef ARDUINO
+		Serial.print("(");
+		Serial.print(x);
+		Serial.print(", ");
+		Serial.print(y);
+		Serial.print(")");
+#else
+		printf("(%f, %f, %f)", x, y, z);
+#endif
+	}
+};
+
+template <typename T>
 struct Point {
 	T x, y;
 
@@ -117,6 +173,62 @@ struct Point {
 		Serial.print(")");
 #else
 		printf("(%f, %f)", x, y);
+#endif
+	}
+};
+
+template <typename T>
+struct Point3d {
+	T x = 0, y = 0, z = 0;
+
+	Point3d() {}
+	Point3d(const T x, const T y, const T z) : x(x), y(y), z(z) {}
+
+	inline Point3d &operator+=(const Point3d<T> &rhs) __attribute__((always_inline))
+	{
+		this->x += rhs.x;
+		this->y += rhs.y;
+		this->z += rhs.z;
+
+		return *this;
+	}
+
+	inline Point3d &operator+=(const Vector<T> &rhs) __attribute__((always_inline))
+	{
+		this->x += rhs.x;
+		this->y += rhs.y;
+		this->z += rhs.z;
+
+		return *this;
+	}
+
+	inline Point3d &operator-=(const Point3d<T> &rhs) __attribute__((always_inline))
+	{
+		this->x -= rhs.x;
+		this->y -= rhs.y;
+		this->z -= rhs.z;
+
+		return *this;
+	}
+
+	inline Point3d &operator-=(const Vector<T> &rhs) __attribute__((always_inline))
+	{
+		this->x -= rhs.x;
+		this->y -= rhs.y;
+		this->z -= rhs.z;
+
+		return *this;
+	}
+	
+	void print() {
+#ifdef ARDUINO
+		Serial.print("(");
+		Serial.print(x);
+		Serial.print(", ");
+		Serial.print(y);
+		Serial.print(")");
+#else
+		printf("(%f, %f, %f)", x, y, z);
 #endif
 	}
 };
