@@ -13,7 +13,7 @@
 #include <FastLED.h>
 #endif
 
-#define VERBOSE
+// #define LS_VERBOSE
 
 #include "utils.h"
 #include "colortypes.h"

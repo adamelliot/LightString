@@ -88,7 +88,7 @@ void LIGHT_LAYER_CLASS::unpause() {
 
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
-#ifdef VERBOSE
+#ifdef LS_VERBOSE
 #ifdef ARDUINO
 	Serial.print(F("Starting Pattern: 0x"));
 	Serial.print(patternCode.patternID, HEX);
@@ -222,7 +222,7 @@ void LIGHT_LAYER_CLASS::addLightPattern(ILightPattern &pattern, uint64_t modeLis
 			}
 			modeList >>= 1;
 
-#ifdef VERBOSE
+#ifdef LS_VERBOSE
 #ifdef ARDUINO
 			Serial.print(F("Adding Pattern Code: "));
 			Serial.print((patternID << 8) | mode, HEX);

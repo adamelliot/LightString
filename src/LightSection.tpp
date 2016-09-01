@@ -42,7 +42,7 @@ void LIGHT_SECTION_CLASS::unlockBuffer(IPixelBuffer *buffer) {
 LIGHT_SECTION_TEMPLATE
 bool LIGHT_SECTION_CLASS::addBuffer(IPixelBuffer *buffer) {
 	if (buffer->getLength() != this->outputBuffer->getLength()) {
-#ifdef VERBOSE
+#ifdef LS_VERBOSE
 #ifdef ARDUINO
 		Serial.println(F("ERROR: Buffer added to pool needs to be the same size as the output buffer."));
 #else
