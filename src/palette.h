@@ -281,8 +281,8 @@ public:
 	void shuffle();
 	uint8_t getPaletteCount() { return palettes.size(); }
 
-	T<FORMAT> getColor(FORMAT index) const { return (palettes[paletteIndex])[index]; }
-	inline TPalette<T, FORMAT> &getPalette() const { return palettes[paletteIndex]; }
+	T<FORMAT> getColor(FORMAT index) { return (palettes[paletteIndex])[index]; }
+	inline TPalette<T, FORMAT> &getPalette() { return palettes[paletteIndex]; }
 
 	void loadPalette(uint8_t index) { paletteIndex = index; }
 
