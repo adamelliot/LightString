@@ -84,15 +84,11 @@ public:
 template <template <typename> class PIXEL, typename FORMAT = uint8_t>
 class TLightPattern : public ILightPattern {
 protected:
-
-	// Set to which layer the pattern is being drawn on
-	uint8_t layer;
-
 	TPixelBuffer<PIXEL, FORMAT> *pixelBuffer;
 
 public:
 	TLightPattern(uint8_t modeCount = 1) __attribute__((always_inline))
-		: ILightPattern(modeCount), layer(0), pixelBuffer(0) {}
+		: ILightPattern(modeCount), pixelBuffer(0) {}
 
 	void setPixelBuffer(IPixelBuffer *pixelBuffer) {
 		this->pixelBuffer = (TPixelBuffer<PIXEL, FORMAT> *)pixelBuffer;
