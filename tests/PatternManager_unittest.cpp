@@ -80,7 +80,7 @@ TEST(PatternManager, ensureLayersGetConfigured) {
 	uint8_t sectionID = patternManager.addLightSection(leds);
 	patternManager.addBufferToLightSection(sectionID, buffer);
 
-	patternManager.setMaxPatternDuration(500);
+	patternManager.setPatternDuration(500);
 
 	auto section = patternManager.getLightSection(sectionID);
 	EXPECT_TRUE(section != NULL);
@@ -90,7 +90,7 @@ TEST(PatternManager, ensureLayersGetConfigured) {
 	patternManager.addLightPattern(testPattern);
 
 	EXPECT_EQ(section->getTotalLayers(), 1);
-	EXPECT_EQ(section->layers[0].getMaxPatternDuration(), 500);
+	EXPECT_EQ(section->layers[0].getPatternDuration(), 500);
 
 	patternManager.play();
 

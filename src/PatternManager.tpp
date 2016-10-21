@@ -45,19 +45,19 @@ void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHand
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::setMaxPatternDuration(uint32_t maxPatternDuration) {
-	this->layerConfig.maxPatternDuration = maxPatternDuration;
+void PATTERN_MANAGER_CLASS::setPatternDuration(uint32_t patternDuration) {
+	this->layerConfig.patternDuration = patternDuration;
 
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
-			sections[i].layers[j].setMaxPatternDuration(maxPatternDuration);
+			sections[i].layers[j].setPatternDuration(patternDuration);
 		}
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::setMaxPatternDuration(uint32_t maxPatternDuration, uint8_t layerID, uint8_t sectionID) {
-	sections[sectionID].layers[layerID].setTransitionDuration(maxPatternDuration);
+void PATTERN_MANAGER_CLASS::setPatternDuration(uint32_t patternDuration, uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].setTransitionDuration(patternDuration);
 }
 
 PATTERN_MANAGER_TEMPLATE

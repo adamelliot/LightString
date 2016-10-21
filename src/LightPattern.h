@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef _LIGHTPATTERN_H_
-#define _LIGHTPATTERN_H_
-
 #include "types.h"
 #include "PixelBuffer.h"
 
@@ -24,6 +21,8 @@ public:
 	void setLayer(ILightLayer *layer) { this->layer = layer; }
 	ILightLayer* getLayer() { return layer; }
 
+	// Set config is called before setupMode
+	virtual void setConfig(PatternConfig *config) {}
 	virtual void setupMode(uint8_t mode) {}
 	virtual void patternFinished() {}
 	
@@ -61,18 +60,24 @@ public:
 
 	virtual PatternCode getNextPatternCode() { return PatternCode(0xff, 0xff, 0xff); /* Any pattern */ }
 
-	virtual EPatternTransition getTransition() { return getEndTransition(); }
-	virtual EPatternTransition getBeginTransition() { return TRANSITION_FADE_UP; }
-	virtual EPatternTransition getEndTransition() { return TRANSITION_FADE_DOWN; }
+	// DEPRECATED
+	virtual EPatternTransition getTransition() { return getOutTransition(); }
+
+	virtual EPatternTransition getInTransition() { return TRANSITION_DEFAULT; }
+	virtual EPatternTransition getOutTransition() { return TRANSITION_DEFAULT; }
+
+	// Forces the length of the pattern transition. -1 Means default to container
+	virtual int32_t getTransitionDuration() { return -1; }
 
 	// If false the pattern can only be activated by getNextPatternCode()
 	virtual bool hideFromPatternList() { return false; }
 
-	// Flags that the next pattern should be loaded
+	// Flags that the next pattern should be loaded. This will take precedence over
+	// any settings from sequences or layers.
 	virtual bool isPatternFinished() { return false; }
 
-	// Returns how long this pattern should run in ms
-	virtual int32_t getPatternDuration() { return -1; /* -1 means forever */ }
+	// Forces the length of the pattern. -1 Means default to container
+	virtual int32_t getPatternDuration() { return -1; }
 
 	// Used to pass data into a running pattern via the pattern manager
 	// TODO: Is there a better way to handle this?
@@ -114,5 +119,3 @@ typedef FilterLightPattern LightPattern;
 // typedef FilterLightPattern LightProgram;
 
 };
-
-#endif

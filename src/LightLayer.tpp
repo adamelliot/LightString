@@ -1,4 +1,15 @@
 LIGHT_LAYER_TEMPLATE
+LIGHT_LAYER_CLASS::~LightLayer() {
+	delete patternSequence;
+}
+
+LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequence) {
+	this->patternSequence = new PatternSequence(patternSequence);
+	patternIndex = 0;
+}
+
+LIGHT_LAYER_TEMPLATE
 ILightPattern *LIGHT_LAYER_CLASS::getPattern(PatternCode patternCode) {
 	int copy = 0;
 	for (uint32_t i = 0; i < lightPatterns.size(); i++) {
@@ -11,17 +22,36 @@ ILightPattern *LIGHT_LAYER_CLASS::getPattern(PatternCode patternCode) {
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::updatePatternIndex(PatternCode patternCode) {
-	if (patternList[patternIndex] == patternCode) return;
 
-	for (uint32_t i = 0; i < patternList.size(); i++) {
-		if (patternList[i] == patternCode) {
-			patternIndex = i;
-			break;
+	if (patternSequence) {
+		auto sequence = patternSequence->getSequence();
+		auto size = sequence.size();
+		uint32_t i = patternIndex;
+
+		while (size--) {
+			auto cue = patternSequence->getPatternCue(i);
+			if (cue.code == patternCode) {
+				patternIndex = i;
+				break;
+			}
+
+			i++;
+			i %= sequence.size();
+		}
+	} else {
+		if (patternList[patternIndex] == patternCode) return;
+
+		auto size = patternList.size();
+		for (uint32_t i = 0; i < size; i++) {
+			if (patternList[(i + patternIndex) % size] == patternCode) {
+				patternIndex = i;
+				break;
+			}
 		}
 	}
 }
@@ -55,7 +85,7 @@ void LIGHT_LAYER_CLASS::play() {
 		return;
 	}
 
-	startPattern(patternList[patternIndex]);
+	startSelectedPattern();
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -80,10 +110,70 @@ void LIGHT_LAYER_CLASS::unpause() {
 	if (playState != PATTERN_PAUSED) return;
 
 	setPlayState(PATTERN_PLAYING);
-	
+
 	uint32_t timeDelta = millis() - pauseStartedAt;
 	patternStartedAt += timeDelta;
 	transitionStartedAt += timeDelta;
+}
+
+LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, PatternConfig *config) {
+	this->opacity = getMaxOpacity();
+
+	this->activePattern = pattern;
+	this->activePattern->setLayer(this);
+
+	if (this->activePattern->isFilterPattern()) {
+		this->activePattern->setPixelBuffer(this->section->getOutputBuffer());
+	} else {
+		this->activePattern->setPixelBuffer(this->section->lockBuffer());
+	}
+
+	setPlayState(PATTERN_STARTED);
+
+	this->activePattern->setConfig(config);
+	this->activePattern->setMode(mode);
+
+	this->patternStartedAt = millis();
+	this->transitionState = TRANSITION_STARTING;
+
+	runningBeginTransition = true;
+
+	setPlayState(PATTERN_PLAYING);
+}
+
+/**
+ * Starts the pattern at patternIndex and chooses between sequence or patternList
+ */
+LIGHT_LAYER_TEMPLATE
+bool LIGHT_LAYER_CLASS::startSelectedPattern() {
+	finishPattern();
+
+	PatternCode code;
+	PatternConfig *config = nullptr;
+
+	if (patternSequence) {
+		auto cue = patternSequence->getPatternCue(patternIndex);
+		code = cue.code;
+		config = &cue;
+	} else {
+		code = patternList[patternIndex];
+	}
+
+	auto pattern = getPattern(code);
+
+	if (!pattern) {
+#ifdef __DISPLAY_ERROR
+		Serial.print("Pattern not found: 0x");
+		Serial.print(cue.code.patternID, HEX);
+		Serial.print(" on Layer: ");
+		Serial.println(layerID);
+#endif
+		return false;
+	}
+
+	startPattern(pattern, code.mode, config);
+	return true;
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -140,34 +230,22 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 	finishPattern();
 	updatePatternIndex(patternCode);
 
-	this->opacity = getMaxOpacity();
-
-	this->activePattern = pattern;
-	this->activePattern->setLayer(this);
-
-	if (this->activePattern->isFilterPattern()) {
-		this->activePattern->setPixelBuffer(this->section->getOutputBuffer());
-	} else {
-		this->activePattern->setPixelBuffer(this->section->lockBuffer());
-	}
-
-	setPlayState(PATTERN_STARTED);
-
-	this->activePattern->setMode(patternCode.mode);
-	this->patternStartedAt = millis();
-	this->transitionState = TRANSITION_STARTING;
-
-	runningBeginTransition = true;
-
-	setPlayState(PATTERN_PLAYING);
+	startPattern(pattern, patternCode.mode);
 
 	return true;
 }
 
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::startRandomPattern() {
-	patternIndex = random(patternList.size());
-	return nextPattern();
+	uint32_t size = patternList.size();
+
+	if (patternSequence) {
+		size = patternSequence->getSequence().size();
+	}
+
+	patternIndex = random(size);
+
+	return startSelectedPattern();
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -175,7 +253,7 @@ bool LIGHT_LAYER_CLASS::nextPattern() {
 	patternIndex++;
 	patternIndex %= patternList.size();
 
-	return startPattern(patternList[patternIndex]);
+	return startSelectedPattern();
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -186,7 +264,7 @@ bool LIGHT_LAYER_CLASS::prevPattern() {
 		patternIndex--;
 	}
 
-	return startPattern(patternList[patternIndex]);
+	return startSelectedPattern();
 }
 
 // Shuffle from: http://benpfaff.org/writings/clc/shuffle.html
@@ -277,49 +355,124 @@ template <>
 inline float LightLayer<float>::getMaxOpacity() { return 1.0f; }
 
 LIGHT_LAYER_TEMPLATE
+inline EPatternTransition LIGHT_LAYER_CLASS::getSelectedInTransition() {
+	if (activePattern->getInTransition() == TRANSITION_DEFAULT) {
+		if (patternSequence) {
+			auto cue = patternSequence->getPatternCue(patternIndex);
+			if (cue.inTransition == TRANSITION_DEFAULT) {
+				return config.inTransition;
+			} else {
+				return cue.inTransition;
+			}
+		} else {
+			return config.inTransition;
+		}
+	}
+
+	return activePattern->getInTransition();
+}
+
+LIGHT_LAYER_TEMPLATE
+inline EPatternTransition LIGHT_LAYER_CLASS::getSelectedOutTransition() {
+	if (activePattern->getOutTransition() == TRANSITION_DEFAULT) {
+		if (patternSequence) {
+			auto cue = patternSequence->getPatternCue(patternIndex);
+			if (cue.outTransition == TRANSITION_DEFAULT) {
+				return config.outTransition;
+			} else {
+				return cue.outTransition;
+			}
+		} else {
+			return config.outTransition;
+		}
+	}
+
+	return activePattern->getOutTransition();
+}
+
+LIGHT_LAYER_TEMPLATE
+inline int32_t LIGHT_LAYER_CLASS::getSelectedPatternDuration() {
+	if (activePattern->getPatternDuration() == -1) {
+		if (patternSequence) {
+			auto cue = patternSequence->getPatternCue(patternIndex);
+			if (cue.patternDuration == -1) {
+				return config.patternDuration;
+			} else {
+				return cue.patternDuration;
+			}
+		} else {
+			return config.outTransition;
+		}
+	}
+
+	return activePattern->getPatternDuration();
+}
+
+LIGHT_LAYER_TEMPLATE
+inline int32_t LIGHT_LAYER_CLASS::getSelectedTransitionDuration() {
+	if (activePattern->getTransitionDuration() == -1) {
+		if (patternSequence) {
+			auto cue = patternSequence->getPatternCue(patternIndex);
+
+			if (cue.transitionDuration == -1) {
+				return config.transitionDuration;
+			} else {
+				return cue.transitionDuration;
+			}
+		} else {
+			return config.transitionDuration;
+		}
+	}
+
+	return activePattern->getTransitionDuration();
+}
+
+LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 	if (transitionState == TRANSITION_STARTING) {
 		transitionState = TRANSITION_RUNNING;
 		transitionStartedAt = millis();
+
+		currentTransition = runningBeginTransition ? getSelectedInTransition() : getSelectedOutTransition();
 	}
+
+	int32_t transitionDuration = getSelectedTransitionDuration();
 
 	uint32_t timeElapsed = millis() - transitionStartedAt;
 	FORMAT ratio = getElapsedTimeRatio();
 	bool clear = false;
 
-	EPatternTransition transition = runningBeginTransition ?
-		activePattern->getBeginTransition() : activePattern->getEndTransition();
-	
-	switch (transition) {
-		case TRANSITION_OVERWRITE:
-		timeElapsed = config.transitionDuration;
-		break;
-
-		case TRANSITION_WIPE:
-		timeElapsed = config.transitionDuration;
+	switch (currentTransition) {
+	case TRANSITION_WIPE:
+		timeElapsed = transitionDuration;
 		clear = true;
 		break;
 
-		case TRANSITION_FREEZE_FADE:
+	case TRANSITION_FREEZE_FADE:
 		opacity = getMaxOpacity() - ratio;
 		clear = true;
 		break;
 
-		case TRANSITION_FADE_DOWN:
+	case TRANSITION_FADE_DOWN:
 		activePattern->update(timeDelta);
 		opacity = getMaxOpacity() - ratio;
 		clear = true;
 		break;
 
-		case TRANSITION_FADE_UP:
+	case TRANSITION_FADE_UP:
 		activePattern->update(timeDelta);
 		opacity = ratio;
 		break;
+
+	case TRANSITION_OVERWRITE:
+	default:
+		timeElapsed = transitionDuration;
+		break;
 	}
 
-	if (timeElapsed >= config.transitionDuration) {
+	if (timeElapsed >= transitionDuration) {
 		transitionState = TRANSITION_DONE;
-		if (clear && (config.transitionDuration > 0)) {
+		if (clear && (transitionDuration > 0)) {
 			activePattern->getPixelBuffer()->clear();
 		}
 	}
@@ -327,24 +480,24 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 	if (transitionState == TRANSITION_DONE) {
 		if (!runningBeginTransition) {
 			switch (config.playMode) {
-				case PLAY_MODE_CONTINUOUS:
-				{
-					PatternCode code = activePattern->getNextPatternCode();
-					if (code == PatternCode(0xff, 0xff, 0xff)) {
-						nextPattern();
-					} else {
-						startPattern(code);
-					}
+			case PLAY_MODE_CONTINUOUS:
+			{
+				PatternCode code = activePattern->getNextPatternCode();
+				if (code == PatternCode(0xff, 0xff, 0xff)) {
+					nextPattern();
+				} else {
+					startPattern(code);
 				}
-				break;
+			}
+			break;
 
-				case PLAY_MODE_ONCE: // Once we're done
+			case PLAY_MODE_ONCE: // Once we're done
 				finishPattern();
 				setPlayState(PATTERN_STOPPED);
 				break;
-			
-				case PLAY_MODE_REPEAT:
-				startPattern(patternList[patternIndex]);
+
+			case PLAY_MODE_REPEAT:
+				startSelectedPattern();
 				break;
 			}
 		} else {
@@ -360,12 +513,11 @@ void LIGHT_LAYER_CLASS::update() {
 
 	if (!activePattern || playState == PATTERN_STOPPED || playState == PATTERN_PAUSED) return;
 
-	uint32_t patternTimeDelta = time - patternStartedAt;
+	int32_t patternTimeDelta = (int32_t)(time - patternStartedAt);
+	int32_t patternDuration = getSelectedPatternDuration();
 
-	// NOTE: Should transition time adjust end time?
-	if (activePattern->isPatternFinished() || 
-		(activePattern->getPatternDuration() > 0 && patternTimeDelta > (uint32_t)activePattern->getPatternDuration()) ||
-		(config.maxPatternDuration > 0 && patternTimeDelta > config.maxPatternDuration))
+	if (activePattern->isPatternFinished() ||
+	        (patternDuration > 0 && patternTimeDelta > patternDuration))
 	{
 		if (transitionState == TRANSITION_DONE) {
 			transitionState = TRANSITION_STARTING;

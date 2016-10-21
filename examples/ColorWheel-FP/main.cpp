@@ -52,7 +52,7 @@ void setup() {
 	patternManager.setPatternEventHandler(patternEvent);
 
 	// Set how long our patterns run for by default. This can be over-ridden by the pattern
-	patternManager.setMaxPatternDuration(kPatternDuration);
+	patternManager.setPatternDuration(kPatternDuration);
 
 	// Add a light pattern (by default it adds to Section 0, Layer 0)
 	patternManager.addLightPattern(wheelPattern);

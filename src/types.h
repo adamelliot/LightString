@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <cstdlib>
 #include <stdint.h>
 
@@ -55,6 +56,8 @@ typedef enum {
 	TRANSITION_FADE_DOWN, // Forces all lights to fade while playing
 	TRANSITION_FADE_UP, // Fades in all lights while playing
 	TRANSITION_FREEZE_FADE, // Forces just the section to freeze, then fade down
+
+	TRANSITION_DEFAULT = 0xff // Use the transition from the container
 } EPatternTransition;
 
 typedef enum {
@@ -76,9 +79,9 @@ typedef enum {
 } EPatternMode;
 
 struct PatternCode {
-	uint8_t patternID; // Name of pattern
-	uint8_t copyID; // Which copy of the pattern
-	uint8_t mode; // Which mode is specified
+	uint8_t patternID = 0; // Name of pattern
+	uint8_t copyID = 0; // Which copy of the pattern
+	uint8_t mode = 0; // Which mode is specified
 
 	inline PatternCode(uint8_t patternID = 0, uint8_t copyID = 0, uint8_t mode = 0) :
 		patternID(patternID), copyID(copyID), mode(mode) {}
@@ -112,17 +115,71 @@ public:
 	virtual bool addBuffer(IPixelBuffer *buffer) = 0;
 };
 
-struct LightLayerConfig {
+struct PatternConfig {
 	// Pattern Manager Timing
-	// 0 - lets the pattern choose it's own timing
+	// -1 - Default to container
+	//  0 - Run for ever
 	// If the pattern specifies a time and this is set, the pattern will take precedent
-	uint32_t maxPatternDuration = 0;
+	// patternDuration includes the amount of time spend in transitionDuration
+	int32_t patternDuration = 0;
 
-	// How long a transition takes at the start or end of a pattern
-	uint32_t transitionDuration = kDefaultTransitionDuration;
+	// How long (in ms) the transition will last before running pattern
+	int32_t transitionDuration = kDefaultTransitionDuration;
 
+	// Which transition to run during the transitionDuration
+	EPatternTransition inTransition = TRANSITION_FADE_UP;
+
+	// Which transition to run during the outDuration
+	EPatternTransition outTransition = TRANSITION_FADE_DOWN;
+
+	void *config = nullptr;
+};
+
+struct PatternCue : public PatternConfig {
+public:
+	// Which pattern and code to run
+	PatternCode code;
+
+	// Any extra structure that the user may want to have when the pattern starts
+	void *config = nullptr;
+
+	PatternCue(PatternCode code, int32_t patternDuration, int32_t transitionDuration,
+		EPatternTransition inTransition, EPatternTransition outTransition,  void *config)
+	{
+		this->code = code;
+		this->patternDuration = patternDuration;
+		this->transitionDuration = transitionDuration;
+		this->inTransition = inTransition;
+		this->outTransition = outTransition;
+		this->config = config;
+	}
+};
+
+class PatternSequence {
+private:
+	std::vector<PatternCue> sequence;
+
+public:
+
+	void addPatternCue(PatternCue &patternCue) {
+		sequence.emplace_back(patternCue);
+	}
+
+	void addPatternCue(PatternCode code, int32_t patternDuration = 0,
+		EPatternTransition inTransition = TRANSITION_FADE_UP,
+		EPatternTransition outTransition = TRANSITION_FADE_DOWN,
+		int32_t transitionDuration = kDefaultTransitionDuration, void *config = nullptr) {
+		sequence.emplace_back(PatternCue(code, patternDuration, transitionDuration, 
+			inTransition, outTransition, config));
+	}
+
+	std::vector<PatternCue> &getSequence() { return sequence; }
+	PatternCue &getPatternCue(uint16_t index) { return sequence[index]; }
+};
+
+struct LightLayerConfig : PatternConfig {
 	// Method called when a pattern event happens
-	PatternEvent patternEventHandler = NULL;
+	PatternEvent patternEventHandler = nullptr;
 
 	// What playback mode the layer is in
 	EPlayMode playMode = PLAY_MODE_CONTINUOUS;
