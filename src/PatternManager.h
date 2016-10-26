@@ -37,8 +37,8 @@ public:
 
 	LIGHT_SECTION_CLASS *getLightSection(uint8_t sectionID);
 
-	void setPatternEventHandler(PatternEvent patternEventHandler);
-	void setPatternEventHandler(PatternEvent patternEventHandler, uint8_t layerID, uint8_t sectionID = 0);
+	void setPatternEventHandler(PatternEvent patternEventHandler, void *userData = nullptr);
+	void setPatternEventHandler(PatternEvent patternEventHandler, void *userData, uint8_t layerID, uint8_t sectionID = 0);
 
 	void setPatternDuration(uint32_t patternDuration);
 	void setPatternDuration(uint32_t patternDuration, uint8_t layerID, uint8_t sectionID = 0);

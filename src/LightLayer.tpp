@@ -12,6 +12,12 @@ void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequenc
 }
 
 LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler, void *userData) {
+	this->config.patternEventHandler = patternEventHandler;
+	this->config.patternEventUserData = userData;
+}
+
+LIGHT_LAYER_TEMPLATE
 ILightPattern *LIGHT_LAYER_CLASS::getPattern(PatternCode patternCode) {
 	int copy = 0;
 	for (uint32_t i = 0; i < lightPatterns.size(); i++) {
@@ -78,7 +84,7 @@ void LIGHT_LAYER_CLASS::setPlayState(EPlayState playState) {
 	this->playState = playState;
 
 	if (config.patternEventHandler) {
-		config.patternEventHandler(*activePattern, playState);
+		config.patternEventHandler(*activePattern, playState, config.eventHandlerUserData);
 	}
 }
 
@@ -159,7 +165,9 @@ void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, Patte
 
 	setPlayState(PATTERN_STARTED);
 
-	this->activePattern->setConfig(config);
+	if (config) {
+		this->activePattern->setConfig(*config);
+	}
 	this->activePattern->setMode(mode);
 
 	this->patternStartedAt = millis();

@@ -49,8 +49,9 @@ TEST(LightSection, adjustBrightness) {
 	lightSection.update();
 	EXPECT_RGBf_EQ(leds[0], 0.5, 0, 0);
 
+	lightSection.setFadeDuration(100);
 	lightSection.fadeDown();
-	usleep(500000);
+	usleep(50000);
 
 	lightSection.update();
 	EXPECT_RGBf_EQ(leds[0], 0.25, 0, 0);

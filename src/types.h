@@ -122,7 +122,7 @@ struct IPalette;
 class ILightLayer;
 class ILightPattern;
 
-typedef void (* PatternEvent)(ILightPattern &lightPattern, EPlayState event);
+typedef void (* PatternEvent)(ILightPattern &lightPattern, EPlayState event, void *userData);
 
 class ILightSection {
 public:
@@ -203,6 +203,9 @@ public:
 struct LightLayerConfig : PatternConfig {
 	// Method called when a pattern event happens
 	PatternEvent patternEventHandler = nullptr;
+
+	// Data to be handed back to the patterEventHandler
+	void *eventHandlerUserData = nullptr;
 
 	// What playback mode the layer is in
 	EPlayMode playMode = PLAY_MODE_CONTINUOUS;

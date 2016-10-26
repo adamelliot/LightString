@@ -34,4 +34,6 @@ TEST(LightPattern, cloning) {
 	auto newPattern = cloneablePattern.clone();
 
 	EXPECT_NE(newPattern, nullptr);
+
+	delete newPattern;
 }

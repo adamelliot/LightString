@@ -34,6 +34,9 @@ public:
 	TPixelBuffer<OUTPUT_PIXEL, FORMAT> *outputBuffer = nullptr;
 	std::vector<LightLayer<FORMAT>> layers;
 
+	int32_t getFadeDuration() { return fadeDuration; }
+	void setFadeDuration(int32_t val) { fadeDuration = val; }
+
 	IPixelBuffer *getOutputBuffer() { return outputBuffer; }
 
 	inline uint8_t getTotalLayers() { return layers.size(); }

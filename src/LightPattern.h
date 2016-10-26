@@ -26,7 +26,7 @@ public:
 	ILightLayer* getLayer() { return layer; }
 
 	// Set config is called before setupMode
-	virtual void setConfig(PatternConfig *config) {}
+	virtual void setConfig(const PatternConfig &config) {}
 	virtual void setupMode(uint8_t mode) {}
 	virtual void patternFinished() {}
 	

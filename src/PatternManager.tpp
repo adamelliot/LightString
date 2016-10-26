@@ -17,19 +17,19 @@ void PATTERN_MANAGER_CLASS::unpause() {
 // ------------------------ Pattern Management ------------------------
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler) {
+void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler, void *userData) {
 	this->layerConfig.patternEventHandler = patternEventHandler;
 
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
-			sections[i].layers[j].setPatternEventHandler(patternEventHandler);
+			sections[i].layers[j].setPatternEventHandler(patternEventHandler, userData);
 		}
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler, uint8_t layerID, uint8_t sectionID) {
-	sections[sectionID].layers[layerID].setPatternEventHandler(patternEventHandler);
+void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler, void *userData, uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].setPatternEventHandler(patternEventHandler, userData);
 }
 
 PATTERN_MANAGER_TEMPLATE

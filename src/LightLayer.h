@@ -99,8 +99,7 @@ public:
 	void setPatternDuration(int32_t patternDuration) { this->config.patternDuration = patternDuration; }
 	uint32_t getPatternDuration() { return config.patternDuration; }
 
-	void setPatternEventHandler(PatternEvent patternEventHandler) { this->config.patternEventHandler = patternEventHandler; }
-	PatternEvent getPatternEventHandler() { return config.patternEventHandler; }
+	void setPatternEventHandler(PatternEvent patternEventHandler, void *userData = nullptr);
 
 	void setPlayMode(EPlayMode playMode) { this->config.playMode = playMode; }
 	uint32_t getPlayMode() { return config.playMode; }
