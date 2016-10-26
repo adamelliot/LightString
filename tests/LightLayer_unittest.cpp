@@ -8,21 +8,26 @@
 
 using namespace LightString;
 
-class TestPattern1 : public LightString::TLightPattern<TRGBA, float> {
+static int destroyCount = 0;
+
+class TestPattern1 : public TLightPattern<TRGBA, float> {
 public:
 	TestPattern1() : TLightPattern(3) {}
+	~TestPattern1() { destroyCount++; }
 	uint8_t getPatternID() { return 1; }
 };
 
-class TestPattern2 : public LightString::TLightPattern<TRGBA, float> {
+class TestPattern2 : public TCloneable<TestPattern2, TLightPattern<TRGBA, float>> {
 public:
-	TestPattern2() : TLightPattern(3) {}
+	TestPattern2() : TCloneable(3) {}
+	~TestPattern2() { destroyCount++; }
 	uint8_t getPatternID() { return 2; }
 };
 
-class TestPattern3 : public LightString::TLightPattern<TRGBA, float> {
+class TestPattern3 : public TCloneable<TestPattern3, TLightPattern<TRGBA, float>> {
 public:
-	TestPattern3() : TLightPattern(3) {}
+	TestPattern3() : TCloneable(3) {}
+	~TestPattern3() { destroyCount++; }
 	uint8_t getPatternID() { return 3; }
 
 	EPatternTransition getInTransition() { return TRANSITION_FREEZE_FADE; }
@@ -64,6 +69,7 @@ TEST(LightLayer, initialization) {
 
 	EXPECT_EQ(lightLayer.isActive(), false);
 	EXPECT_EQ(lightLayer.getOpacity(), 1.0f);
+	EXPECT_EQ(lightLayer.getActivePattern(), nullptr);
 }
 
 TEST_F(LightLayerTest, creatingPatternSequence) {
@@ -76,7 +82,7 @@ TEST_F(LightLayerTest, creatingPatternSequence) {
 
 	lightLayer.setPatternSequence(sequence);
 
-	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
 
 	auto seq = sequence.getSequence();
 	EXPECT_EQ(seq.size(), 2);
@@ -166,3 +172,84 @@ TEST_F(LightLayerTest, durationSelectedFromCorrectPlace) {
 	EXPECT_EQ(lightLayer.getSelectedPatternDuration(), 3500);
 	EXPECT_EQ(lightLayer.getSelectedTransitionDuration(), 800);
 }
+
+TEST_F(LightLayerTest, patternsClonedOnChange) {
+	PatternSequence sequence;
+
+	destroyCount = 0;
+
+	sequence.addPatternCue(PatternCode(2, 0, 0), 4000, TRANSITION_OVERWRITE, TRANSITION_FREEZE_FADE, 500);
+	sequence.addPatternCue(PatternCode(1, 0, 0), -1);
+	sequence.addPatternCue(PatternCode(3, 0, 0), 6000, TRANSITION_FADE_DOWN, TRANSITION_FREEZE_FADE, 700);
+
+	lightLayer.setPatternSequence(sequence);
+	lightLayer.setClonePatterns(true);
+
+	lightLayer.play();
+
+	auto pattern = lightLayer.getActivePattern();
+	EXPECT_EQ(pattern->getPatternID(), 2);
+	EXPECT_NE(pattern, &pattern2);
+
+	lightLayer.nextPattern();
+	EXPECT_EQ(destroyCount, 1);
+
+	pattern = lightLayer.getActivePattern();	
+	EXPECT_EQ(pattern->getPatternID(), 1);
+	EXPECT_EQ(pattern, &pattern1);
+
+	lightLayer.nextPattern();
+	EXPECT_EQ(destroyCount, 1);
+
+	pattern = lightLayer.getActivePattern();	
+	EXPECT_EQ(pattern->getPatternID(), 3);
+	EXPECT_NE(pattern, &pattern3);
+
+	lightLayer.nextPattern();
+	EXPECT_EQ(destroyCount, 2);
+
+	pattern = lightLayer.getActivePattern();	
+	EXPECT_EQ(pattern->getPatternID(), 2);
+}
+
+TEST_F(LightLayerTest, sequencedPatternsLoopPastEndProperly) {
+	PatternSequence sequence;
+
+	sequence.addPatternCue(PatternCode(2, 0, 0), 4000, TRANSITION_OVERWRITE, TRANSITION_FREEZE_FADE, 500);
+	sequence.addPatternCue(PatternCode(1, 0, 0), -1);
+	sequence.addPatternCue(PatternCode(3, 0, 0), 6000, TRANSITION_FADE_DOWN, TRANSITION_FREEZE_FADE, 700);
+
+	lightLayer.setPatternSequence(sequence);
+	lightLayer.setClonePatterns(true);
+
+	lightLayer.play();
+	lightLayer.prevPattern();
+
+	auto pattern = lightLayer.getActivePattern();
+	EXPECT_EQ(pattern->getPatternID(), 3);
+
+	lightLayer.nextPattern();
+
+	pattern = lightLayer.getActivePattern();
+	EXPECT_EQ(pattern->getPatternID(), 2);
+}
+
+TEST_F(LightLayerTest, patternsLoopPastEndProperly) {
+	PatternSequence sequence;
+
+	lightLayer.play();
+
+	auto pattern = lightLayer.getActivePattern();
+	EXPECT_EQ(pattern->getPatternID(), 1);
+
+	lightLayer.prevPattern();
+
+	pattern = lightLayer.getActivePattern();
+	EXPECT_EQ(pattern->getPatternID(), 3);
+
+	lightLayer.nextPattern();
+
+	pattern = lightLayer.getActivePattern();
+	EXPECT_EQ(pattern->getPatternID(), 1);
+}
+

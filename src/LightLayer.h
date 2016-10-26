@@ -27,6 +27,7 @@ private:
 	//		- isPatternFinished, getNextPatternCode, getInTransition, getOutTransition
 	PatternSequence *patternSequence = nullptr;
 
+	bool patternCloned = false;
 	// Cloning patterns is used when patterns could run in parallel and should
 	// be controlled by the wrapping section and pattern manager
 	bool clonePatterns = false;
@@ -66,6 +67,8 @@ public:
 
 	inline FORMAT getMaxOpacity();
 	bool isActive() { return playState != PATTERN_STOPPED; }
+
+	void setClonePatterns(bool val) { clonePatterns = val; }
 
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }

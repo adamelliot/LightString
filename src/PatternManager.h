@@ -75,6 +75,9 @@ public:
 
 	void shufflePatterns();
 
+	void setPatternSequence(const PatternSequence &patternSequence);
+	void setPatternSequence(const PatternSequence &patternSequence, uint8_t layerID, uint8_t sectionID = 0);
+
 	void addLightPattern(ILightPattern &pattern, uint8_t layerID = 0);
 	void addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID);
 	void addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID, uint8_t sectionID);

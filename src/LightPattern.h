@@ -17,6 +17,10 @@ protected:
 public:
 	ILightPattern(uint8_t modeCount = 1) : modeCount(modeCount), blendMode(BLEND_COPY) {}
 	virtual ~ILightPattern() {}
+
+	// If the clone method isn't supplied the system will default to using the
+	// existing instance of the class and will report a warning
+	virtual ILightPattern *clone() const { return nullptr; }
 	
 	void setLayer(ILightLayer *layer) { this->layer = layer; }
 	ILightLayer* getLayer() { return layer; }
@@ -79,11 +83,18 @@ public:
 	// Forces the length of the pattern. -1 Means default to container
 	virtual int32_t getPatternDuration() { return -1; }
 
-	// Used to pass data into a running pattern via the pattern manager
-	// TODO: Is there a better way to handle this?
-	virtual void nudge(int32_t data) {}
-
+	// Called once per frame
 	virtual void update(uint32_t ms) {}
+};
+
+template <typename DERIVED, typename BASE>
+class TCloneable : public BASE {
+public:
+	using BASE::BASE;
+
+	virtual BASE *clone() const {
+		return new DERIVED(static_cast<DERIVED const &>(*this));
+	}
 };
 
 template <template <typename> class PIXEL, typename FORMAT = uint8_t>

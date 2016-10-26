@@ -189,6 +189,20 @@ void PATTERN_MANAGER_CLASS::ensureLayerIsSetup(uint8_t sectionID, uint8_t layerI
 }
 
 PATTERN_MANAGER_TEMPLATE
+void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSequence) {
+	for (uint32_t i = 0; i < sections.size(); i++) {
+		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
+			sections[i].layers[j].setPatternSequence(patternSequence);
+		}
+	}
+}
+
+PATTERN_MANAGER_TEMPLATE
+void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSequence, uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].setPatternSequence(patternSequence);
+}
+
+PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::addLightPattern(ILightPattern &pattern, uint8_t layerID) {
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		ensureLayerIsSetup(i, layerID);
@@ -308,6 +322,10 @@ bool PATTERN_MANAGER_CLASS::update() {
 	for (int i = 0; i < sections.size(); i++) {
 		sections[i].update();
 	}
-	
+
+#ifndef USE_FASTLED
+	// Apply brightness to sections
+#endif
+
 	return true;
 }

@@ -21,3 +21,17 @@ TEST(LightPattern, initialization) {
 
 	EXPECT_EQ(pattern.getModeCount(), 1);
 }
+
+
+class CloneablePattern : public TCloneable<CloneablePattern, TLightPattern<TRGB>> {};
+
+TEST(LightPattern, cloning) {
+	TLightPattern<TRGB> pattern;
+	CloneablePattern cloneablePattern;
+
+	EXPECT_EQ(pattern.clone(), nullptr);
+
+	auto newPattern = cloneablePattern.clone();
+
+	EXPECT_NE(newPattern, nullptr);
+}

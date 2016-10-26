@@ -6,7 +6,9 @@ LIGHT_LAYER_CLASS::~LightLayer() {
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequence) {
 	this->patternSequence = new PatternSequence(patternSequence);
-	patternIndex = 0;
+	if (patternIndex >= this->patternSequence->getSequence().size()) {
+		patternIndex = 0;
+	}
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -66,6 +68,9 @@ void LIGHT_LAYER_CLASS::finishPattern() {
 	if (!activePattern->isFilterPattern()) {
 		section->unlockBuffer(activePattern->getPixelBuffer());
 	}
+
+	if (this->activePattern != nullptr && patternCloned) delete this->activePattern;
+	patternCloned = false;
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -120,7 +125,30 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, PatternConfig *config) {
 	this->opacity = getMaxOpacity();
 
-	this->activePattern = pattern;
+	if (clonePatterns) {
+		auto clonedPattern = pattern->clone();
+		if (!clonedPattern) {
+			clonedPattern = pattern;
+#ifdef __DISPLAY_ERROR
+#ifdef ARDUINO
+			Serial.print("Pattern not cloned, running original pattern -- pattern: 0x");
+			Serial.print(pattern->getGatternID(), HEX);
+			Serial.print(" on Layer: ");
+			Serial.println(layerID);
+#else
+			printf("Pattern not cloned, running original pattern -- pattern: 0x%x\t on Layer: %d\n",
+				pattern->getGatternID(), layerID);
+#endif
+#endif
+		} else {
+			patternCloned = true;
+		}
+
+		this->activePattern = clonedPattern;
+	} else {
+		this->activePattern = pattern;
+	}
+
 	this->activePattern->setLayer(this);
 
 	if (this->activePattern->isFilterPattern()) {
@@ -250,16 +278,27 @@ bool LIGHT_LAYER_CLASS::startRandomPattern() {
 
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::nextPattern() {
+	uint32_t size = patternList.size();
+
+	if (patternSequence) {
+		size = patternSequence->getSequence().size();
+	}
+
 	patternIndex++;
-	patternIndex %= patternList.size();
+	patternIndex %= size;
 
 	return startSelectedPattern();
 }
 
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::prevPattern() {
+	uint32_t size = patternList.size();
+
+	if (patternSequence) {
+		size = patternSequence->getSequence().size();
+	}
 	if (patternIndex == 0) {
-		patternIndex = patternList.size() - 1;
+		patternIndex = size - 1;
 	} else {
 		patternIndex--;
 	}
