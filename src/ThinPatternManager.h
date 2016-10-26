@@ -3,13 +3,14 @@
 #include "types.h"
 #include "LightPattern.h"
 #include "LightLayer.h"
+#include "LightSection.h"
 
 using namespace LightString;
 
 namespace LightString {
 
 template <template <typename> class PIXEL = TRGB, typename FORMAT = uint8_t>
-class ThinPatternManager : public LightLayer<FORMAT>, public ILightSection {
+class ThinPatternManager : public LightLayer<FORMAT>, public LightSection<PIXEL, FORMAT, PIXEL> {
 private:
 
 	TPixelBuffer<PIXEL, FORMAT> *outputBuffer = NULL;

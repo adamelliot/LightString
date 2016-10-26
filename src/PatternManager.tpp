@@ -2,27 +2,15 @@
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::pause(bool blackout, bool fade) {
-	if (blackout) {
-		if (fade) {
-			fadeDown();
-		} else {
-			setBrightness(0);
-		}
-	}
-
 	for (uint32_t i = 0; i < sections.size(); i++) {
-		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
-			sections[i].layers[j].pause();
-		}
+		sections[i].pause(blackout, fade);
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::unpause() {
 	for (uint32_t i = 0; i < sections.size(); i++) {
-		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
-			sections[i].layers[j].unpause();
-		}
+		sections[i].unpause();
 	}
 }
 
@@ -251,58 +239,6 @@ bool PATTERN_MANAGER_CLASS::addBufferToLightSection(uint8_t sectionID, TPixelBuf
 	return lightSection->addBuffer(&buffer);
 }
 
-// -------------------- Brightness Control -------------------
-
-PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::fadeDown() {
-	targetBrightness = 0;
-	brightnessStep = -adjustedBrightness / kTransitionFrames;
-}
-
-PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::fadeUp(bool forceZero) {
-	if (forceZero) {
-		adjustedBrightness = 0;
-#ifdef USE_FASTLED
-		FastLED.setBrightness(adjustedBrightness);
-#endif
-	}
-
-	targetBrightness = brightness;
-	brightnessStep = (brightness - adjustedBrightness) / kTransitionFrames;
-}
-
-PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::setBrightness(uint8_t brightness) {
-	this->brightness = brightness;
-	this->adjustedBrightness = brightness;
-	this->targetBrightness = brightness;
-
-#ifdef USE_FASTLED
-	FastLED.setBrightness(brightness);
-#endif
-}
-
-PATTERN_MANAGER_TEMPLATE
-bool PATTERN_MANAGER_CLASS::isTransitioning() {
-	return adjustedBrightness != targetBrightness;
-}
-
-PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::transitionBrightness() {
-	if (!this->isTransitioning()) return;
-
-	adjustedBrightness += brightnessStep;
-
-	if (abs(targetBrightness - adjustedBrightness) < abs(brightnessStep)) {
-		adjustedBrightness = targetBrightness;
-	}
-
-#ifdef USE_FASTLED
-	FastLED.setBrightness(adjustedBrightness);
-#endif
-}
-
 // -------------------- Primary Manager Loop -------------------
 
 PATTERN_MANAGER_TEMPLATE
@@ -317,15 +253,9 @@ bool PATTERN_MANAGER_CLASS::update() {
 	}
 	lastTime = time;
 
-	this->transitionBrightness();
-
 	for (int i = 0; i < sections.size(); i++) {
 		sections[i].update();
 	}
-
-#ifndef USE_FASTLED
-	// Apply brightness to sections
-#endif
 
 	return true;
 }

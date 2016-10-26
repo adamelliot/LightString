@@ -78,6 +78,29 @@ typedef enum {
 
 } EPatternMode;
 
+template <typename FORMAT>
+struct TColorFormatHelper {
+	static FORMAT getMaxValue();
+	static FORMAT scale(FORMAT a, FORMAT b);
+};
+
+template <>
+inline uint8_t TColorFormatHelper<uint8_t>::getMaxValue() { return 0xff; }
+
+template <>
+inline float TColorFormatHelper<float>::getMaxValue() { return 1.0f; }
+
+template <>
+inline uint8_t TColorFormatHelper<uint8_t>::scale(uint8_t a, uint8_t b) {
+	return ((uint16_t)a * (uint16_t)(b + 1)) >> 8;
+}
+
+template <>
+inline float TColorFormatHelper<float>::scale(float a, float b) {
+	return a * b;
+}
+
+
 struct PatternCode {
 	uint8_t patternID = 0; // Name of pattern
 	uint8_t copyID = 0; // Which copy of the pattern

@@ -440,7 +440,7 @@ inline int32_t LIGHT_LAYER_CLASS::getSelectedPatternDuration() {
 				return cue.patternDuration;
 			}
 		} else {
-			return config.outTransition;
+			return config.patternDuration;
 		}
 	}
 
@@ -506,6 +506,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 	case TRANSITION_OVERWRITE:
 	default:
 		timeElapsed = transitionDuration;
+		activePattern->update(timeDelta);
 		break;
 	}
 

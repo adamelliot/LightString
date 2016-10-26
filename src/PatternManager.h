@@ -85,12 +85,6 @@ public:
 	uint8_t addLightSection(TPixelBuffer<OUTPUT_PIXEL, FORMAT> &pixelBuffer);
 	bool addBufferToLightSection(uint8_t sectionID, TPixelBuffer<PIXEL, FORMAT> &buffer);
 
-	void fadeDown();
-	void fadeUp(bool forceZero = true);
-	void setBrightness(uint8_t brightness);
-	bool isTransitioning();
-	void transitionBrightness();
-
 	bool update();
 };
 

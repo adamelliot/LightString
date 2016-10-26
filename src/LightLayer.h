@@ -82,7 +82,9 @@ public:
 
 	uint8_t getPatternIndex() const { return patternIndex; }
 
+	inline void setOpacity(FORMAT val) { opacity = val; }
 	inline FORMAT getOpacity() { return opacity; }
+
 	void setPalette(IPalette *palette) { if (activePattern) activePattern->setPalette(palette); }
 
 	void setPatternSequence(const PatternSequence &patternSequence);

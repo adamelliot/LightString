@@ -118,6 +118,17 @@ TEST(TPixelBuffer, fade) {
 	}
 }
 
+TEST(TPixelBufferF, fade) {
+	TPixelBuffer<TRGB, float> buffer(4);
+
+	buffer.fillColor(RGBf(1, 0.8, 0.60));
+	buffer.fade(0.5);
+
+	for (int i = 0; i < 4; i++) {
+		EXPECT_RGBf_EQ(buffer[i], 0.5, 0.4, 0.3);
+	}
+}
+
 // ------------------ Mapping Buffers ---------------------
 
 TEST(TMappingPixelBuffer2d, creationExternalMemory) {

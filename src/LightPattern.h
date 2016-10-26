@@ -115,6 +115,19 @@ public:
 	size_t getSize() { return sizeof(*this); }
 };
 
+// Outputs a solid color for the pixel buffer
+template <template <typename> class PIXEL, typename FORMAT = uint8_t>
+class TSolidColorPattern : public TLightPattern<PIXEL, FORMAT> {
+private:
+	PIXEL<FORMAT> color;
+
+public:
+	TSolidColorPattern(PIXEL<FORMAT> color) : TLightPattern<PIXEL, FORMAT>(1), color(color) {}
+
+	uint8_t getPatternID() { return 0xfe; }
+	void update(uint32_t) { this->pixelBuffer->fillColor(color); }
+};
+
 // Filter patterns don't get their own private buffer, but operate on the
 // output buffer.
 class FilterLightPattern : public TLightPattern<TRGB, uint8_t> {
