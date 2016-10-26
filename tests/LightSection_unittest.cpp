@@ -49,10 +49,24 @@ TEST(LightSection, adjustBrightness) {
 	lightSection.update();
 	EXPECT_RGBf_EQ(leds[0], 0.5, 0, 0);
 
-	lightSection.setFadeDuration(100);
+	lightSection.setFadeDuration(200);
 	lightSection.fadeDown();
-	usleep(50000);
+	usleep(100000);
 
 	lightSection.update();
 	EXPECT_RGBf_EQ(leds[0], 0.25, 0, 0);
+}
+
+TEST(LightSection, backBuffersAreProvided) {
+	LightSection<TRGBA, float, TRGB> lightSection;
+
+	TPixelBuffer<TRGBA, float> buffer = TPixelBuffer<TRGBA, float>(5);
+	TPixelBuffer<TRGB, float> leds = TPixelBuffer<TRGB, float>(5);
+
+	lightSection.outputBuffer = &leds;
+	lightSection.addBuffer(&buffer);
+
+	auto ret = lightSection.lockBuffer();
+
+	EXPECT_EQ(ret, &buffer);
 }

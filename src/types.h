@@ -205,7 +205,7 @@ struct LightLayerConfig : PatternConfig {
 	PatternEvent patternEventHandler = nullptr;
 
 	// Data to be handed back to the patterEventHandler
-	void *eventHandlerUserData = nullptr;
+	void *patternEventUserData = nullptr;
 
 	// What playback mode the layer is in
 	EPlayMode playMode = PLAY_MODE_CONTINUOUS;

@@ -84,7 +84,7 @@ void LIGHT_LAYER_CLASS::setPlayState(EPlayState playState) {
 	this->playState = playState;
 
 	if (config.patternEventHandler) {
-		config.patternEventHandler(*activePattern, playState, config.eventHandlerUserData);
+		config.patternEventHandler(*activePattern, playState, config.patternEventUserData);
 	}
 }
 
