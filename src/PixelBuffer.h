@@ -41,7 +41,7 @@ public:
 	}
 
 	inline bool resize(uint16_t length) {
-		if (!shouldDelete && length > 0) {
+		if (!shouldDelete && this->length > 0) {
 #ifdef ARDUINO
 			Serial.println("ERROR: Cannot resize buffer that is not owned by pixel buffer.");
 #else
