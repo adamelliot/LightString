@@ -25,12 +25,16 @@ public:
 	void setLayer(ILightLayer *layer) { this->layer = layer; }
 	ILightLayer* getLayer() { return layer; }
 
-	// Set config is called before setupMode
-	virtual void setConfig(const PatternConfig &config) {}
+	/**
+	 * Only overload one of the setupMode functions. If you are using sequences and
+	 * are expecting config objects use the 2 parameter call. The 2 parameter call
+	 * takes precedence over the 1 parameter call.
+	 */
+	virtual void setupMode(uint8_t mode, PatternConfig *config) { setupMode(mode); }
 	virtual void setupMode(uint8_t mode) {}
 	virtual void patternFinished() {}
 	
-	void setMode(uint8_t mode) { this->mode = mode; setupMode(mode); }
+	void setMode(uint8_t mode, PatternConfig *config = nullptr) { this->mode = mode; setupMode(mode, config); }
 	uint8_t getMode() { return mode; }
 	uint8_t getModeCount() { return modeCount; }
 

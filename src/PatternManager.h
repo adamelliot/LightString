@@ -49,6 +49,9 @@ public:
 	void setPlayMode(EPlayMode playMode);
 	void setPlayMode(EPlayMode playMode, uint8_t layerID, uint8_t sectionID = 0);
 
+	void setBrightness(FORMAT brightness);
+	void setBrightness(FORMAT brightness, uint8_t sectionID);
+
 	void setMaxFPS(uint16_t targetFPS) { 
 		msPerFrame = (targetFPS == 0) ? 0 : 1000 / targetFPS; 
 	}

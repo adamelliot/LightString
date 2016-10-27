@@ -65,6 +65,18 @@ void PATTERN_MANAGER_CLASS::setTransitionDuration(uint32_t transitionDuration, u
 }
 
 PATTERN_MANAGER_TEMPLATE
+void PATTERN_MANAGER_CLASS::setBrightness(FORMAT val) {
+	for (uint32_t i = 0; i < sections.size(); i++) {
+		sections[i].setBrightness(val);
+	}
+}
+
+PATTERN_MANAGER_TEMPLATE
+void PATTERN_MANAGER_CLASS::setBrightness(FORMAT val, uint8_t sectionID) {
+	sections[sectionID].setBrightness(val);
+}
+
+PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPlayMode(EPlayMode playMode) {
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {

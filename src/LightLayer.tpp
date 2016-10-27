@@ -165,10 +165,7 @@ void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, Patte
 
 	setPlayState(PATTERN_STARTED);
 
-	if (config) {
-		this->activePattern->setConfig(*config);
-	}
-	this->activePattern->setMode(mode);
+	this->activePattern->setMode(mode, config);
 
 	this->patternStartedAt = millis();
 	this->transitionState = TRANSITION_STARTING;
