@@ -147,7 +147,8 @@ struct PatternConfig {
 	int32_t patternDuration = 0;
 
 	// How long (in ms) the transition will last before running pattern
-	int32_t transitionDuration = kDefaultTransitionDuration;
+	int32_t inTransitionDuration = kDefaultTransitionDuration;
+	int32_t outTransitionDuration = kDefaultTransitionDuration;
 
 	// Which transition to run during the transitionDuration
 	EPatternTransition inTransition = TRANSITION_FADE_UP;
@@ -155,6 +156,7 @@ struct PatternConfig {
 	// Which transition to run during the outDuration
 	EPatternTransition outTransition = TRANSITION_FADE_DOWN;
 
+	// Any extra structure that the user may want to have when the pattern starts
 	void *config = nullptr;
 };
 
@@ -163,15 +165,13 @@ public:
 	// Which pattern and code to run
 	PatternCode code;
 
-	// Any extra structure that the user may want to have when the pattern starts
-	void *config = nullptr;
-
-	PatternCue(PatternCode code, int32_t patternDuration, int32_t transitionDuration,
-		EPatternTransition inTransition, EPatternTransition outTransition,  void *config)
+	PatternCue(PatternCode code, int32_t patternDuration, int32_t inTransitionDuration, int32_t outTransitionDuration,
+		EPatternTransition inTransition, EPatternTransition outTransition, void *config = nullptr)
 	{
 		this->code = code;
 		this->patternDuration = patternDuration;
-		this->transitionDuration = transitionDuration;
+		this->inTransitionDuration = inTransitionDuration;
+		this->outTransitionDuration = outTransitionDuration;
 		this->inTransition = inTransition;
 		this->outTransition = outTransition;
 		this->config = config;
@@ -184,7 +184,7 @@ private:
 
 public:
 
-	void addPatternCue(PatternCue &patternCue) {
+	void addPatternCue(const PatternCue &patternCue) {
 		sequence.emplace_back(patternCue);
 	}
 
@@ -193,7 +193,7 @@ public:
 		EPatternTransition outTransition = TRANSITION_FADE_DOWN,
 		int32_t transitionDuration = kDefaultTransitionDuration, void *config = nullptr) {
 		sequence.emplace_back(PatternCue(code, patternDuration, transitionDuration, 
-			inTransition, outTransition, config));
+			transitionDuration, inTransition, outTransition, config));
 	}
 
 	std::vector<PatternCue> &getSequence() { return sequence; }
@@ -217,7 +217,7 @@ public:
 	virtual void setLayerID(uint8_t layerID) = 0;
 	virtual uint8_t getLayerID() = 0;
 
-	virtual void setConfig(LightLayerConfig &config) = 0;
+	virtual void setConfig(const LightLayerConfig &config) = 0;
 	virtual LightLayerConfig &getConfig() = 0;
 
 	virtual void setPalette(IPalette *) {}

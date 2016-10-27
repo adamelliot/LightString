@@ -55,7 +55,7 @@ private:
 
 	void setPlayState(EPlayState playState);
 
-	inline FORMAT getElapsedTimeRatio();
+	inline FORMAT getElapsedTimeRatio(int32_t transitionDuration);
 
 	void startPattern(ILightPattern *pattern, uint8_t mode, PatternConfig *config = nullptr);
 	bool startSelectedPattern();
@@ -73,7 +73,7 @@ public:
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }
 
-	void setConfig(LightLayerConfig &config) { this->config = config; }
+	void setConfig(const LightLayerConfig &config) { this->config = config; }
 	LightLayerConfig &getConfig() { return config; }
 
 	void setLightSection(ILightSection *section) { this->section = section; }
@@ -88,13 +88,18 @@ public:
 	void setPalette(IPalette *palette) { if (activePattern) activePattern->setPalette(palette); }
 
 	void setPatternSequence(const PatternSequence &patternSequence);
+	void clearPatternSequence();
 
 	EPatternTransition getSelectedInTransition();
 	EPatternTransition getSelectedOutTransition();
+	int32_t getSelectedInTransitionDuration();
+	int32_t getSelectedOutTransitionDuration();
 	int32_t getSelectedPatternDuration();
-	int32_t getSelectedTransitionDuration();
 
-	void setTransitionDuration(int32_t transitionDuration) { this->config.transitionDuration = transitionDuration; }
+	void setTransitionDuration(int32_t transitionDuration) {
+		this->config.inTransitionDuration = transitionDuration;
+		this->config.outTransitionDuration = transitionDuration;
+	}
 
 	void setPatternDuration(int32_t patternDuration) { this->config.patternDuration = patternDuration; }
 	uint32_t getPatternDuration() { return config.patternDuration; }

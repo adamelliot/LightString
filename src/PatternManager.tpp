@@ -17,8 +17,25 @@ void PATTERN_MANAGER_CLASS::unpause() {
 // ------------------------ Pattern Management ------------------------
 
 PATTERN_MANAGER_TEMPLATE
+void PATTERN_MANAGER_CLASS::setLayerConfig(const LightLayerConfig &config) {
+	this->layerConfig = config;
+
+	for (uint32_t i = 0; i < sections.size(); i++) {
+		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
+			sections[i].layers[j].setConfig(config);
+		}
+	}
+}
+
+PATTERN_MANAGER_TEMPLATE
+void PATTERN_MANAGER_CLASS::setLayerConfig(const LightLayerConfig &config, uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].setConfig(config);
+}
+
+PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler, void *userData) {
 	this->layerConfig.patternEventHandler = patternEventHandler;
+	this->layerConfig.patternEventUserData = userData;
 
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
@@ -50,11 +67,13 @@ void PATTERN_MANAGER_CLASS::setPatternDuration(uint32_t patternDuration, uint8_t
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setTransitionDuration(uint32_t transitionDuration) {
-	this->layerConfig.transitionDuration = transitionDuration;
+	this->layerConfig.inTransitionDuration = transitionDuration;
+	this->layerConfig.outTransitionDuration = transitionDuration;
 
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
-			sections[i].layers[j].getConfig().transitionDuration = transitionDuration;
+			sections[i].layers[j].getConfig().inTransitionDuration = transitionDuration;
+			sections[i].layers[j].getConfig().outTransitionDuration = transitionDuration;
 		}
 	}
 }
@@ -96,8 +115,10 @@ bool PATTERN_MANAGER_CLASS::startPattern(PatternCode patternCode, uint8_t layerI
 }
 
 PATTERN_MANAGER_TEMPLATE
-bool PATTERN_MANAGER_CLASS::startPattern(uint8_t patternID, uint8_t layerID) {
-	return startPattern(PatternCode(patternID), 0, 0);
+void PATTERN_MANAGER_CLASS::startPattern(uint8_t patternID, uint8_t layerID) {
+	for (uint32_t i = 0; i < sections.size(); i++) {
+		startPattern(PatternCode(patternID), layerID, i);
+	}
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -200,6 +221,20 @@ void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSeq
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSequence, uint8_t layerID, uint8_t sectionID) {
 	sections[sectionID].layers[layerID].setPatternSequence(patternSequence);
+}
+
+PATTERN_MANAGER_TEMPLATE
+void PATTERN_MANAGER_CLASS::clearPatternSequence() {
+	for (uint32_t i = 0; i < sections.size(); i++) {
+		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
+			sections[i].layers[j].clearPatternSequence();
+		}
+	}
+}
+
+PATTERN_MANAGER_TEMPLATE
+void PATTERN_MANAGER_CLASS::clearPatternSequence(uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].clearPatternSequence();
 }
 
 PATTERN_MANAGER_TEMPLATE

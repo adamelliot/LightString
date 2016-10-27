@@ -162,15 +162,18 @@ TEST_F(LightLayerTest, durationSelectedFromCorrectPlace) {
 	lightLayer.play();
 
 	EXPECT_EQ(lightLayer.getSelectedPatternDuration(), 4000);
-	EXPECT_EQ(lightLayer.getSelectedTransitionDuration(), 500);
+	EXPECT_EQ(lightLayer.getSelectedInTransitionDuration(), 500);
+	EXPECT_EQ(lightLayer.getSelectedOutTransitionDuration(), 500);
 
 	lightLayer.nextPattern();
 	EXPECT_EQ(lightLayer.getSelectedPatternDuration(), 10000);
-	EXPECT_EQ(lightLayer.getSelectedTransitionDuration(), 1000);
+	EXPECT_EQ(lightLayer.getSelectedInTransitionDuration(), 1000);
+	EXPECT_EQ(lightLayer.getSelectedOutTransitionDuration(), 1000);
 
 	lightLayer.nextPattern();
 	EXPECT_EQ(lightLayer.getSelectedPatternDuration(), 3500);
-	EXPECT_EQ(lightLayer.getSelectedTransitionDuration(), 800);
+	EXPECT_EQ(lightLayer.getSelectedInTransitionDuration(), 800);
+	EXPECT_EQ(lightLayer.getSelectedOutTransitionDuration(), 800);
 }
 
 TEST_F(LightLayerTest, patternsClonedOnChange) {

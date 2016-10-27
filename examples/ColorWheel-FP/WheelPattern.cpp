@@ -1,6 +1,6 @@
 #include "WheelPattern.h"
 
-void WheelPattern::setupMode(uint8_t mode) {
+void WheelPattern::setupMode(uint8_t mode, LightString::PatternConfig *config) {
 	counter = 0;
 }
 

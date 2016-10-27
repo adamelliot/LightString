@@ -24,7 +24,7 @@ public:
 	uint8_t getPatternID() { return WHEEL_PATTERN; }
 
 	// Called when this pattern is activated
-	void setupMode(uint8_t mode);
+	void setupMode(uint8_t mode, LightString::PatternConfig *config);
 
 	// Called every frame of the pattern
 	void update(uint32_t ms);

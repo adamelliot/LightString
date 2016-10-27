@@ -19,12 +19,12 @@ public:
 	Band(PIXEL color = CRGB::Pink)
 		: TLightProgram<PIXEL>(1), color(color) {}
 
-	void setupMode(uint8_t mode);
+	void setupMode(uint8_t mode, LightString::PatternConfig *config);
 	void update(uint32_t ms);
 };
 
 template <typename PIXEL>
-void Band<PIXEL>::setupMode(uint8_t mode) {
+void Band<PIXEL>::setupMode(uint8_t mode, LightString::PatternConfig *config) {
 	switch (mode) {
 		case 0:
 		break;

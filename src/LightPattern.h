@@ -76,6 +76,8 @@ public:
 
 	// Forces the length of the pattern transition. -1 Means default to container
 	virtual int32_t getTransitionDuration() { return -1; }
+	virtual int32_t getInTransitionDuration() { return getTransitionDuration(); }
+	virtual int32_t getOutTransitionDuration() { return getTransitionDuration(); }
 
 	// If false the pattern can only be activated by getNextPatternCode()
 	virtual bool hideFromPatternList() { return false; }

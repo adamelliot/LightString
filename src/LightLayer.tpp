@@ -12,6 +12,12 @@ void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequenc
 }
 
 LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::clearPatternSequence() {
+	delete this->patternSequence;
+	this->patternSequence = nullptr;
+}
+
+LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler, void *userData) {
 	this->config.patternEventHandler = patternEventHandler;
 	this->config.patternEventUserData = userData;
@@ -372,22 +378,22 @@ void LIGHT_LAYER_CLASS::addLightPattern(ILightPattern &pattern) {
 }
 
 template <>
-inline float LightLayer<float>::getElapsedTimeRatio() {
-	if (config.transitionDuration <= 0.0f) return 1.0f;
+inline float LightLayer<float>::getElapsedTimeRatio(int32_t transitionDuration) {
+	if (transitionDuration <= 0) return 1.0f;
 
 	uint32_t timeElapsed = millis() - transitionStartedAt;
-	float ratio = (float)timeElapsed / (float)config.transitionDuration;
+	float ratio = (float)timeElapsed / (float)transitionDuration;
 	if (ratio > 1.0f) ratio = 1.0f;
 
 	return ratio;
 }
 
 template <>
-inline uint8_t LightLayer<uint8_t>::getElapsedTimeRatio() {
-	if (config.transitionDuration == 0) return 255;
+inline uint8_t LightLayer<uint8_t>::getElapsedTimeRatio(int32_t transitionDuration) {
+	if (transitionDuration <= 0) return 255;
 
 	uint32_t timeElapsed = millis() - transitionStartedAt;
-	uint32_t ratio = timeElapsed * 256 / config.transitionDuration;
+	uint32_t ratio = timeElapsed * 256 / transitionDuration;
 	if (ratio > 255) ratio = 255;
 	return (uint8_t)ratio;
 }
@@ -436,10 +442,10 @@ inline EPatternTransition LIGHT_LAYER_CLASS::getSelectedOutTransition() {
 
 LIGHT_LAYER_TEMPLATE
 inline int32_t LIGHT_LAYER_CLASS::getSelectedPatternDuration() {
-	if (activePattern->getPatternDuration() == -1) {
+	if (activePattern->getPatternDuration() < 0) {
 		if (patternSequence) {
 			auto cue = patternSequence->getPatternCue(patternIndex);
-			if (cue.patternDuration == -1) {
+			if (cue.patternDuration < 0) {
 				return config.patternDuration;
 			} else {
 				return cue.patternDuration;
@@ -453,22 +459,41 @@ inline int32_t LIGHT_LAYER_CLASS::getSelectedPatternDuration() {
 }
 
 LIGHT_LAYER_TEMPLATE
-inline int32_t LIGHT_LAYER_CLASS::getSelectedTransitionDuration() {
-	if (activePattern->getTransitionDuration() == -1) {
+inline int32_t LIGHT_LAYER_CLASS::getSelectedInTransitionDuration() {
+	if (activePattern->getInTransitionDuration() < 0) {
 		if (patternSequence) {
 			auto cue = patternSequence->getPatternCue(patternIndex);
 
-			if (cue.transitionDuration == -1) {
-				return config.transitionDuration;
+			if (cue.inTransitionDuration < 0) {
+				return config.inTransitionDuration;
 			} else {
-				return cue.transitionDuration;
+				return cue.inTransitionDuration;
 			}
 		} else {
-			return config.transitionDuration;
+			return config.inTransitionDuration;
 		}
 	}
 
-	return activePattern->getTransitionDuration();
+	return activePattern->getInTransitionDuration();
+}
+
+LIGHT_LAYER_TEMPLATE
+inline int32_t LIGHT_LAYER_CLASS::getSelectedOutTransitionDuration() {
+	if (activePattern->getOutTransitionDuration() < 0) {
+		if (patternSequence) {
+			auto cue = patternSequence->getPatternCue(patternIndex);
+
+			if (cue.outTransitionDuration < 0) {
+				return config.outTransitionDuration;
+			} else {
+				return cue.outTransitionDuration;
+			}
+		} else {
+			return config.outTransitionDuration;
+		}
+	}
+
+	return activePattern->getOutTransitionDuration();
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -480,15 +505,15 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 		currentTransition = runningBeginTransition ? getSelectedInTransition() : getSelectedOutTransition();
 	}
 
-	int32_t transitionDuration = getSelectedTransitionDuration();
+	int32_t transitionDuration = runningBeginTransition ? getSelectedInTransitionDuration() : getSelectedOutTransitionDuration();
 
 	uint32_t timeElapsed = millis() - transitionStartedAt;
-	FORMAT ratio = getElapsedTimeRatio();
+	FORMAT ratio = getElapsedTimeRatio(transitionDuration);
 	bool clear = false;
 
 	switch (currentTransition) {
 	case TRANSITION_WIPE:
-		timeElapsed = transitionDuration;
+		activePattern->update(timeDelta);
 		clear = true;
 		break;
 
@@ -510,7 +535,6 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 
 	case TRANSITION_OVERWRITE:
 	default:
-		timeElapsed = transitionDuration;
 		activePattern->update(timeDelta);
 		break;
 	}

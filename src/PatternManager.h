@@ -37,6 +37,9 @@ public:
 
 	LIGHT_SECTION_CLASS *getLightSection(uint8_t sectionID);
 
+	void setLayerConfig(const LightLayerConfig &config);
+	void setLayerConfig(const LightLayerConfig &config, uint8_t layerID, uint8_t sectionID = 0);
+
 	void setPatternEventHandler(PatternEvent patternEventHandler, void *userData = nullptr);
 	void setPatternEventHandler(PatternEvent patternEventHandler, void *userData, uint8_t layerID, uint8_t sectionID = 0);
 
@@ -55,12 +58,13 @@ public:
 	void setMaxFPS(uint16_t targetFPS) { 
 		msPerFrame = (targetFPS == 0) ? 0 : 1000 / targetFPS; 
 	}
-	
+
 	void pause(bool blackout = true, bool fade = true);
 	void unpause();
 
+	// TODO: Make start pattern interface more consistent
 	bool startPattern(PatternCode patternCode, uint8_t layerID, uint8_t sectionID = 0);
-	bool startPattern(uint8_t patternID, uint8_t layerID = 0);
+	void startPattern(uint8_t patternID, uint8_t layerID = 0);
 
 	// Only starts on active layers
 	void startRandomPattern();
@@ -80,6 +84,9 @@ public:
 
 	void setPatternSequence(const PatternSequence &patternSequence);
 	void setPatternSequence(const PatternSequence &patternSequence, uint8_t layerID, uint8_t sectionID = 0);
+
+	void clearPatternSequence();
+	void clearPatternSequence(uint8_t layerID, uint8_t sectionID = 0);
 
 	void addLightPattern(ILightPattern &pattern, uint8_t layerID = 0);
 	void addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID);
