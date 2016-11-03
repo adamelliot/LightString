@@ -151,7 +151,7 @@ void LIGHT_SECTION_CLASS::updateFadeLevel() {
 	uint32_t t = millis() - fadeStart;
 	FORMAT ratio;
 
-	if (t >= fadeEnd) {
+	if (t >= fadeDuration) {
 		ratio = TColorFormatHelper<FORMAT>::getMaxValue();
 	} else {
 		ratio = (t * TColorFormatHelper<FORMAT>::getMaxValue()) / fadeDuration;

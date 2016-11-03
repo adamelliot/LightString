@@ -28,9 +28,6 @@ private:
 	PatternSequence *patternSequence = nullptr;
 
 	bool patternCloned = false;
-	// Cloning patterns is used when patterns could run in parallel and should
-	// be controlled by the wrapping section and pattern manager
-	bool clonePatterns = false;
 
 	uint8_t patternIndex = 0; // Index in the pattern order or the sequence
 
@@ -45,6 +42,7 @@ private:
 	bool loadEnqueued = false;
 
 	FORMAT opacity = getMaxOpacity();
+	FORMAT transitionOpacity = getMaxOpacity();
 
 	ILightPattern *activePattern = nullptr;
 
@@ -72,7 +70,7 @@ public:
 	EPlayState getPlayState() { return playState; }
 	bool isActive() { return playState != PATTERN_STOPPED; }
 
-	void setClonePatterns(bool val) { clonePatterns = val; }
+	void setClonePatterns(bool val) { config.clonePatterns = val; }
 
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }
@@ -90,6 +88,7 @@ public:
 
 	inline void setOpacity(FORMAT val) { opacity = val; }
 	inline FORMAT getOpacity() { return opacity; }
+	inline FORMAT getTransitionOpacity() { return opacity; }
 
 	void setPalette(IPalette *palette) { if (activePattern) activePattern->setPalette(palette); }
 

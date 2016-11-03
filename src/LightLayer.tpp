@@ -171,9 +171,9 @@ void LIGHT_LAYER_CLASS::unpause() {
 
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, PatternConfig *config) {
-	this->opacity = getMaxOpacity();
+	this->transitionOpacity = getMaxOpacity();
 
-	if (clonePatterns) {
+	if (this->config.clonePatterns) {
 		auto clonedPattern = pattern->clone();
 		if (!clonedPattern) {
 			clonedPattern = pattern;
@@ -563,19 +563,19 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 		break;
 
 	case TRANSITION_FREEZE_FADE:
-		opacity = getMaxOpacity() - ratio;
+		transitionOpacity = getMaxOpacity() - ratio;
 		clear = true;
 		break;
 
 	case TRANSITION_FADE_DOWN:
 		activePattern->update(timeDelta);
-		opacity = getMaxOpacity() - ratio;
+		transitionOpacity = getMaxOpacity() - ratio;
 		clear = true;
 		break;
 
 	case TRANSITION_FADE_UP:
 		activePattern->update(timeDelta);
-		opacity = ratio;
+		transitionOpacity = ratio;
 		break;
 
 	case TRANSITION_OVERWRITE:

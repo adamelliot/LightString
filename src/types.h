@@ -213,6 +213,10 @@ struct LightLayerConfig : PatternConfig {
 
 	// What playback mode the layer is in
 	EPlayMode playMode = PLAY_MODE_CONTINUOUS;
+
+	// Cloning patterns is used when patterns could run in parallel and should
+	// be controlled by the wrapping section and pattern manager
+	bool clonePatterns = false;
 };
 
 class ILightLayer {
