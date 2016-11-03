@@ -4,10 +4,46 @@ LIGHT_LAYER_CLASS::~LightLayer() {
 }
 
 LIGHT_LAYER_TEMPLATE
+PatternCode LIGHT_LAYER_CLASS::getPatternCodeFromIndex(uint8_t index) {
+	if (patternSequence) {
+		return patternSequence->getSequence()[index].code;
+	} else {
+		return patternList[index];
+	}
+}
+
+LIGHT_LAYER_TEMPLATE
+int LIGHT_LAYER_CLASS::getPlaybackCount() const {
+	if (patternSequence) {
+		return patternSequence->getSequence().size();
+	} else {
+		return patternList.size();
+	}
+}
+
+LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequence) {
+	auto currentCode = PatternCode(0xff, 0xff, 0xff);
+	PatternCode newCode;
+	bool currentPatternChanged = false;
+
+	if (this->patternSequence && patternIndex < this->patternSequence->getSequence().size()) {
+		currentCode = this->patternSequence->getPatternCue(patternIndex).code;
+	}
+
 	this->patternSequence = new PatternSequence(patternSequence);
 	if (patternIndex >= this->patternSequence->getSequence().size()) {
 		patternIndex = 0;
+		currentPatternChanged = true;
+	} else {
+		newCode = this->patternSequence->getPatternCue(patternIndex).code;
+		if (newCode != currentCode) {
+			currentPatternChanged = true;
+		}
+	}
+
+	if (currentPatternChanged && isActive()) {
+		startSelectedPattern();
 	}
 }
 
@@ -149,7 +185,7 @@ void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, Patte
 			Serial.println(layerID);
 #else
 			printf("Pattern not cloned, running original pattern -- pattern: 0x%x\t on Layer: %d\n",
-				pattern->getGatternID(), layerID);
+			       pattern->getGatternID(), layerID);
 #endif
 #endif
 		} else {
@@ -213,6 +249,15 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 
 	startPattern(pattern, code.mode, config);
 	return true;
+}
+
+LIGHT_LAYER_TEMPLATE
+bool LIGHT_LAYER_CLASS::enqueuePattern(PatternCode patternCode, bool waitToFinish) {
+	enqueuedPattern = patternCode;
+	loadEnqueued = true;
+	if (!waitToFinish) {
+		patternStartedAt = millis() - getSelectedPatternDuration();
+	}
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -548,26 +593,31 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 
 	if (transitionState == TRANSITION_DONE) {
 		if (!runningBeginTransition) {
-			switch (config.playMode) {
-			case PLAY_MODE_CONTINUOUS:
-			{
-				PatternCode code = activePattern->getNextPatternCode();
-				if (code == PatternCode(0xff, 0xff, 0xff)) {
-					nextPattern();
-				} else {
-					startPattern(code);
+			if (loadEnqueued) {
+				loadEnqueued = false;
+				startPattern(enqueuedPattern);
+			} else {
+				switch (config.playMode) {
+				case PLAY_MODE_CONTINUOUS:
+				{
+					PatternCode code = activePattern->getNextPatternCode();
+					if (code == PatternCode(0xff, 0xff, 0xff)) {
+						nextPattern();
+					} else {
+						startPattern(code);
+					}
 				}
-			}
-			break;
-
-			case PLAY_MODE_ONCE: // Once we're done
-				finishPattern();
-				setPlayState(PATTERN_STOPPED);
 				break;
 
-			case PLAY_MODE_REPEAT:
-				startSelectedPattern();
-				break;
+				case PLAY_MODE_ONCE: // Once we're done
+					finishPattern();
+					setPlayState(PATTERN_STOPPED);
+					break;
+
+				case PLAY_MODE_REPEAT:
+					startSelectedPattern();
+					break;
+				}
 			}
 		} else {
 			runningBeginTransition = false;
@@ -586,7 +636,8 @@ void LIGHT_LAYER_CLASS::update() {
 	int32_t patternDuration = getSelectedPatternDuration();
 
 	if (activePattern->isPatternFinished() ||
-	        (patternDuration > 0 && patternTimeDelta > patternDuration))
+	        (patternDuration > 0 && patternTimeDelta >= patternDuration) ||
+	        (patternDuration == 0 && loadEnqueued))
 	{
 		if (transitionState == TRANSITION_DONE) {
 			transitionState = TRANSITION_STARTING;

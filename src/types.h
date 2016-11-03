@@ -115,6 +115,10 @@ struct PatternCode {
 	inline bool operator== (const PatternCode &rhs) __attribute__((always_inline)) {
 		return this->patternID == rhs.patternID && this->copyID == rhs.copyID && this->mode == rhs.mode;
 	}
+
+	inline bool operator!= (const PatternCode &rhs) __attribute__((always_inline)) {
+		return this->patternID != rhs.patternID || this->copyID != rhs.copyID || this->mode != rhs.mode;
+	}
 };
 
 struct IPalette;

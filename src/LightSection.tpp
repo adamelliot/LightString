@@ -72,7 +72,9 @@ void LIGHT_SECTION_CLASS::update() {
 			TPixelBuffer<PIXEL, FORMAT> *buffer = (TPixelBuffer<PIXEL, FORMAT> *)pattern->getPixelBuffer();
 
 			if (layers[i].getOpacity() < layers[i].getMaxOpacity()) {
-				outputBuffer->blendWith(*buffer, pattern->getBlendMode(), layers[i].getOpacity());
+				if (layers[i].getOpacity() > 0) {
+					outputBuffer->blendWith(*buffer, pattern->getBlendMode(), layers[i].getOpacity());
+				}
 			} else {
 				outputBuffer->blendWith(*buffer, pattern->getBlendMode());
 			}

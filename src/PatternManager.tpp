@@ -29,6 +29,7 @@ void PATTERN_MANAGER_CLASS::setLayerConfig(const LightLayerConfig &config) {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setLayerConfig(const LightLayerConfig &config, uint8_t layerID, uint8_t sectionID) {
+	ensureLayerIsSetup(sectionID, layerID);
 	sections[sectionID].layers[layerID].setConfig(config);
 }
 
@@ -46,6 +47,7 @@ void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHand
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler, void *userData, uint8_t layerID, uint8_t sectionID) {
+	ensureLayerIsSetup(sectionID, layerID);
 	sections[sectionID].layers[layerID].setPatternEventHandler(patternEventHandler, userData);
 }
 
@@ -62,6 +64,7 @@ void PATTERN_MANAGER_CLASS::setPatternDuration(uint32_t patternDuration) {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternDuration(uint32_t patternDuration, uint8_t layerID, uint8_t sectionID) {
+	ensureLayerIsSetup(sectionID, layerID);
 	sections[sectionID].layers[layerID].setTransitionDuration(patternDuration);
 }
 
@@ -80,6 +83,7 @@ void PATTERN_MANAGER_CLASS::setTransitionDuration(uint32_t transitionDuration) {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setTransitionDuration(uint32_t transitionDuration, uint8_t layerID, uint8_t sectionID) {
+	ensureLayerIsSetup(sectionID, layerID);
 	sections[sectionID].layers[layerID].getConfig().transitionDuration = transitionDuration;
 }
 
@@ -106,6 +110,7 @@ void PATTERN_MANAGER_CLASS::setPlayMode(EPlayMode playMode) {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPlayMode(EPlayMode playMode, uint8_t layerID, uint8_t sectionID) {
+	ensureLayerIsSetup(sectionID, layerID);
 	sections[sectionID].layers[layerID].setPlayMode(playMode);
 }
 
@@ -220,6 +225,7 @@ void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSeq
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSequence, uint8_t layerID, uint8_t sectionID) {
+	ensureLayerIsSetup(sectionID, layerID);
 	sections[sectionID].layers[layerID].setPatternSequence(patternSequence);
 }
 
@@ -234,6 +240,7 @@ void PATTERN_MANAGER_CLASS::clearPatternSequence() {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::clearPatternSequence(uint8_t layerID, uint8_t sectionID) {
+	ensureLayerIsSetup(sectionID, layerID);
 	sections[sectionID].layers[layerID].clearPatternSequence();
 }
 

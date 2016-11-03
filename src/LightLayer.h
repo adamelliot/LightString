@@ -41,6 +41,9 @@ private:
 	uint32_t transitionStartedAt = 0;
 	bool runningBeginTransition = false;
 
+	PatternCode enqueuedPattern;
+	bool loadEnqueued = false;
+
 	FORMAT opacity = getMaxOpacity();
 
 	ILightPattern *activePattern = nullptr;
@@ -66,6 +69,7 @@ public:
 	~LightLayer();
 
 	inline FORMAT getMaxOpacity();
+	EPlayState getPlayState() { return playState; }
 	bool isActive() { return playState != PATTERN_STOPPED; }
 
 	void setClonePatterns(bool val) { clonePatterns = val; }
@@ -81,6 +85,8 @@ public:
 	ILightPattern *getActivePattern() { return activePattern; }
 
 	uint8_t getPatternIndex() const { return patternIndex; }
+	PatternCode getPatternCodeFromIndex(uint8_t index);
+	int getPlaybackCount() const;
 
 	inline void setOpacity(FORMAT val) { opacity = val; }
 	inline FORMAT getOpacity() { return opacity; }
@@ -115,6 +121,7 @@ public:
 	void pause();
 	void unpause();
 
+	bool enqueuePattern(PatternCode patternCode, bool waitToFinish = false);
 	bool startPattern(PatternCode patternCode);
 	bool startRandomPattern();
 	bool nextPattern();
