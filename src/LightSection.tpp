@@ -71,9 +71,11 @@ void LIGHT_SECTION_CLASS::update() {
 		if (pattern && !pattern->isFilterPattern()) {
 			TPixelBuffer<PIXEL, FORMAT> *buffer = (TPixelBuffer<PIXEL, FORMAT> *)pattern->getPixelBuffer();
 
-			if (layers[i].getOpacity() < layers[i].getMaxOpacity()) {
-				if (layers[i].getOpacity() > 0) {
-					outputBuffer->blendWith(*buffer, pattern->getBlendMode(), layers[i].getOpacity());
+			FORMAT opacity = TColorFormatHelper<FORMAT>::scale(layers[i].getOpacity(), layers[i].getTransitionOpacity());
+
+			if (opacity < layers[i].getMaxOpacity()) {
+				if (opacity > 0) {
+					outputBuffer->blendWith(*buffer, pattern->getBlendMode(), opacity);
 				}
 			} else {
 				outputBuffer->blendWith(*buffer, pattern->getBlendMode());
