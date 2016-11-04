@@ -57,6 +57,7 @@ public:
 	void fadeUp(bool forceZero = true);
 
 	void setBrightness(FORMAT brightness) { this->brightness = brightness; }
+	FORMAT getBrightness() { return brightness; }
 
 };
 
