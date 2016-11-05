@@ -167,29 +167,29 @@ void PATTERN_MANAGER_CLASS::play(uint8_t layerID, uint8_t sectionID) {
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::nextPattern(uint8_t layerID, uint8_t sectionID) {
-	sections[sectionID].layers[layerID].nextPattern();
+void PATTERN_MANAGER_CLASS::nextPattern(bool transition, uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].nextPattern(transition);
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::nextPattern() {
+void PATTERN_MANAGER_CLASS::nextPattern(bool transition) {
 	for (uint32_t j = 0; j < sections.size(); j++) {
 		for (uint32_t i = 0; i < sections[i].getTotalLayers(); i++) {
-			sections[j].layers[i].nextPattern();
+			sections[j].layers[i].nextPattern(transition);
 		}
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::prevPattern(uint8_t layerID, uint8_t sectionID) {
-	sections[sectionID].layers[layerID].prevPattern();
+void PATTERN_MANAGER_CLASS::prevPattern(bool transition, uint8_t layerID, uint8_t sectionID) {
+	sections[sectionID].layers[layerID].prevPattern(transition);
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::prevPattern() {
+void PATTERN_MANAGER_CLASS::prevPattern(bool transition) {
 	for (uint32_t j = 0; j < sections.size(); j++) {
 		for (uint32_t i = 0; i < sections[i].getTotalLayers(); i++) {
-			sections[j].layers[i].prevPattern();
+			sections[j].layers[i].prevPattern(transition);
 		}
 	}
 }

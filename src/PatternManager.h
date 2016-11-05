@@ -75,10 +75,10 @@ public:
 	void play();
 	void play(uint8_t layerID, uint8_t sectionID = 0);
 
-	void nextPattern();
-	void nextPattern(uint8_t layerID, uint8_t sectionID = 0);
-	void prevPattern();
-	void prevPattern(uint8_t layerID, uint8_t sectionID = 0);
+	void nextPattern(bool transition = false);
+	void nextPattern(bool transition, uint8_t layerID, uint8_t sectionID = 0);
+	void prevPattern(bool transition = false);
+	void prevPattern(bool transition, uint8_t layerID, uint8_t sectionID = 0);
 
 	void shufflePatterns();
 

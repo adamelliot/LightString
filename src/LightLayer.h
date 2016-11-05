@@ -40,6 +40,7 @@ private:
 
 	PatternCode enqueuedPattern;
 	bool loadEnqueued = false;
+	bool loadPrevious = false;
 
 	FORMAT opacity = getMaxOpacity();
 	FORMAT transitionOpacity = getMaxOpacity();
@@ -123,8 +124,8 @@ public:
 	bool enqueuePattern(PatternCode patternCode, bool waitToFinish = false);
 	bool startPattern(PatternCode patternCode);
 	bool startRandomPattern();
-	bool nextPattern();
-	bool prevPattern();
+	bool nextPattern(bool transition = false);
+	bool prevPattern(bool transition = false);
 
 	void shufflePatterns();
 

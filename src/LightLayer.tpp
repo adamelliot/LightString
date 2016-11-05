@@ -255,6 +255,7 @@ LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::enqueuePattern(PatternCode patternCode, bool waitToFinish) {
 	enqueuedPattern = patternCode;
 	loadEnqueued = true;
+	loadPrevious = false;
 	if (!waitToFinish) {
 		patternStartedAt = millis() - getSelectedPatternDuration();
 	}
@@ -333,33 +334,49 @@ bool LIGHT_LAYER_CLASS::startRandomPattern() {
 }
 
 LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::nextPattern() {
-	uint32_t size = patternList.size();
+bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
+	loadEnqueued = false;
 
-	if (patternSequence) {
-		size = patternSequence->getSequence().size();
+	if (transition) {
+		patternStartedAt = millis() - getSelectedPatternDuration();
+		loadPrevious = false;
+		return true;
+	} else {
+		uint32_t size = patternList.size();
+
+		if (patternSequence) {
+			size = patternSequence->getSequence().size();
+		}
+
+		patternIndex++;
+		patternIndex %= size;
+
+		return startSelectedPattern();
 	}
-
-	patternIndex++;
-	patternIndex %= size;
-
-	return startSelectedPattern();
 }
 
 LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::prevPattern() {
-	uint32_t size = patternList.size();
+bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
+	loadEnqueued = false;
 
-	if (patternSequence) {
-		size = patternSequence->getSequence().size();
-	}
-	if (patternIndex == 0) {
-		patternIndex = size - 1;
+	if (transition) {
+		patternStartedAt = millis() - getSelectedPatternDuration();
+		loadPrevious = true;
+		return true;
 	} else {
-		patternIndex--;
-	}
+		uint32_t size = patternList.size();
 
-	return startSelectedPattern();
+		if (patternSequence) {
+			size = patternSequence->getSequence().size();
+		}
+		if (patternIndex == 0) {
+			patternIndex = size - 1;
+		} else {
+			patternIndex--;
+		}
+
+		return startSelectedPattern();
+	}
 }
 
 // Shuffle from: http://benpfaff.org/writings/clc/shuffle.html
@@ -602,7 +619,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 				{
 					PatternCode code = activePattern->getNextPatternCode();
 					if (code == PatternCode(0xff, 0xff, 0xff)) {
-						nextPattern();
+						loadPrevious ? prevPattern() : nextPattern();
 					} else {
 						startPattern(code);
 					}
@@ -619,6 +636,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 					break;
 				}
 			}
+			loadPrevious = false;
 		} else {
 			runningBeginTransition = false;
 		}

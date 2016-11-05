@@ -237,8 +237,8 @@ public:
 
 	virtual bool startPattern(PatternCode patternCode) = 0;
 	virtual bool startRandomPattern() = 0;
-	virtual bool nextPattern() = 0;
-	virtual bool prevPattern() = 0;
+	virtual bool nextPattern(bool transition = false) = 0;
+	virtual bool prevPattern(bool transition = false) = 0;
 	
 	virtual void stop() = 0;
 	virtual void pause() = 0;
