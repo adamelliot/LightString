@@ -152,7 +152,7 @@ public:
 	inline TPixelBuffer<T, FORMAT> &blendCOPY(TPixelBuffer<SRC_PIXEL, FORMAT> &src, FORMAT alpha) {
 		uint16_t len = min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
-			SRC_PIXEL<FORMAT> srcPixel = src.pixels[i].fade(alpha);
+			SRC_PIXEL<FORMAT> srcPixel = src.pixels[i].fadeCopy(alpha);
 			LightString::blendCOPY(this->pixels[i], srcPixel);
 		}
 
@@ -173,7 +173,7 @@ public:
 	inline TPixelBuffer<T, FORMAT> &blendADD(TPixelBuffer<SRC_PIXEL, FORMAT> &src, FORMAT alpha) {
 		uint16_t len = min(this->length, src.length);
 		for (uint16_t i = 0; i < len; i++) {
-			SRC_PIXEL<FORMAT> srcPixel = src.pixels[i].fade(alpha);
+			SRC_PIXEL<FORMAT> srcPixel = src.pixels[i].fadeCopy(alpha);
 			LightString::blendADD(this->pixels[i], srcPixel);
 		}
 

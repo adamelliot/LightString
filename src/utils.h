@@ -31,7 +31,7 @@ T map(T x, T in_min, T in_max, T out_min, T out_max) {
 
 #define mapf LightString::map<float>
 
-inline float clamp(float value, float min, float max) {
+inline float clamp(float value, float min = 0.0, float max = 1.0) {
 	return ((value < min) ? min : (value > max) ? max : value);
 }
 

@@ -62,7 +62,7 @@ struct TRGB {
 		this->g = rhs.g;
 		this->b = rhs.b;
 	}
-	
+
 	/* --------------- Casting ----------------- */
 
 	inline operator bool() const __attribute__((always_inline)) {
@@ -168,6 +168,12 @@ struct TRGB {
 		return *this;
 	}
 
+	inline TRGB fadeCopy(const TYPE ratio) {
+		TRGB<TYPE> ret = *this;
+		::scale8(ret.raw, ratio, 3);
+		return ret;
+	}
+
 	inline TYPE saturation() {
 		uint8_t high = brightness();
 
@@ -260,7 +266,7 @@ struct TRGB {
 #endif
 };
 
-/* --------------- Specializations (uint8_t) ---------------*/ 
+/* --------------- Specializations (uint8_t) ---------------*/
 
 /* --------------- Specializations (float) ---------------*/
 
@@ -321,6 +327,12 @@ inline TRGB<float>& TRGB<float>::fade(const float ratio) {
 	return *this;
 }
 
+template <>
+inline TRGB<float> TRGB<float>::fadeCopy(const float ratio) {
+	TRGB<float> ret = *this;
+	::mul(ret.raw, ratio, 3);
+	return ret;
+}
 
 template <>
 inline float TRGB<float>::brightness() {

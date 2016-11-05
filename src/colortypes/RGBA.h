@@ -158,6 +158,12 @@ struct TRGBA : TRGB<TYPE> {
 		return *this;
 	}
 
+	inline TRGBA fadeCopy(const TYPE ratio) {
+		TRGBA<TYPE> ret = *this;
+		ret.a = ::scale8(ret.a, ratio);
+		return ret;
+	}
+
 	/* ------------------- Other ----------------- */
 
 #ifdef ARDUINO
@@ -290,6 +296,12 @@ inline TRGBA<float> &TRGBA<float>::fade(const float ratio) {
 	return *this;
 }
 
+template <>
+inline TRGBA<float> TRGBA<float>::fadeCopy(const float ratio) {
+	TRGBA<float> ret = *this;
+	ret.a *= ratio;
+	return ret;
+}
 
 /* --------------- Blending ---------------*/
 

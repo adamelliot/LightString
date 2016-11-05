@@ -180,6 +180,14 @@ TEST(RGBu, fade) {
 	EXPECT_RGBu_EQ(col, 10, 15, 20);
 }
 
+TEST(RGBu, fadeCopy) {
+	RGBu col(40, 60, 80);
+	RGBu ret = col.fadeCopy(64); // Scale by quarter
+
+	EXPECT_RGBu_EQ(col, 40, 60, 80);
+	EXPECT_RGBu_EQ(ret, 10, 15, 20);
+}
+
 TEST(RGBu, getSaturation) {
 	RGBu col(20, 60, 80);
 	EXPECT_EQ(col.s(), 191);
