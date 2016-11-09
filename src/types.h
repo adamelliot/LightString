@@ -129,8 +129,10 @@ class ILightPattern;
 typedef void (* PatternEvent)(ILightPattern &lightPattern, EPlayState event, void *userData);
 
 class ILightSection {
-public:
+protected:
+	uint8_t sectionID = 0;
 
+public:
 	virtual IPixelBuffer *getOutputBuffer() = 0;
 
 	virtual uint8_t getTotalLayers() = 0;
@@ -140,6 +142,9 @@ public:
 	virtual IPixelBuffer *lockBuffer() = 0;
 	virtual void unlockBuffer(IPixelBuffer *buffer) = 0;
 	virtual bool addBuffer(IPixelBuffer *buffer) = 0;
+
+	void setSectionID(uint8_t val) { sectionID = val; }
+	uint8_t getSectionID() { return sectionID; }
 };
 
 struct PatternConfig {

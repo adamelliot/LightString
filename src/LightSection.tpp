@@ -13,7 +13,6 @@ IPixelBuffer *LIGHT_SECTION_CLASS::lockBuffer() {
 	// In the case of no buffer pool the output buffer is used.
 	// This only works if PIXEL is CRGB, and should otherwise throw an error
 	// outputBuffer
-
 	if (bufferPool.size() == 0) return (TPixelBuffer<PIXEL, FORMAT> *)outputBuffer;
 
 	for (uint32_t i = 0; i < bufferPool.size(); i++) {

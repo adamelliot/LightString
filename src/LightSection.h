@@ -11,7 +11,6 @@ namespace LightString {
 template <template <typename> class PIXEL, typename FORMAT, template <typename> class OUTPUT_PIXEL = TRGB>
 class LightSection : public ILightSection {
 private:
-
 	std::vector<IPixelBuffer *> bufferPool;
 	uint8_t activeBuffers = 0;
 

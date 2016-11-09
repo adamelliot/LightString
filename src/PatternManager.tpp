@@ -280,6 +280,7 @@ uint8_t PATTERN_MANAGER_CLASS::addLightSection(TPixelBuffer<OUTPUT_PIXEL, FORMAT
 	auto id = sections.size();
 
 	sections.push_back(LIGHT_SECTION_CLASS());
+	sections[id].setSectionID(id);
 	sections[id].outputBuffer = &pixelBuffer;
 
 	return sections.size() - 1;
