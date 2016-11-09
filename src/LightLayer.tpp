@@ -468,7 +468,7 @@ inline float LightLayer<float>::getMaxOpacity() { return 1.0f; }
 
 LIGHT_LAYER_TEMPLATE
 inline EPatternTransition LIGHT_LAYER_CLASS::getSelectedInTransition() {
-	if (activePattern->getInTransition() == TRANSITION_DEFAULT) {
+	if (!activePattern || activePattern->getInTransition() == TRANSITION_DEFAULT) {
 		if (patternSequence) {
 			auto cue = patternSequence->getPatternCue(patternIndex);
 			if (cue.inTransition == TRANSITION_DEFAULT) {
@@ -486,7 +486,7 @@ inline EPatternTransition LIGHT_LAYER_CLASS::getSelectedInTransition() {
 
 LIGHT_LAYER_TEMPLATE
 inline EPatternTransition LIGHT_LAYER_CLASS::getSelectedOutTransition() {
-	if (activePattern->getOutTransition() == TRANSITION_DEFAULT) {
+	if (!activePattern || activePattern->getOutTransition() == TRANSITION_DEFAULT) {
 		if (patternSequence) {
 			auto cue = patternSequence->getPatternCue(patternIndex);
 			if (cue.outTransition == TRANSITION_DEFAULT) {
@@ -504,7 +504,7 @@ inline EPatternTransition LIGHT_LAYER_CLASS::getSelectedOutTransition() {
 
 LIGHT_LAYER_TEMPLATE
 inline int32_t LIGHT_LAYER_CLASS::getSelectedPatternDuration() {
-	if (activePattern->getPatternDuration() < 0) {
+	if (!activePattern || activePattern->getPatternDuration() < 0) {
 		if (patternSequence) {
 			auto cue = patternSequence->getPatternCue(patternIndex);
 			if (cue.patternDuration < 0) {
@@ -522,7 +522,7 @@ inline int32_t LIGHT_LAYER_CLASS::getSelectedPatternDuration() {
 
 LIGHT_LAYER_TEMPLATE
 inline int32_t LIGHT_LAYER_CLASS::getSelectedInTransitionDuration() {
-	if (activePattern->getInTransitionDuration() < 0) {
+	if (!activePattern || activePattern->getInTransitionDuration() < 0) {
 		if (patternSequence) {
 			auto cue = patternSequence->getPatternCue(patternIndex);
 
@@ -541,7 +541,7 @@ inline int32_t LIGHT_LAYER_CLASS::getSelectedInTransitionDuration() {
 
 LIGHT_LAYER_TEMPLATE
 inline int32_t LIGHT_LAYER_CLASS::getSelectedOutTransitionDuration() {
-	if (activePattern->getOutTransitionDuration() < 0) {
+	if (!activePattern || activePattern->getOutTransitionDuration() < 0) {
 		if (patternSequence) {
 			auto cue = patternSequence->getPatternCue(patternIndex);
 
