@@ -151,3 +151,28 @@ TEST(PaletteTypesF, creation) {
 
 	EXPECT_RGBf_EQ(col, 1, 0, 0);
 }
+
+TEST(TPaletteManagerF, loadPaletteByID) {
+	TPaletteManager<TRGB, float> palettes;
+
+	TPalette<TRGB, float> pal1(HTML::Blue, HTML::Yellow);
+	pal1.paletteID = 1;
+
+	TPalette<TRGB, float> pal2(0xff0000, 0x00ff00);
+	pal2.paletteID = 2;
+
+	TPalette<TRGB, float> pal3(HTML::Pink, HTML::White);
+	pal3.paletteID = 3;
+
+	palettes.add(pal1);
+	palettes.add(pal2);
+	palettes.add(pal3);
+
+	palettes.loadPaletteByID(2);
+
+	RGBf col1 = palettes.getColor(0);
+	RGBf col2 = palettes.getColor(1);
+
+	EXPECT_RGBf_EQ(col1, 1, 0, 0);
+	EXPECT_RGBf_EQ(col2, 0, 1, 0);
+}

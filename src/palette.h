@@ -49,9 +49,12 @@ public:
 		T<FORMAT> *colorStops;
 	};
 
+	uint8_t paletteID = 0;
+
 	TPalette(const TPalette<T, FORMAT> &rhs) : size(rhs.size) {
 		alloc();
 
+		paletteID = rhs.paletteID;
 		for (int i = 0; i < rhs.size; i++) {
 			this->colors[i] = rhs.colors[i];
 		}
@@ -88,6 +91,7 @@ public:
 			alloc();
 		}
 
+		paletteID = rhs.paletteID;
 		for (int i = 0; i < size; i++) {
 			colorStops[i] = rhs.colorStops[i];
 		}
@@ -101,6 +105,7 @@ public:
 			alloc();
 		}
 
+		paletteID = rhs.paletteID;
 		for (int i = 0; i < rhs.size; i++) {
 			colors[i] = rhs.colors[i];
 		}
@@ -274,6 +279,9 @@ protected:
 	std::vector<TPalette<T, FORMAT>> palettes;
 	uint8_t paletteIndex = 0;
 
+	// Find the first palette with a specific ID
+	uint8_t getPaletteIndexFromID(uint8_t id);
+
 public:
 
 	TPaletteManager() {}
@@ -283,8 +291,10 @@ public:
 
 	T<FORMAT> getColor(FORMAT index) { return (palettes[paletteIndex])[index]; }
 	inline TPalette<T, FORMAT> &getPalette() { return palettes[paletteIndex]; }
+	inline TPalette<T, FORMAT> &getPaletteById(uint8_t id) { return palettes[getPaletteIndexFromID(id)]; }
 
 	void loadPalette(uint8_t index) { paletteIndex = index; }
+	void loadPaletteByID(uint8_t id) { paletteIndex = getPaletteIndexFromID(id); }
 
 	void add(const TPalette<T, FORMAT> &palette) { palettes.push_back(palette); }
 

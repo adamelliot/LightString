@@ -67,6 +67,17 @@ T<FORMAT> TSwatchManager<T, FORMAT>::previous() {
 // ------------------- Palette Manager ---------------------
 
 template<template <typename> class T, typename FORMAT>
+uint8_t TPaletteManager<T, FORMAT>::getPaletteIndexFromID(uint8_t id) {
+	for (auto i = 0; i < palettes.size(); i++) {
+		if (palettes[i].paletteID == id) {
+			return i;
+		}
+	}
+
+	return 0;
+}
+
+template<template <typename> class T, typename FORMAT>
 void TPaletteManager<T, FORMAT>::shuffle() {
 	auto size = palettes.size();
 
