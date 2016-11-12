@@ -16,6 +16,26 @@ TEST(TPaletteF, creation) {
 	EXPECT_EQ(palette.colorStops[2].b, 1.0);
 }
 
+TEST(TPaletteF, creationWithLength) {
+	TRGB<float> colors[] = {HTML::Red, HTML::Lime, HTML::Blue};
+	TPalette<TRGB, float> palette(3, colors);
+
+	EXPECT_EQ(palette.size, 3);
+	EXPECT_EQ(palette.colorStops[0].r, 1.0);
+	EXPECT_EQ(palette.colorStops[1].g, 1.0);
+	EXPECT_EQ(palette.colorStops[2].b, 1.0);
+}
+
+TEST(TPaletteF, creationMirroredWithLength) {
+	TRGB<float> colors[] = {HTML::Red, HTML::Lime};
+	TPalette<TRGB, float> palette(2, colors, true);
+
+	EXPECT_EQ(palette.size, 3);
+	EXPECT_EQ(palette.colorStops[0].r, 1.0);
+	EXPECT_EQ(palette.colorStops[1].g, 1.0);
+	EXPECT_EQ(palette.colorStops[2].r, 1.0);
+}
+
 TEST(TPaletteF, indexAccess) {
 	TPalette<TRGB, float> palette1(HTML::Red, HTML::Lime);
 

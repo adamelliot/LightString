@@ -127,6 +127,7 @@ public:
 	inline TPalette(uint8_t len, const T<FORMAT> newColors[], bool mirrored = false)
 		: size(mirrored ? ((len << 1) - 1) : len)
 	{
+		alloc();
 		memcpy(colors, newColors, len * sizeof(T<FORMAT>));
 
 		if (mirrored) {
