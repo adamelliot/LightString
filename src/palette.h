@@ -281,7 +281,7 @@ protected:
 	uint8_t paletteIndex = 0;
 
 	// Find the first palette with a specific ID
-	uint8_t getPaletteIndexFromID(uint8_t id);
+	int16_t getPaletteIndexFromID(uint8_t id);
 
 public:
 
@@ -292,12 +292,13 @@ public:
 
 	T<FORMAT> getColor(FORMAT index) { return (palettes[paletteIndex])[index]; }
 	inline TPalette<T, FORMAT> &getPalette() { return palettes[paletteIndex]; }
-	inline TPalette<T, FORMAT> &getPaletteById(uint8_t id) { return palettes[getPaletteIndexFromID(id)]; }
+	inline TPalette<T, FORMAT> *getPaletteByID(uint8_t id);
 
 	void loadPalette(uint8_t index) { paletteIndex = index; }
-	void loadPaletteByID(uint8_t id) { paletteIndex = getPaletteIndexFromID(id); }
+	void loadPaletteByID(uint8_t id);
 
 	void add(const TPalette<T, FORMAT> &palette) { palettes.push_back(palette); }
+	void add(uint8_t id, const TPalette<T, FORMAT> &palette);
 
 	void next();
 	void previous();

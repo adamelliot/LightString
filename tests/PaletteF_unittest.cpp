@@ -118,6 +118,37 @@ TEST(TPaletteManagerF, add) {
 	EXPECT_EQ(palettes.getPaletteCount(), 1);
 }
 
+TEST(TPaletteManagerF, addWithID) {
+	TPaletteManager<TRGB, float> palettes;
+	TPalette<TRGB, float> pal(HTML::Red, HTML::Lime);
+	TPalette<TRGB, float> pal2(HTML::Blue, HTML::Lime);
+
+	palettes.add(2, pal);
+	palettes.add(2, pal2);
+
+	EXPECT_EQ(palettes.getPaletteCount(), 1);
+
+	palettes.add(1, pal2);
+
+	EXPECT_EQ(palettes.getPaletteCount(), 2);
+}
+
+TEST(TPaletteManagerF, getPaletteByID) {
+	TPaletteManager<TRGB, float> palettes;
+	TPalette<TRGB, float> pal(HTML::Red, HTML::Lime);
+	TPalette<TRGB, float> pal2(HTML::Blue, HTML::Lime);
+
+	palettes.add(2, pal);
+	palettes.add(2, pal2);
+
+	palettes.add(1, pal);
+
+	auto &ret = *(palettes.getPaletteByID(2));
+
+	EXPECT_EQ(ret.colorStops[0], pal2.colorStops[0]);
+	EXPECT_EQ(ret.colorStops[1], pal2.colorStops[1]);
+}
+
 TEST(TPaletteManagerF, getColor) {
 	TPaletteManager<TRGB, float> palettes;
 	TPalette<TRGB, float> pal(HTML::Red, HTML::Lime);
