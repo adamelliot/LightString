@@ -205,9 +205,11 @@ void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, Patte
 		this->activePattern->setPixelBuffer(this->section->lockBuffer());
 	}
 
-	setPlayState(PATTERN_STARTED);
+	setPlayState(PATTERN_SETUP);
 
 	this->activePattern->setMode(mode, config);
+
+	setPlayState(PATTERN_STARTED);
 
 	this->patternStartedAt = millis();
 	this->transitionState = TRANSITION_STARTING;

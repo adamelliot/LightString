@@ -37,7 +37,8 @@ typedef enum {
 } ETransitionState;
 
 typedef enum {
-	PATTERN_STARTED = 0,
+	PATTERN_SETUP = 0,
+	PATTERN_STARTED,
 	PATTERN_PLAYING,
 	PATTERN_FINISHED, // Happens when a pattern ends
 	PATTERN_PAUSED,
