@@ -106,6 +106,7 @@ void TPaletteManager<T, FORMAT>::add(uint8_t id, const TPalette<T, FORMAT> &pale
 template<template <typename> class T, typename FORMAT>
 void TPaletteManager<T, FORMAT>::shuffle() {
 	auto size = palettes.size();
+	if (size == 0) return;
 
 	for (size_t i = 0; i < size; i++) {
 		size_t j = (i + random() / (0xffffffff / (size - i) + 1)) % size;
@@ -117,12 +118,16 @@ void TPaletteManager<T, FORMAT>::shuffle() {
 
 template<template <typename> class T, typename FORMAT>
 void TPaletteManager<T, FORMAT>::next() {
+	if (palettes.size() == 0) return;
+
 	paletteIndex++;
 	paletteIndex %= palettes.size();
 }
 
 template<template <typename> class T, typename FORMAT>
 void TPaletteManager<T, FORMAT>::previous() {
+	if (palettes.size() == 0) return;
+
 	if (paletteIndex == 0) {
 		paletteIndex = palettes.size() - 1;
 	} else {

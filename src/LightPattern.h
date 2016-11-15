@@ -7,7 +7,7 @@ namespace LightString {
 
 class ILightPattern {
 protected:
-	ILightLayer *layer;
+	ILightLayer *layer = nullptr;
 	
 	uint8_t mode;
 	uint8_t modeCount;
