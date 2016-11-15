@@ -340,7 +340,9 @@ bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
 	loadEnqueued = false;
 
 	if (transition) {
-		patternStartedAt = millis() - getSelectedPatternDuration();
+		if (transitionState == TRANSITION_DONE) {
+			transitionState = TRANSITION_STARTING;
+		}
 		loadPrevious = false;
 		return true;
 	} else {
@@ -362,7 +364,9 @@ bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
 	loadEnqueued = false;
 
 	if (transition) {
-		patternStartedAt = millis() - getSelectedPatternDuration();
+		if (transitionState == TRANSITION_DONE) {
+			transitionState = TRANSITION_STARTING;
+		}
 		loadPrevious = true;
 		return true;
 	} else {

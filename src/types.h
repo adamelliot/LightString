@@ -228,6 +228,8 @@ struct LightLayerConfig : PatternConfig {
 class ILightLayer {
 public:
 	
+	virtual EPlayState getPlayState() = 0;
+
 	virtual void setLayerID(uint8_t layerID) = 0;
 	virtual uint8_t getLayerID() = 0;
 
