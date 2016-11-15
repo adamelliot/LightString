@@ -292,6 +292,7 @@ public:
 
 	T<FORMAT> getColor(FORMAT index) { return (palettes[paletteIndex])[index]; }
 	inline TPalette<T, FORMAT> &getPalette() { return palettes[paletteIndex]; }
+	inline TPalette<T, FORMAT> &getPalette(uint8_t index) { return palettes[index]; }
 	inline TPalette<T, FORMAT> *getPaletteByID(uint8_t id);
 
 	void loadPalette(uint8_t index) { paletteIndex = index; }
