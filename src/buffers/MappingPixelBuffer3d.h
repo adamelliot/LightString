@@ -22,7 +22,7 @@ public:
 
 	// Pixels here should represent the whole plane + 1 pixel
 	inline TMappingPixelBuffer3d(T<FORMAT> *pixels, const uint16_t width, const uint16_t height, const uint16_t depth)
-		: TPixelBuffer<T, FORMAT>(pixels + 1, width * height), width(width), height(height), depth(depth)
+		: TPixelBuffer<T, FORMAT>(pixels + 1, width * height * depth), width(width), height(height), depth(depth)
 	{
 		this->rawPixels = pixels;
 	}
@@ -70,6 +70,24 @@ public:
 		for (; len; len -= step) {
 			this->pixels[xyz(x, y, z + len)] = col;
 		}
+	}
+
+	inline void rect(int16_t x1, int16_t y1, int16_t z1, int16_t x2, int16_t y2, int16_t z2, T<FORMAT> col) {
+		if (x1 > x2) std::swap(x1, x2);
+		if (y1 > y2) std::swap(y1, y2);
+		if (z1 > z2) std::swap(z1, z2);
+
+		for (int16_t x = x1; x < x2; x++) {
+			for (int16_t y = y1; y < y2; y++) {
+				for (int16_t z = z1; z < z2; z++) {
+					this->pixels[xyz(x, y, z)] = col;
+				}
+			}
+		}
+	}
+
+	inline void rect(int16_t x1, int16_t y1, int16_t z1, int16_t size, T<FORMAT> col) {
+		rect(x1, y1, z1, x1 + size, y1 + size, z1 + size, col);
 	}
 
 	// 3d Bresenham Line modified from: http://www.ict.griffith.edu.au/anthony/info/graphics/bresenham.procs

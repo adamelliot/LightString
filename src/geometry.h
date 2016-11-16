@@ -9,7 +9,7 @@
 namespace LightString {
 
 struct Rect {
-	int16_t x, y, width, height;
+	int16_t x = 0, y = 0, width = 0, height = 0;
 
 	Rect() {}
 
@@ -21,8 +21,7 @@ template <typename T>
 struct Vector {
 	T x, y;
 
-	Vector() : x(0), y(0) {}
-	Vector(const T x, const T y) : x(x), y(y) {}
+	Vector(const T x = 0, const T y = 0) : x(x), y(y) {}
 
 	inline Vector &operator+=(const Vector<T> &rhs) __attribute__((always_inline))
 	{
@@ -73,8 +72,7 @@ template <typename T>
 struct Vector3d {
 	T x, y, z;
 
-	Vector3d() : x(0), y(0), z(0) {}
-	Vector3d(const T x, const T y, const T z) : x(x), y(y), z(z) {}
+	Vector3d(const T x = 0, const T y = 0, const T z = 0) : x(x), y(y), z(z) {}
 
 	inline Vector3d &operator+=(const Vector3d<T> &rhs) __attribute__((always_inline))
 	{
@@ -129,8 +127,7 @@ template <typename T>
 struct Point {
 	T x, y;
 
-	Point() : x(0), y(0) {}
-	Point(const T x, const T y) : x(x), y(y) {}
+	Point(const T x = 0, const T y = 0) : x(x), y(y) {}
 
 	inline Point &operator+=(const Point<T> &rhs) __attribute__((always_inline))
 	{
@@ -181,8 +178,7 @@ template <typename T>
 struct Point3d {
 	T x = 0, y = 0, z = 0;
 
-	Point3d() {}
-	Point3d(const T x, const T y, const T z) : x(x), y(y), z(z) {}
+	Point3d(const T x = 0, const T y = 0, const T z = 0) : x(x), y(y), z(z) {}
 
 	inline Point3d &operator+=(const Point3d<T> &rhs) __attribute__((always_inline))
 	{
@@ -193,7 +189,7 @@ struct Point3d {
 		return *this;
 	}
 
-	inline Point3d &operator+=(const Vector<T> &rhs) __attribute__((always_inline))
+	inline Point3d &operator+=(const Vector3d<T> &rhs) __attribute__((always_inline))
 	{
 		this->x += rhs.x;
 		this->y += rhs.y;
@@ -211,7 +207,7 @@ struct Point3d {
 		return *this;
 	}
 
-	inline Point3d &operator-=(const Vector<T> &rhs) __attribute__((always_inline))
+	inline Point3d &operator-=(const Vector3d<T> &rhs) __attribute__((always_inline))
 	{
 		this->x -= rhs.x;
 		this->y -= rhs.y;
@@ -232,7 +228,7 @@ struct Point3d {
 #endif
 	}
 };
-
+/*
 struct MovingPoint {
 	Point<float> origin;
 	Vector<float> vel;
@@ -246,6 +242,28 @@ struct MovingPoint {
 		acc = Vector<float>(ax, ay);
 		this->friction = friction;
 	}
+
+	inline void update() {
+		origin += vel;
+		vel += acc;
+
+		if (friction != 0) {
+			vel *= 1.0 - friction;
+			acc *= 1.0 - friction;
+		}
+	}
+};*/
+
+template<template <typename> class PT, template <typename> class VEC>
+struct MovingPoint {
+	PT<float> origin;
+	VEC<float> vel;
+	VEC<float> acc;
+	float friction;
+
+	MovingPoint() : friction(0) {}
+	MovingPoint(PT<float> origin, VEC<float> vel, VEC<float> acc, float friction = 0) :
+		origin(origin), vel(vel), acc(acc), friction(friction) {}
 
 	inline void update() {
 		origin += vel;
