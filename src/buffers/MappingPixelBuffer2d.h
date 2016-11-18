@@ -108,7 +108,7 @@ public:
 	}
 
 	template <typename TYPE>
-	inline void drawRect(Point<TYPE> pt, uint16_t size, T<FORMAT> col) {
+	inline void drawRect(TPoint<TYPE, 2> pt, uint16_t size, T<FORMAT> col) {
 		drawRect(pt.x, pt.y, pt.x + size, pt.y + size, col);
 	}
 
@@ -187,7 +187,7 @@ public:
 	}
 
 	template <typename TYPE>
-	inline void lineTo(Point<TYPE> pt1, Point<TYPE> pt2, T<FORMAT> col) {
+	inline void lineTo(TPoint<TYPE, 2> pt1, TPoint<TYPE, 2> pt2, T<FORMAT> col) {
 		lineTo(pt1.x, pt1.y, pt2.x, pt2.y, col);
 	}
 };
