@@ -1,5 +1,8 @@
 #pragma once
 
+#include <math.h>
+#include <cmath>
+
 namespace LightString {
 
 template <template <typename> class T, typename FORMAT = uint8_t>
@@ -38,7 +41,57 @@ public:
 		return (x + (y * width) + (z * width * height));
 	}
 
-	inline void setPixel(int16_t x, int16_t y, int16_t z, T<FORMAT> col) {
+	/* ---------- Anti-aliased Methods ------------ */
+	// These all assume that we have an alpha channel
+
+	void drawPixel(const Point3f &pt, T<FORMAT> col) {
+		float dx0, dy0, dz0;
+		float dx1, dy1, dz1;
+		dx1 = modf(pt.x, &dx0);
+		dy1 = modf(pt.z, &dy0);
+		dz1 = modf(pt.z, &dz0);
+
+		int16_t x = dx0;
+		int16_t y = dy0;
+		int16_t z = dz0;
+
+		dx0 = 1.0 - dx1;
+		dy0 = 1.0 - dy1;
+		dz0 = 1.0 - dz1;
+		float a = col.a;
+
+		col.a = dx0 * dy0 * dz0 * a;
+		this->pixels[xyz(x + 0, y + 0, z + 0)] &= col;
+
+		col.a = dx1 * dy0 * dz0 * a;
+		this->pixels[xyz(x + 1, y + 0, z + 0)] &= col;
+
+		col.a = dx1 * dy1 * dz0 * a;
+		this->pixels[xyz(x + 1, y + 1, z + 0)] &= col;
+
+		col.a = dx1 * dy1 * dz1 * a;
+		this->pixels[xyz(x + 1, y + 1, z + 1)] &= col;
+
+		col.a = dx0 * dy1 * dz1 * a;
+		this->pixels[xyz(x + 0, y + 1, z + 1)] &= col;
+
+		col.a = dx0 * dy0 * dz1 * a;
+		this->pixels[xyz(x + 0, y + 0, z + 1)] &= col;
+
+		col.a = dx1 * dy0 * dz1 * a;
+		this->pixels[xyz(x + 1, y + 0, z + 1)] = col;
+
+		col.a = dx0 * dy1 * dz0 * a;
+		this->pixels[xyz(x + 0, y + 1, z + 0)] = col;
+	}
+
+	inline void drawPlaneX(const Point2f pt0, const Point2f pt1, int16_t x, T<FORMAT> col) {
+
+	}
+
+	/* --------- Basic Un-aliased Methods --------- */
+
+	inline void drawPixel(int16_t x, int16_t y, int16_t z, T<FORMAT> col) {
 		this->pixels[xyz(x, y, z)] = col;
 	}
 

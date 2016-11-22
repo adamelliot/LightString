@@ -124,6 +124,26 @@ struct TRGBA : TRGB<TYPE> {
 		return *this;
 	}
 
+	inline TRGBA& operator&= (const TRGB<TYPE> &rhs) {
+		blendCOPY(*this, rhs);
+		return *this;
+	}
+
+	inline TRGBA& operator&= (const TRGBA<TYPE> &rhs) {
+		blendCOPY(*this, rhs);
+		return *this;
+	}
+
+	inline TRGBA& operator|= (const TRGB<TYPE> &rhs) {
+		blendADD(*this, rhs);
+		return *this;
+	}
+
+	inline TRGBA& operator|= (const TRGBA<TYPE> &rhs) {
+		blendADD(*this, rhs);
+		return *this;
+	}
+
 	/* ----------- General Utilities ------------ */
 
 	inline TRGBA &lerp(const TRGB<TYPE> &other, float ratio) __attribute__((always_inline)) {
@@ -316,7 +336,7 @@ TRGB<TYPE> blendCOPY(TRGB<TYPE> &lhs, const TRGB<TYPE> &rhs);
 
 template <>
 inline TRGBA<uint8_t> blendCOPY(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
-	uint8_t a = lhs.a;
+	uint8_t a = rhs.a;
 	lhs.lerp8(rhs, rhs.a);
 	lhs.a = a;
 	return lhs;
@@ -324,7 +344,7 @@ inline TRGBA<uint8_t> blendCOPY(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) 
 
 template <>
 inline TRGBA<float> blendCOPY(TRGBA<float> &lhs, const TRGBA<float> &rhs) {
-	float a = lhs.a;
+	float a = rhs.a;
 	lhs.lerp(rhs, rhs.a);
 	lhs.a = a;
 	return lhs;

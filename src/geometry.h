@@ -4,6 +4,7 @@
 #include <FastLED.h>
 #endif
 
+#include "utils.h"
 #include "colortypes.h"
 
 #include <vector>
@@ -140,11 +141,19 @@ struct TVec : public TVecBase<TYPE, SIZE> {
 	}
 };
 
+typedef TVec<float, 2> Vec2f;
+typedef TVec<float, 3> Vec3f;
+typedef TVec<float, 4> Vec4f;
+
 template <typename TYPE, unsigned SIZE>
 struct TPoint : public TVecBase<TYPE, SIZE> {
 	typedef TVecBase<TYPE, SIZE> BASE;
 	using BASE::BASE;
 };
+
+typedef TPoint<float, 2> Point2f;
+typedef TPoint<float, 3> Point3f;
+typedef TPoint<float, 4> Point4f;
 
 template <typename TYPE>
 struct TRect {
@@ -167,7 +176,7 @@ struct TCuboid {
 		: x(x), y(y), z(z), width(width), height(height), depth(depth) {}
 
 	bool containsPoint(const TPoint<TYPE, 3> pt);
-	TPoint<TYPE, 3> boundPoint(const TPoint<TYPE, 3> &pt);
+	TPoint<TYPE, 3> boundPoint(const TPoint<TYPE, 3> &pt, TVec<TYPE, 3> *vec = nullptr);
 	TPoint<TYPE, 3> clampPoint(const TPoint<TYPE, 3> &pt);
 
 	TPoint<TYPE, 3> randomPoint();
@@ -187,7 +196,7 @@ public:
 	DynamicPoint(TPoint<float, SIZE> origin, TVec<float, SIZE> vel, TVec<float, SIZE> acc, float friction = 0) :
 		origin(origin), vel(vel), acc(acc), friction(friction) {}
 
-	inline void update() {
+	virtual void update() {
 		origin += vel;
 		vel += acc;
 
@@ -208,12 +217,20 @@ struct PointSystem {
 	TCuboid<float> bounds;
 
 	bool bounded = false;
+	uint16_t minPoints = 0;
+	uint32_t pointTimeout = 0;
+	uint64_t nextPointTime = 0;
 
 	PointSystem(size_t maxSize);
 
 	void stopAll();
+	void setMinPoints(uint16_t val) { minPoints = val; }
 	void setMaxPoints(size_t size, bool enableNewPoints = false);
 	void setVelocity(TVec<float, SIZE> vel);
+	void setAddPointTimeout(uint32_t t) { pointTimeout = t; }
+
+	void addPoints(int16_t count = 1);
+	uint32_t activePointCount();
 
 	void addBoundedPoints(BoundingType bounds, size_t pointCount, float velocity = 1.0);
 	void update();

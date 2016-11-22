@@ -321,7 +321,7 @@ TEST(Blending_U8, blendCOPYRGBA) {
 
 	blendCOPY(col1, col2);
 
-	EXPECT_RGBAu_EQ(col1, 25, 35, 45, 255);
+	EXPECT_RGBAu_EQ(col1, 25, 35, 45, 127);
 }
 
 TEST(Blending_U8, blendCOPYRGB) {

@@ -388,6 +388,9 @@ bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
 // Shuffle from: http://benpfaff.org/writings/clc/shuffle.html
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::shufflePatterns() {
+	auto size = patternList.size();
+	if (size <= 1) return;
+
 	for (size_t i = 0; i < patternList.size(); i++) {
 		size_t j = (i + random() / (0xfffffff / (patternList.size() - i) + 1)) % patternList.size();
 		PatternCode t = patternList[j];
