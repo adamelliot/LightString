@@ -238,6 +238,13 @@ struct TRGB {
 		return *this;
 	}
 
+	inline TRGB &invert() {
+		r = 256 - r;
+		g = 256 - g;
+		b = 256 - b;
+		return *this;
+	}
+
 	/* ------------------- Other ----------------- */
 
 #ifdef ARDUINO
@@ -387,6 +394,14 @@ inline float TRGB<float>::saturation(const float val) {
 	raw[mi] = newMi;
 
 	return val;
+}
+
+template <>
+inline TRGB<float>& TRGB<float>::invert() {
+	r = 1.0 - r;
+	g = 1.0 - g;
+	b = 1.0 - b;
+	return *this;
 }
 
 };
