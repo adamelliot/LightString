@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include "utils.h"
 
 #ifndef ARDUINO
@@ -9,11 +10,11 @@ uint64_t millis() {
 }
 
 long random(long max) {
-    return rand() % max;
+    return std::rand() % max;
 }
 
 long random(long min, long max) {
-    return (rand() % (max - min)) + min;
+    return (std::rand() % (max - min)) + min;
 }
 
 #else
