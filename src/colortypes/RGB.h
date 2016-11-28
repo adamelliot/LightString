@@ -187,7 +187,7 @@ struct TRGB {
 	inline TYPE sat() { return saturation(); }
 	inline TYPE s() { return saturation(); }
 
-	inline TYPE saturation(const TYPE val) {
+	inline TRGB &saturation(const TYPE val) {
 		uint8_t lo = 0, mi = 1, hi = 2;
 
 		if (raw[lo] > raw[mi]) swap(lo, mi);
@@ -201,11 +201,11 @@ struct TRGB {
 		raw[lo] = newLo;
 		raw[mi] = newMi;
 
-		return val;
+		return *this;
 	}
 
-	inline TYPE sat(const TYPE limit) { return saturation(limit); }
-	inline TYPE s(const TYPE limit) { return saturation(limit); }
+	inline TRGB &sat(const TYPE limit) { return saturation(limit); }
+	inline TRGB &s(const TYPE limit) { return saturation(limit); }
 
 	inline TYPE brightness() {
 		uint8_t max = r;
@@ -218,7 +218,7 @@ struct TRGB {
 	inline TYPE val() { return brightness(); }
 	inline TYPE v() { return brightness(); }
 
-	inline TYPE brightness(const TYPE limit) {
+	inline TRGB &brightness(const TYPE limit) {
 		uint8_t max = brightness();
 		uint16_t fact = ((uint16_t)limit * 256) / max;
 
@@ -226,12 +226,12 @@ struct TRGB {
 		g = (g * fact) / 256;
 		b = (b * fact) / 256;
 
-		return limit;
+		return *this;
 	}
 
-	inline TYPE bri(const TYPE limit) { return brightness(limit); }
-	inline TYPE val(const TYPE limit) { return brightness(limit); }
-	inline TYPE v(const TYPE limit) { return brightness(limit); }
+	inline TRGB &bri(const TYPE limit) { return brightness(limit); }
+	inline TRGB &val(const TYPE limit) { return brightness(limit); }
+	inline TRGB &v(const TYPE limit) { return brightness(limit); }
 
 	inline TRGB &maximizeBrightness() {
 		brightness(255);
@@ -350,7 +350,7 @@ inline float TRGB<float>::brightness() {
 }
 
 template <>
-inline float TRGB<float>::brightness(const float limit) {
+inline TRGB<float>& TRGB<float>::brightness(const float limit) {
 	float max = brightness();
 	float fact = limit / max;
 
@@ -358,7 +358,7 @@ inline float TRGB<float>::brightness(const float limit) {
 	g *= fact;
 	b *= fact;
 
-	return limit;
+	return *this;
 }
 
 template <>
@@ -379,7 +379,7 @@ inline float TRGB<float>::saturation() {
 }
 
 template <>
-inline float TRGB<float>::saturation(const float val) {
+inline TRGB<float>& TRGB<float>::saturation(const float val) {
 	uint8_t lo = 0, mi = 1, hi = 2;
 
 	if (raw[lo] > raw[mi]) swap(lo, mi);
@@ -393,7 +393,7 @@ inline float TRGB<float>::saturation(const float val) {
 	raw[lo] = newLo;
 	raw[mi] = newMi;
 
-	return val;
+	return *this;
 }
 
 template <>

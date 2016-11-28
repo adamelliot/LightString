@@ -180,8 +180,7 @@ struct TRGBA : TRGB<TYPE> {
 
 	inline TRGBA fadeCopy(const TYPE ratio) {
 		TRGBA<TYPE> ret = *this;
-		ret.a = ::scale8(ret.a, ratio);
-		return ret;
+		return ret.fade(ratio);
 	}
 
 	/* ------------------- Other ----------------- */

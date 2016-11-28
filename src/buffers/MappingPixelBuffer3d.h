@@ -7,6 +7,8 @@ namespace LightString {
 
 template <template <typename> class T, typename FORMAT = uint8_t>
 class TMappingPixelBuffer3d : public TPixelBuffer<T, FORMAT> {
+	typedef T<FORMAT> (* BlendOperator)(T<FORMAT> &, const T<FORMAT> &);
+
 private:
 	T<FORMAT> *rawPixels;
 
@@ -44,6 +46,7 @@ public:
 	/* ---------- Anti-aliased Methods ------------ */
 	// These all assume that we have an alpha channel
 
+	template <BlendOperator BLEND_OP = blendCOPY>
 	void drawPixel(const Point3f &pt, T<FORMAT> col) {
 		float dx0, dy0, dz0;
 		float dx1, dy1, dz1;
@@ -61,38 +64,158 @@ public:
 		float a = col.a;
 
 		col.a = dx0 * dy0 * dz0 * a;
-		this->pixels[xyz(x + 0, y + 0, z + 0)] &= col;
+		BLEND_OP(this->pixels[xyz(x + 0, y + 0, z + 0)], col);
 
 		col.a = dx1 * dy0 * dz0 * a;
-		this->pixels[xyz(x + 1, y + 0, z + 0)] &= col;
+		BLEND_OP(this->pixels[xyz(x + 1, y + 0, z + 0)], col);
 
 		col.a = dx1 * dy1 * dz0 * a;
-		this->pixels[xyz(x + 1, y + 1, z + 0)] &= col;
+		BLEND_OP(this->pixels[xyz(x + 1, y + 1, z + 0)], col);
 
 		col.a = dx1 * dy1 * dz1 * a;
-		this->pixels[xyz(x + 1, y + 1, z + 1)] &= col;
+		BLEND_OP(this->pixels[xyz(x + 1, y + 1, z + 1)], col);
 
 		col.a = dx0 * dy1 * dz1 * a;
-		this->pixels[xyz(x + 0, y + 1, z + 1)] &= col;
+		BLEND_OP(this->pixels[xyz(x + 0, y + 1, z + 1)], col);
 
 		col.a = dx0 * dy0 * dz1 * a;
-		this->pixels[xyz(x + 0, y + 0, z + 1)] &= col;
+		BLEND_OP(this->pixels[xyz(x + 0, y + 0, z + 1)], col);
 
 		col.a = dx1 * dy0 * dz1 * a;
-		this->pixels[xyz(x + 1, y + 0, z + 1)] = col;
+		BLEND_OP(this->pixels[xyz(x + 1, y + 0, z + 1)], col);
 
 		col.a = dx0 * dy1 * dz0 * a;
-		this->pixels[xyz(x + 0, y + 1, z + 0)] = col;
+		BLEND_OP(this->pixels[xyz(x + 0, y + 1, z + 0)], col);
 	}
 
-	inline void drawPlaneX(const Point2f pt0, const Point2f pt1, int16_t x, T<FORMAT> col) {
+	/**
+	 * Draw a plane that fits into one "slice" of pixel data at an X value
+	 *
+	 * TODO: Handle case where size is < 1.0
+	 */
+	template <BlendOperator BLEND_OP = blendCOPY>
+	inline void drawRectX(Point2f pt0, Point2f pt1, int16_t x, int16_t x1, T<FORMAT> col) {
+		float &y0 = pt0.x, &y1 = pt1.x;
+		float &z0 = pt0.y, &z1 = pt1.y;
 
+		if (y0 > y1) std::swap(y0, y1);
+		if (z0 > z1) std::swap(z0, z1);
+		if (x  > x1) std::swap(x, x1);
+
+		float iy0, iy1, iz0, iz1;
+
+		// Fractional start
+		float dy0 = 1.0 - modf(y0, &iy0);
+		float dz0 = 1.0 - modf(z0, &iz0);
+
+		// Fractional end
+		float dy1 = modf(y1, &iy1);
+		float dz1 = modf(z1, &iz1);
+
+		float a = col.a;
+
+		for (; x < x1; x++) {
+			// Draw corners
+			col.a = a * dy0 * dz0;
+			BLEND_OP(this->pixels[xyz(x, iy0, iz0)], col);
+			col.a = a * dy1 * dz0;
+			BLEND_OP(this->pixels[xyz(x, iy1, iz0)], col);
+			col.a = a * dy1 * dz1;
+			BLEND_OP(this->pixels[xyz(x, iy1, iz1)], col);
+			col.a = a * dy0 * dz1;
+			BLEND_OP(this->pixels[xyz(x, iy0, iz1)], col);
+
+			float y0_1 =  y0 + 1;
+			float z0_1 =  z0 + 1;
+
+			// Draw frame
+			col.a = a * dz0;
+			lineY_nc<BLEND_OP>(x, y0_1, z0, y1, col);
+			col.a = a * dy0;
+			lineZ_nc<BLEND_OP>(x, y0, z0_1, z1, col);
+			col.a = a * dy1;
+			lineZ_nc<BLEND_OP>(x, y1, z0_1, z1, col);
+			col.a = a * dz1;
+			lineY_nc<BLEND_OP>(x, y0_1, z1, y1, col);
+
+			// Draw inside
+			col.a = a;
+			rectX_nc<BLEND_OP>(x, y0_1, z0_1, y1, z1, col);
+		}
 	}
 
-	/* --------- Basic Un-aliased Methods --------- */
+	template <BlendOperator BLEND_OP = blendCOPY>
+	inline void drawRectX(Point2f pt0, Point2f pt1, int16_t x, T<FORMAT> col) {
+		drawRectX<BLEND_OP>(pt0, pt1, x, x + 1, col);
+	}
 
+	template <BlendOperator BLEND_OP = blendCOPY>
+	inline void drawCuboid(Point3f pt0, Point3f pt1, T<FORMAT> col) {
+		float &x0 = pt0.x, &x1 = pt1.x;
+		float &y0 = pt0.y, &y1 = pt1.y;
+		float &z0 = pt0.z, &z1 = pt1.z;
+
+		if (x0 > x1) std::swap(x0, x1);
+		if (y0 > y1) std::swap(y0, y1);
+		if (z0 > z1) std::swap(z0, z1);
+
+		float ix0, ix1;
+		float dx0 = 1.0 - modf(x0, &ix0);
+		float dx1 = modf(x1, &ix1);
+
+		float a = col.a;
+
+		auto pt0_ = Point2f(pt0.y, pt0.z);
+		auto pt1_ = Point2f(pt1.y, pt1.z);
+
+		col.a = a * dx0;
+		drawRectX<BLEND_OP>(pt0_, pt1_, ix0, col);
+
+		col.a = a;
+		drawRectX<BLEND_OP>(pt0_, pt1_, ix0 + 1, ix1, col);
+
+		col.a = a * dx1;
+		drawRectX<BLEND_OP>(pt0_, pt1_, ix1, col);
+	}
+
+	template <BlendOperator BLEND_OP = blendCOPY>
+	inline void drawCuboid(TCuboid<float> cuboid, T<FORMAT> col) {
+		drawCuboid<BLEND_OP>(Point3f(cuboid.x, cuboid.y, cuboid.z),
+			Point3f(cuboid.x + cuboid.width, cuboid.y + cuboid.height, cuboid.z + cuboid.depth));
+	}
+
+	template <BlendOperator BLEND_OP = blendCOPY>
+	inline void drawCube(Point3f pt0, float size, T<FORMAT> col) {
+		Point3f pt1 = pt0;
+		pt1 += size;
+		drawCuboid<BLEND_OP>(pt0, pt1, col);
+	}
+
+	/* --------- Basic aliased Methods --------- */
+
+	template <BlendOperator BLEND_OP = blendCOPY>
 	inline void drawPixel(int16_t x, int16_t y, int16_t z, T<FORMAT> col) {
-		this->pixels[xyz(x, y, z)] = col;
+		BLEND_OP(this->pixels[xyz(x, y, z)], col);
+	}
+
+	template <BlendOperator BLEND_OP = blendCOPY>
+	inline void lineX_nc(int16_t x, int16_t y, int16_t z, int16_t x1, T<FORMAT> col) {
+		for (; x < x1; x++) BLEND_OP(this->pixels[xyz(x, y, z)], col);
+	}
+
+	template <BlendOperator BLEND_OP = blendCOPY>
+	inline void lineY_nc(int16_t x, int16_t y, int16_t z, int16_t y1, T<FORMAT> col) {
+		for (; y < y1; y++) BLEND_OP(this->pixels[xyz(x, y, z)], col);
+	}
+
+	template <BlendOperator BLEND_OP = blendCOPY>
+	inline void lineZ_nc(int16_t x, int16_t y, int16_t z, int16_t z1, T<FORMAT> col) {
+		for (; z < z1; z++) BLEND_OP(this->pixels[xyz(x, y, z)], col);
+	}
+
+	template <BlendOperator BLEND_OP = blendCOPY>
+	inline void rectX_nc(int16_t x, int16_t y, int16_t z, int16_t y1, int16_t z1, T<FORMAT> col) {
+		for (; y < y1; y++) lineZ_nc<BLEND_OP>(x, y, z, z1, col);
 	}
 
 	inline void lineX(int16_t x, int16_t y, int16_t z, int16_t len, T<FORMAT> col) {
