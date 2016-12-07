@@ -51,7 +51,7 @@ public:
 		float dx0, dy0, dz0;
 		float dx1, dy1, dz1;
 		dx1 = modf(pt.x, &dx0);
-		dy1 = modf(pt.z, &dy0);
+		dy1 = modf(pt.y, &dy0);
 		dz1 = modf(pt.z, &dz0);
 
 		int16_t x = dx0;
@@ -194,8 +194,8 @@ public:
 	/* --------- Basic aliased Methods --------- */
 
 	template <BlendOperator BLEND_OP = blendCOPY>
-	inline void drawPixel(int16_t x, int16_t y, int16_t z, T<FORMAT> col) {
-		BLEND_OP(this->pixels[xyz(x, y, z)], col);
+	inline void drawPixel(Point3i pt, T<FORMAT> col) {
+		BLEND_OP(this->pixels[xyz(pt.x, pt.y, pt.z)], col);
 	}
 
 	template <BlendOperator BLEND_OP = blendCOPY>
@@ -248,22 +248,26 @@ public:
 		}
 	}
 
-	inline void rect(int16_t x1, int16_t y1, int16_t z1, int16_t x2, int16_t y2, int16_t z2, T<FORMAT> col) {
-		if (x1 > x2) std::swap(x1, x2);
-		if (y1 > y2) std::swap(y1, y2);
-		if (z1 > z2) std::swap(z1, z2);
+	template <BlendOperator BLEND_OP = blendCOPY>
+	inline void drawCuboid(Point3i pt1, Point3i pt2, T<FORMAT> col) {
+		if (pt1.x > pt2.x) std::swap(pt1.x, pt2.x);
+		if (pt1.y > pt2.y) std::swap(pt1.y, pt2.y);
+		if (pt1.z > pt2.z) std::swap(pt1.z, pt2.z);
 
-		for (int16_t x = x1; x < x2; x++) {
-			for (int16_t y = y1; y < y2; y++) {
-				for (int16_t z = z1; z < z2; z++) {
-					this->pixels[xyz(x, y, z)] = col;
+		for (int16_t x = pt1.x; x < pt2.x; x++) {
+			for (int16_t y = pt1.y; y < pt2.y; y++) {
+				for (int16_t z = pt1.z; z < pt2.z; z++) {
+					BLEND_OP(this->pixels[xyz(x, y, z)], col);
 				}
 			}
 		}
 	}
 
-	inline void rect(int16_t x1, int16_t y1, int16_t z1, int16_t size, T<FORMAT> col) {
-		rect(x1, y1, z1, x1 + size, y1 + size, z1 + size, col);
+	template <BlendOperator BLEND_OP = blendCOPY>
+	inline void drawCube(Point3i pt, int size, T<FORMAT> col) {
+		Point3i pt1 = pt;
+		pt1 += size;
+		drawCuboid<BLEND_OP>(pt, pt1, col);
 	}
 
 	// 3d Bresenham Line modified from: http://www.ict.griffith.edu.au/anthony/info/graphics/bresenham.procs

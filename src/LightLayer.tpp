@@ -392,7 +392,7 @@ void LIGHT_LAYER_CLASS::shufflePatterns() {
 	if (size <= 1) return;
 
 	for (size_t i = 0; i < patternList.size(); i++) {
-		size_t j = (i + random() / (0xfffffff / (patternList.size() - i) + 1)) % patternList.size();
+		size_t j = (i + random() / (0x7ffffff / (patternList.size() - i) + 1)) % patternList.size();
 		PatternCode t = patternList[j];
 		patternList[j] = patternList[i];
 		patternList[i] = t;

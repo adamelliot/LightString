@@ -145,7 +145,7 @@ TEST(RGBAf, fade) {
 	RGBAf col(0.20, 0.30, 0.40);
 	col.fade(0.5); // half
 
-	EXPECT_RGBAf_EQ(col, 0.20, 0.30, 0.40, 0.5);
+	EXPECT_RGBAf_EQ(col, 0.10, 0.15, 0.20, 1);
 }
 
 TEST(RGBAf, lerp) {
@@ -230,7 +230,6 @@ TEST(RGBAf, setBrightness) {
 
 	EXPECT_RGBAf_EQ(col, 0.4, 0.6, 0.8, 0.8);
 }
-
 
 TEST(RGBAf, maximizeBrightness) {
 	RGBAf col = RGBAf(0.4, 0.6, 0.8, 1);

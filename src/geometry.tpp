@@ -102,20 +102,23 @@ void PointSystem<SIZE, POINT_TYPE>::setVelocity(TVec<float, SIZE> vel) {
 }
 
 template <unsigned SIZE, typename POINT_TYPE>
-void PointSystem<SIZE, POINT_TYPE>::addBoundedPoints(BoundingType bounds, size_t pointCount, float velocity) {
+void PointSystem<SIZE, POINT_TYPE>::setBounds(BoundingType bounds) {
 	this->bounds = bounds;
 	this->bounded = true;
+}
 
-	size_t i = 0;
-	while (pointCount-- && i < points.size()) {
+template <unsigned SIZE, typename POINT_TYPE>
+void PointSystem<SIZE, POINT_TYPE>::addBoundedPoints(size_t pointCount, float velocity) {
+	if (!bounded) return;
+
+	for (int i = 0; i < points.size() && pointCount > 0; i++) {
 		auto &point = points[i];
-		if (point.active) {
-			i++;
-			continue;
-		}
+		if (point.active) continue;
+		pointCount--;
 
 		point.init();
 		point.active = true;
+		if (afterInit) afterInit(point);
 
 		point.origin = bounds.randomPoint();
 		point.vel.randomize(-10000, 10000);
@@ -139,7 +142,7 @@ void PointSystem<SIZE, POINT_TYPE>::addPoints(int16_t count) {
 
 		points[i].init();
 		points[i].active = true;
-		return;
+		if (afterInit) afterInit(points[i]);
 
 		if (count <= 0) return;
 		count--;

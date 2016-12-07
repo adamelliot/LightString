@@ -6,7 +6,7 @@ void TSwatchManager<T, FORMAT>::shuffle() {
 	if (size <= 1) return;
 
 	for (size_t i = 0; i < size; i++) {
-		size_t j = (i + random() / (0xffffffff / (size - i) + 1)) % size;
+		size_t j = (i + random() / (0x7fffffff / (size - i) + 1)) % size;
 		T<FORMAT> t = swatches[j];
 		swatches[j] = swatches[i];
 		swatches[i] = t;
@@ -110,7 +110,7 @@ void TPaletteManager<T, FORMAT>::shuffle() {
 	if (size <= 1) return;
 
 	for (size_t i = 0; i < size; i++) {
-		size_t j = (i + random() / (0xffffffff / (size - i) + 1)) % size;
+		size_t j = (i + random() / (0x7fffffff / (size - i) + 1)) % size;
 		TPalette<T, FORMAT> t = palettes[j];
 		palettes[j] = palettes[i];
 		palettes[i] = t;

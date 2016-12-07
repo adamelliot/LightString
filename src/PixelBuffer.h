@@ -115,6 +115,12 @@ public:
 		}
 	}
 
+	inline void alphaFade(const FORMAT scale) {
+		for (uint16_t i = 0; i < this->length; i++) {
+			pixels[i].alphaFade(scale);
+		}
+	}
+
 	/*
 		// 2d stuff should be broken out into 2d buffer
 		inline void drawRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB col) {

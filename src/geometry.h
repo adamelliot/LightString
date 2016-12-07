@@ -8,6 +8,7 @@
 #include "colortypes.h"
 
 #include <vector>
+#include <functional>
 #include <math.h>
 
 namespace LightString {
@@ -155,6 +156,10 @@ typedef TPoint<float, 2> Point2f;
 typedef TPoint<float, 3> Point3f;
 typedef TPoint<float, 4> Point4f;
 
+typedef TPoint<int, 2> Point2i;
+typedef TPoint<int, 3> Point3i;
+typedef TPoint<int, 4> Point4i;
+
 template <typename TYPE>
 struct TRect {
 	TYPE x = 0, y = 0, width = 0, height = 0;
@@ -180,6 +185,11 @@ struct TCuboid {
 	TPoint<TYPE, 3> clampPoint(const TPoint<TYPE, 3> &pt);
 
 	TPoint<TYPE, 3> randomPoint();
+
+	TCuboid<TYPE> inset(int16_t amount) {
+		auto a2 = amount * 2;
+		return TCuboid<TYPE>(x + amount, y + amount, z + amount, width - a2, height - a2, depth - a2);
+	}
 };
 
 template<unsigned SIZE = 2>
@@ -221,6 +231,8 @@ struct PointSystem {
 	uint32_t pointTimeout = 0;
 	uint64_t nextPointTime = 0;
 
+	std::function<void(POINT_TYPE&)> afterInit = nullptr;
+
 	PointSystem(size_t maxSize);
 
 	void stopAll();
@@ -228,11 +240,13 @@ struct PointSystem {
 	void setMaxPoints(size_t size, bool enableNewPoints = false);
 	void setVelocity(TVec<float, SIZE> vel);
 	void setAddPointTimeout(uint32_t t) { pointTimeout = t; }
+	void setAfterInit(std::function<void(POINT_TYPE&)> func) { afterInit = func; }
 
 	void addPoints(int16_t count = 1);
 	uint32_t activePointCount();
 
-	void addBoundedPoints(BoundingType bounds, size_t pointCount, float velocity = 1.0);
+	void setBounds(BoundingType bounds);
+	void addBoundedPoints(size_t pointCount, float velocity = 1.0);
 	void update();
 };
 

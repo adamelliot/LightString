@@ -162,14 +162,14 @@ TEST(RGBAu, fade) {
 	RGBAu col(20, 30, 40);
 	col.fade(127); // half
 
-	EXPECT_RGBAu_EQ(col, 20, 30, 40, 127);
+	EXPECT_RGBAu_EQ(col, 10, 15, 20, 255);
 }
 
 TEST(RGBAu, fadeCopy) {
 	RGBAu col(40, 60, 80, 50);
 	RGBAu ret = col.fadeCopy(127); // Scale by quarter
 
-	EXPECT_RGBAu_EQ(ret, 40, 60, 80, 25);
+	EXPECT_RGBAu_EQ(ret, 20, 30, 40, 50);
 }
 
 TEST(RGBAu, lerp) {

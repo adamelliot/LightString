@@ -174,13 +174,24 @@ struct TRGBA : TRGB<TYPE> {
 	}
 
 	inline TRGBA &fade(const TYPE ratio) {
-		this->a = ::scale8(this->a, ratio);
+		::scale8(this->raw, ratio, 3);
 		return *this;
 	}
 
 	inline TRGBA fadeCopy(const TYPE ratio) {
+		auto ret = *this;
+		::scale8(ret.raw, ratio, 3);
+		return ret;
+	}
+
+	inline TRGBA &alphaFade(const TYPE ratio) {
+		this->a = ::scale8(this->a, ratio);
+		return *this;
+	}
+
+	inline TRGBA alphaFadeCopy(const TYPE ratio) {
 		TRGBA<TYPE> ret = *this;
-		return ret.fade(ratio);
+		return ret.alphaFade(ratio);
 	}
 
 	/* ------------------- Other ----------------- */
@@ -311,12 +322,25 @@ inline TRGBA<float> &TRGBA<float>::lerp(const TRGBA<float> &other, float ratio) 
 
 template <>
 inline TRGBA<float> &TRGBA<float>::fade(const float ratio) {
-	this->a *= ratio;
+	::mul(this->raw, ratio, 3);
 	return *this;
 }
 
 template <>
 inline TRGBA<float> TRGBA<float>::fadeCopy(const float ratio) {
+	TRGBA<float> ret = *this;
+	::mul(ret.raw, ratio, 3);
+	return ret;
+}
+
+template <>
+inline TRGBA<float> &TRGBA<float>::alphaFade(const float ratio) {
+	this->a *= ratio;
+	return *this;
+}
+
+template <>
+inline TRGBA<float> TRGBA<float>::alphaFadeCopy(const float ratio) {
 	TRGBA<float> ret = *this;
 	ret.a *= ratio;
 	return ret;
@@ -336,6 +360,7 @@ TRGB<TYPE> blendCOPY(TRGB<TYPE> &lhs, const TRGB<TYPE> &rhs);
 template <>
 inline TRGBA<uint8_t> blendCOPY(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
 	uint8_t a = rhs.a;
+	lhs.scale8(lhs.a);
 	lhs.lerp8(rhs, rhs.a);
 	lhs.a = a;
 	return lhs;
@@ -344,6 +369,7 @@ inline TRGBA<uint8_t> blendCOPY(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) 
 template <>
 inline TRGBA<float> blendCOPY(TRGBA<float> &lhs, const TRGBA<float> &rhs) {
 	float a = rhs.a;
+	lhs *= lhs.a;
 	lhs.lerp(rhs, rhs.a);
 	lhs.a = a;
 	return lhs;
@@ -378,7 +404,10 @@ TRGBA<TYPE> blendADD(TRGBA<TYPE> &lhs, const TRGBA<TYPE> &rhs);
 
 template <typename TYPE>
 inline TRGB<TYPE> blendADD(TRGB<TYPE> &lhs, const TRGBA<TYPE> &rhs) {
+	auto tmp = rhs;
+	tmp *= rhs.a;
 	lhs += rhs;
+
 	return lhs;
 }
 
@@ -391,13 +420,15 @@ inline TRGB<TYPE> blendADD(TRGB<TYPE> &lhs, const TRGB<TYPE> &rhs) {
 template <>
 inline TRGBA<uint8_t> blendADD(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
 	TRGBA<uint8_t> adj = TRGBA<uint8_t>(rhs).scale8(rhs.a);
+	lhs.scale8(lhs.a);
 	lhs += adj;
 	return lhs;
 }
 
 template <>
 inline TRGBA<float> blendADD(TRGBA<float> &lhs, const TRGBA<float> &rhs) {
-	TRGBA<float> adj = TRGBA<float>(rhs) * rhs.a;
+	TRGB<float> adj = TRGB<float>(rhs) * rhs.a;
+	lhs *= lhs.a;
 	lhs += adj;
 	return lhs;
 }
