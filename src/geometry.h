@@ -147,6 +147,16 @@ struct TVec : public TVecBase<TYPE, SIZE> {
 
 		return accum;
 	}
+
+	template<unsigned S>
+	operator TVec<TYPE, S>() {
+		TVec<TYPE, S> ret;
+
+		for (int i = 0; i < std::min(S, SIZE); i++) {
+			ret.raw[i] = this->raw[i];
+		}
+		return ret;
+	}
 };
 
 typedef TVec<float, 2> Vec2f;
