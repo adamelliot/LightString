@@ -21,7 +21,7 @@ struct TBaseVal2 {
 		};
 		TYPE raw[2];
 	};
-	TBaseVal2() : raw{0} {}
+	TBaseVal2() : raw{0, 0} {}
 	TBaseVal2(const TYPE x, const TYPE y) : x(x), y(y) {}
 };
 
@@ -33,7 +33,7 @@ struct TBaseVal3 {
 		};
 		TYPE raw[3];
 	};
-	TBaseVal3() : raw{0} {}
+	TBaseVal3() : raw{0, 0, 0} {}
 	TBaseVal3(const TYPE x, const TYPE y, const TYPE z) : x(x), y(y), z(z) {}
 };
 
@@ -45,7 +45,7 @@ struct TBaseVal4 {
 		};
 		TYPE raw[4];
 	};
-	TBaseVal4() : raw{0} {}
+	TBaseVal4() : raw{0, 0, 0, 0} {}
 	TBaseVal4(const TYPE x, const TYPE y, const TYPE z, const TYPE w) : x(x), y(y), z(z), w(w) {}
 };
 
