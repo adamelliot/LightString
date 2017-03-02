@@ -45,6 +45,16 @@ TEST(TCuboid, boundPoint) {
 	EXPECT_EQ(pt.z, 10);
 }
 
+TEST(TCuboid, includePoint) {
+	TCuboid<float> bounds;
+
+	bounds.includePoint(Point3f(10, 10, 10));
+
+	EXPECT_EQ(bounds.width,  10);
+	EXPECT_EQ(bounds.height, 10);
+	EXPECT_EQ(bounds.depth,  10);
+}
+
 TEST(TVec, normalize) {
 	TVec<float, 3> v(10, -10, 10);
 

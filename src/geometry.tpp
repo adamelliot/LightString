@@ -11,6 +11,18 @@ TPoint<TYPE, 2> TRect<TYPE>::randomPoint() {
 }
 
 template <typename TYPE>
+void TCuboid<TYPE>::includePoint(const TPoint<TYPE, 3> pt) {
+	if (pt.x < x) x = pt.x;
+	else if (pt.x > (x + width)) width = pt.x - x;
+
+	if (pt.y < y) y = pt.y;
+	else if (pt.y > (y + height)) height = pt.y - y;
+
+	if (pt.z < z) z = pt.z;
+	else if (pt.z > (z + depth)) depth = pt.z - z;
+}
+
+template <typename TYPE>
 bool TCuboid<TYPE>::containsPoint(TPoint<TYPE, 3> pt) {
 	if (pt.x < x || pt.y < y || pt.z < z ||
 	        pt.x > (x + width) || pt.y > (y + height) || pt.z > (z + depth))

@@ -13,7 +13,14 @@ private:
 	T<FORMAT> *rawPixels;
 
 public:
-	uint16_t width, height, depth;
+	uint16_t width = 1, height = 1, depth = 1;
+
+	inline TMappingPixelBuffer3d(const uint16_t length)
+		: TPixelBuffer<T, FORMAT>(length + 1) {
+		rawPixels = this->pixels;
+		this->pixels++;
+		this->length--;
+	}
 
 	inline TMappingPixelBuffer3d(const uint16_t width, const uint16_t height, const uint16_t depth, const uint16_t length)
 		: TPixelBuffer<T, FORMAT>(length + 1), width(width), height(height), depth(depth) {
@@ -25,7 +32,7 @@ public:
 	inline TMappingPixelBuffer3d(const uint16_t width, const uint16_t height, const uint16_t depth)
 		: TMappingPixelBuffer3d(width, height, depth, width * height * depth) {}
 
-	// Pixels here should represent the whole plane + 1 pixel
+	// Pixels here should represent the whole space + 1 pixel
 	inline TMappingPixelBuffer3d(T<FORMAT> *pixels, const uint16_t width, const uint16_t height, const uint16_t depth)
 		: TPixelBuffer<T, FORMAT>(pixels + 1, width * height * depth), width(width), height(height), depth(depth)
 	{

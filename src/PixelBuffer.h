@@ -216,3 +216,4 @@ typedef TPixelBuffer<TRGBA, uint8_t> RGBAuBuffer;
 
 #include "buffers/MappingPixelBuffer2d.h"
 #include "buffers/MappingPixelBuffer3d.h"
+#include "buffers/MappingPixelBuffer.h"

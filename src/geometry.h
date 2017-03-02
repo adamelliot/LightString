@@ -114,6 +114,13 @@ struct TVecBase
 		return *this;
 	}
 
+	inline bool operator==(const TVecBase<TYPE, SIZE> &rhs) const {
+		bool ret = true;
+		for (auto i = 0; i < SIZE; i++) {
+			ret &= (rhs.raw[i] == this->raw[i]);
+		}
+		return ret;
+	}
 };
 
 template <typename TYPE, unsigned SIZE>
@@ -150,6 +157,16 @@ template <typename TYPE, unsigned SIZE>
 struct TPoint : public TVecBase<TYPE, SIZE> {
 	typedef TVecBase<TYPE, SIZE> BASE;
 	using BASE::BASE;
+
+	template<unsigned S>
+	operator TPoint<TYPE, S>() {
+		TPoint<TYPE, S> ret;
+
+		for (int i = 0; i < std::min(S, SIZE); i++) {
+			ret.raw[i] = this->raw[i];
+		}
+		return ret;
+	}
 };
 
 typedef TPoint<float, 2> Point2f;
@@ -177,8 +194,10 @@ struct TCuboid {
 	TYPE width = 0, height = 0, depth = 0;
 
 	TCuboid() {}
-	TCuboid(const TYPE x, const TYPE y, const TYPE z, const TYPE width, const TYPE height, const TYPE depth)
+	TCuboid(const TYPE x, const TYPE y, const TYPE z, const TYPE width = 0, const TYPE height = 0, const TYPE depth = 0)
 		: x(x), y(y), z(z), width(width), height(height), depth(depth) {}
+
+	void includePoint(const TPoint<TYPE, 3> pt);
 
 	bool containsPoint(const TPoint<TYPE, 3> pt);
 	TPoint<TYPE, 3> boundPoint(const TPoint<TYPE, 3> &pt, TVec<TYPE, 3> *vec = nullptr);

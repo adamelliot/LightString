@@ -147,6 +147,53 @@ TEST(TMappingPixelBuffer3d, lineTo) {
 	EXPECT_RGBf_EQ(buffer[666], 1.0f, 0.0f, 0.0f);
 }
 
+// -------------- Generic Mapping -----------------
+
+TEST(TMappingPixelBuffer, creation) {
+
+	PointMapping mapping;
+
+	mapping.addPoint(Point3i(10, 9, 8), 2);
+	mapping.addPoint(Point3i(9, 4, 2), 1);
+
+	TMappingPixelBuffer<TRGB, float> buffer(mapping);
+
+	EXPECT_EQ(buffer.getLength(), 2);
+	EXPECT_EQ(buffer.width, 10);
+	EXPECT_EQ(buffer.height, 9);
+	EXPECT_EQ(buffer.depth, 8);
+}
+
+TEST(TMappingPixelBuffer, lookupXYZ) {
+	PointMapping mapping;
+
+	mapping.addPoint(Point3i(10, 9, 8), 2);
+	mapping.addPoint(Point3i(9, 4, 2), 1);
+	mapping.addPoint(Point3i(5, 6, 3), 3);
+
+	TMappingPixelBuffer<TRGB, float> buffer(mapping);
+
+	EXPECT_EQ(buffer.xyz(10, 9, 8), 2);
+	EXPECT_EQ(buffer.xyz(9, 4, 2), 1);
+	EXPECT_EQ(buffer.xyz(5, 3, 1), -1);
+	EXPECT_EQ(buffer.xyz(-5, 3, 1), -1);
+}
+
+TEST(TMappingPixelBuffer, lookupXY) {
+	PointMapping mapping;
+
+	mapping.addPoint(Point2i(10, 9), 2);
+	mapping.addPoint(Point2i(9, 4), 1);
+	mapping.addPoint(Point2i(5, 6), 3);
+
+	TMappingPixelBuffer<TRGB, float> buffer(mapping);
+
+	EXPECT_EQ(buffer.xy(10, 9), 2);
+	EXPECT_EQ(buffer.xy(9, 4), 1);
+	EXPECT_EQ(buffer.xy(5, 3), -1);
+	EXPECT_EQ(buffer.xy(-5, 3), -1);
+}
+
 /*
 TEST(TPixelBuffer, resize) {
 	TPixelBuffer<TRGB, uint8_t> buffer(30);
