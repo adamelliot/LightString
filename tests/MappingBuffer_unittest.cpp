@@ -158,7 +158,7 @@ TEST(TMappingPixelBuffer, creation) {
 
 	TMappingPixelBuffer<TRGB, float> buffer(mapping);
 
-	EXPECT_EQ(buffer.getLength(), 2);
+	EXPECT_EQ(buffer.getLength(), 3);
 	EXPECT_EQ(buffer.width, 10);
 	EXPECT_EQ(buffer.height, 9);
 	EXPECT_EQ(buffer.depth, 8);
@@ -194,20 +194,33 @@ TEST(TMappingPixelBuffer, lookupXY) {
 	EXPECT_EQ(buffer.xy(-5, 3), -1);
 }
 
-/*
-TEST(TPixelBuffer, resize) {
-	TPixelBuffer<TRGB, uint8_t> buffer(30);
+TEST(TMappingPixelBuffer, setMapping) {
+	PointMapping mapping;
 
-	EXPECT_EQ(buffer.length, 30);
-	buffer.resize(40);
+	mapping.addPoint(Point3i(10, 9, 8), 2);
+	mapping.addPoint(Point3i(9, 4, 2), 1);
 
-	buffer[35] = RGBu(100, 200, 50);
+	TMappingPixelBuffer<TRGB, float> buffer(mapping);
 
-	EXPECT_EQ(buffer.length, 40);
+	EXPECT_EQ(buffer.getLength(), 3);
+	EXPECT_EQ(buffer.width, 10);
+	EXPECT_EQ(buffer.height, 9);
+	EXPECT_EQ(buffer.depth, 8);
 
-	EXPECT_RGBu_EQ(buffer[35], 100, 200, 50);
+	PointMapping mapping2;
+
+	mapping2.addPoint(Point2i(10, 9), 2);
+	mapping2.addPoint(Point2i(9, 4), 1);
+	mapping2.addPoint(Point2i(5, 6), 3);
+
+	buffer.setMapping(mapping2);
+
+	EXPECT_EQ(buffer.getLength(), 4);
+	EXPECT_EQ(buffer.xy(10, 9), 2);
+	EXPECT_EQ(buffer.xy(9, 4), 1);
 }
 
+/*
 TEST(TPixelBuffer, indexAccess) {
 	TPixelBuffer<TRGB> buffer(30);
 

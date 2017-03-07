@@ -52,15 +52,22 @@ public:
 template <template <typename> class T, typename FORMAT = uint8_t>
 class TMappingPixelBuffer : public TMappingPixelBuffer3d<T, FORMAT> {
 private:
-	
 	PointMapping mapping;
 
 public:
 
 	TPoint<FORMAT, 3> origin;
 
+	TMappingPixelBuffer() : LightString::TMappingPixelBuffer3d<T, FORMAT>(1) {}
+
 	TMappingPixelBuffer(const PointMapping &mapping)
-		: LightString::TMappingPixelBuffer3d<T, FORMAT>(mapping.maxIndex), mapping(mapping) {
+		: LightString::TMappingPixelBuffer3d<T, FORMAT>(mapping.maxIndex) {
+		setMapping(mapping);
+	}
+
+	void setMapping(const PointMapping &mapping) {
+		this->resize(mapping.maxIndex + 1);
+		this->mapping = mapping;
 
 		this->width  = mapping.bounds.width;
 		this->height = mapping.bounds.height;

@@ -44,11 +44,46 @@ public:
 		this->pixels = rawPixels;
 	}
 
+	inline bool resize(uint16_t length) {
+		if (!this->shouldDelete && length > 0) {
+#ifdef ARDUINO
+			Serial.println("ERROR: Cannot resize buffer that is not owned by pixel buffer.");
+#else
+			fprintf(stderr, "ERROR: Cannot resize buffer that is not owned by pixel buffer.\n");
+#endif
+			return false;
+		}
+
+		if (this->shouldDelete) {
+			delete this->rawPixels;
+		}
+
+		this->width = 1;
+		this->height = 1;
+		this->depth = 1;
+
+		this->length = length;
+		this->pixels = new T<FORMAT>[length + 1];
+		memset(this->pixels, 0, sizeof(T<FORMAT>) * length);
+		rawPixels = this->pixels;
+		this->pixels++;
+
+		return true;
+	}
+
 	virtual int16_t xyz(int16_t x, int16_t y, int16_t z) {
 		if (x < 0 || y < 0 || z < 0) return -1;
 
 		return (x + (y * width) + (z * width * height));
 	}
+
+	/* --------------- 2d Methods ----------------- */
+
+	inline void setPixel(uint16_t x, uint16_t y, T<FORMAT> col) __attribute__((always_inline)) {
+		this->pixels[xyz(x, y, 0)] = col;
+	}
+
+	/* --------------- 3d Methods ----------------- */
 
 	/* ---------- Anti-aliased Methods ------------ */
 	// These all assume that we have an alpha channel
