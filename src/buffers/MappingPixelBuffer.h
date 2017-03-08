@@ -69,9 +69,9 @@ public:
 		this->resize(mapping.maxIndex + 1);
 		this->mapping = mapping;
 
-		this->width  = mapping.bounds.width;
-		this->height = mapping.bounds.height;
-		this->depth  = mapping.bounds.depth;
+		this->width  = mapping.bounds.width + 1;
+		this->height = mapping.bounds.height + 1;
+		this->depth  = mapping.bounds.depth + 1;
 
 		origin.x = mapping.bounds.x;
 		origin.y = mapping.bounds.y;
