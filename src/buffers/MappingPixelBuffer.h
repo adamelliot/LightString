@@ -51,7 +51,7 @@ public:
 
 template <template <typename> class T, typename FORMAT = uint8_t>
 class TMappingPixelBuffer : public TMappingPixelBuffer3d<T, FORMAT> {
-private:
+protected:
 	PointMapping mapping;
 
 public:
