@@ -61,9 +61,8 @@ public:
 		return true;
 	}
 
-	inline uint16_t getLength() const {
-		return length;
-	}
+	uint16_t getLength() const { return length; }
+	uint16_t getSize() const { return length; }
 
 	inline T<FORMAT>& operator[] (uint16_t index) __attribute__((always_inline)) {
 		return pixels[index];

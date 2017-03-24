@@ -6,17 +6,16 @@ namespace std
 {
 
 template<>
-struct hash<typename LightString::Point3i>
+struct hash<typename LightString::Point3f>
 {
-    std::size_t operator()(LightString::Point3i const& s) const
+    std::size_t operator()(LightString::Point3f const& s) const
     {
-    	uint8_t shift = sizeof(size_t) / 3;
-
-        std::size_t const h1((uint32_t)s.x);
-        std::size_t const h2((uint32_t)s.y);
-        std::size_t const h3((uint32_t)s.z);
-
-        return (h3 << (shift * 2)) | (h2 << shift) | h1;
+    	const float scale = 100000;
+    	union {
+    		float f;
+    		size_t val;
+    	} u = { ((s.x * scale * scale) + (s.y * scale) + s.z) };
+    	return u.val;//reinterpret_cast<size_t>((s.x * scale * scale) + (s.y * scale) + s.z);
     }
 };
 
@@ -24,28 +23,38 @@ struct hash<typename LightString::Point3i>
 
 namespace LightString {
 
+template <typename TYPE, unsigned SIZE>
+struct TIndexedPoint : public TPoint<TYPE, SIZE> {
+	uint32_t index = 0;
+
+	TIndexedPoint(uint32_t index, TPoint<TYPE, SIZE> val) : index(index), TPoint<TYPE, SIZE>(val) {}
+};
+
 class PointMapping {
 public:
-	std::unordered_map<Point3i, uint32_t> points;
+	std::unordered_map<Point3f, uint32_t> mappedPoints;
+	std::vector<TIndexedPoint<float, 3>> points;
 
 	uint32_t minIndex = 0xffffffff;
 	uint32_t maxIndex = 0;
 
-	TCuboid<int32_t> bounds;
+	TCuboid<float> bounds;
 
-	void addPoint(const Point3i &point, uint32_t index) {
+	void addPoint(const Point3f &point, uint32_t index) {
 		if (index < minIndex) minIndex = index;
 		if (index > maxIndex) maxIndex = index;
 
 		bounds.includePoint(point);
 
-		points.emplace(point, index);
+		points.push_back(TIndexedPoint<float, 3>(index, point));
+		mappedPoints.emplace(point, index);
 	}
 
 	PointMapping() {}
 
 	PointMapping(const PointMapping& mapping) :
-		points(mapping.points), minIndex(mapping.minIndex), maxIndex(mapping.maxIndex) {}
+		points(mapping.points), mappedPoints(mapping.mappedPoints),
+		minIndex(mapping.minIndex), maxIndex(mapping.maxIndex) {}
 
 };
 
@@ -65,6 +74,8 @@ public:
 		setMapping(mapping);
 	}
 
+	const std::vector<TIndexedPoint<float, 3>> &getPoints() { return mapping.points; }
+
 	void setMapping(const PointMapping &mapping) {
 		this->resize(mapping.maxIndex + 1);
 		this->mapping = mapping;
@@ -78,24 +89,27 @@ public:
 		origin.z = mapping.bounds.z;
 	}
 
+	// [[deprecated("Inverse mapping is inefficient and incompatible with full point clouds.")]]
 	virtual int16_t xy(int16_t x, int16_t y) {
-		Point3i pt(x, y, 0);
-		auto key = mapping.points.find(pt);
-		if (key == mapping.points.end()) {
+		Point3f pt(x, y, 0);
+		auto key = mapping.mappedPoints.find(pt);
+		if (key == mapping.mappedPoints.end()) {
 			return -1;
 		} else {
 			return (int16_t)key->second;
 		}
 	}
 
+	// [[deprecated("Inverse mapping is inefficient and incompatible with full point clouds.")]]
 	virtual int16_t xyz(int16_t x, int16_t y, int16_t z) {
-		Point3i pt(x, y, z);
-		auto key = mapping.points.find(pt);
-		if (key == mapping.points.end()) {
+		Point3f pt(x, y, z);
+		auto key = mapping.mappedPoints.find(pt);
+		if (key == mapping.mappedPoints.end()) {
 			return -1;
 		} else {
 			return (int16_t)key->second;
 		}
+		return -1;
 	}
 };
 

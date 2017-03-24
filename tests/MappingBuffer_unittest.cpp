@@ -153,8 +153,8 @@ TEST(TMappingPixelBuffer, creation) {
 
 	PointMapping mapping;
 
-	mapping.addPoint(Point3i(10, 9, 8), 2);
-	mapping.addPoint(Point3i(9, 4, 2), 1);
+	mapping.addPoint(Point3f(10, 9, 8), 2);
+	mapping.addPoint(Point3f(9, 4, 2), 1);
 
 	TMappingPixelBuffer<TRGB, float> buffer(mapping);
 
@@ -167,9 +167,9 @@ TEST(TMappingPixelBuffer, creation) {
 TEST(TMappingPixelBuffer, lookupXYZ) {
 	PointMapping mapping;
 
-	mapping.addPoint(Point3i(10, 9, 8), 2);
-	mapping.addPoint(Point3i(9, 4, 2), 1);
-	mapping.addPoint(Point3i(5, 6, 3), 3);
+	mapping.addPoint(Point3f(10, 9, 8), 2);
+	mapping.addPoint(Point3f(9, 4, 2), 1);
+	mapping.addPoint(Point3f(5, 6, 3), 3);
 
 	TMappingPixelBuffer<TRGB, float> buffer(mapping);
 
@@ -182,9 +182,9 @@ TEST(TMappingPixelBuffer, lookupXYZ) {
 TEST(TMappingPixelBuffer, lookupXY) {
 	PointMapping mapping;
 
-	mapping.addPoint(Point2i(10, 9), 2);
-	mapping.addPoint(Point2i(9, 4), 1);
-	mapping.addPoint(Point2i(5, 6), 3);
+	mapping.addPoint(Point2f(10, 9), 2);
+	mapping.addPoint(Point2f(9, 4), 1);
+	mapping.addPoint(Point2f(5, 6), 3);
 
 	TMappingPixelBuffer<TRGB, float> buffer(mapping);
 
@@ -197,8 +197,8 @@ TEST(TMappingPixelBuffer, lookupXY) {
 TEST(TMappingPixelBuffer, setMapping) {
 	PointMapping mapping;
 
-	mapping.addPoint(Point3i(10, 9, 8), 2);
-	mapping.addPoint(Point3i(9, 4, 2), 1);
+	mapping.addPoint(Point3f(10, 9, 8), 2);
+	mapping.addPoint(Point3f(9, 4, 2), 1);
 
 	TMappingPixelBuffer<TRGB, float> buffer(mapping);
 
@@ -209,9 +209,9 @@ TEST(TMappingPixelBuffer, setMapping) {
 
 	PointMapping mapping2;
 
-	mapping2.addPoint(Point2i(10, 9), 2);
-	mapping2.addPoint(Point2i(9, 4), 1);
-	mapping2.addPoint(Point2i(5, 6), 3);
+	mapping2.addPoint(Point2f(10, 9), 2);
+	mapping2.addPoint(Point2f(9, 4), 1);
+	mapping2.addPoint(Point2f(5, 6), 3);
 
 	buffer.setMapping(mapping2);
 
