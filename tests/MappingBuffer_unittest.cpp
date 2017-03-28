@@ -29,30 +29,44 @@ TEST(TMappingPixelBuffer2d, indexing) {
 	EXPECT_EQ(buffer.xy(10, -10), -1);
 }
 
+TEST(TMappingPixelBuffer2d, dummyPixelAccess) {
+	TMappingPixelBuffer2d<TRGB, float> buffer(10, 10);
+
+	buffer[-1] = RGBf(0.3, 1, 0.2);
+	EXPECT_RGBf_EQ(buffer[-1], 0.3, 1, 0.2);	
+}
+
 // -------------- 3d -----------------
 
-TEST(TMappingPixelBuffer3d, creation) {
-	TMappingPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
+TEST(TPixelBuffer3d, creation) {
+	TPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
 
 	EXPECT_EQ(buffer.length, 1000);
 	EXPECT_TRUE(buffer.shouldDelete);
 
-	TMappingPixelBuffer3d<TRGB, float> buffer2(10, 10, 10, 100);
+	TPixelBuffer3d<TRGB, float> buffer2(10, 10, 10, 100);
 
 	EXPECT_EQ(buffer2.length, 100);
 	EXPECT_TRUE(buffer2.shouldDelete);
 }
 
-TEST(TMappingPixelBuffer3d, indexing) {
-	TMappingPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
+TEST(TPixelBuffer3d, indexing) {
+	TPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
 
 	EXPECT_EQ(buffer.xyz(2, 2, 2), 222);
 	EXPECT_EQ(buffer.xyz(-10, 10, 2), -1);
 	EXPECT_EQ(buffer.xyz(10, -10, 2), -1);
 }
 
-TEST(TMappingPixelBuffer3d, lineX) {
-	TMappingPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
+TEST(TPixelBuffer3d, dummyPixelAccess) {
+	TPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
+
+	buffer.pixels[-1] = RGBf(0.3, 1, 0.2);
+	EXPECT_RGBf_EQ(buffer[-1], 0.3, 1, 0.2);	
+}
+
+TEST(TPixelBuffer3d, lineX) {
+	TPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
 
 	buffer.clear();
 	buffer.lineX(2, 2, 2, 3, HTML::White);
@@ -69,8 +83,8 @@ TEST(TMappingPixelBuffer3d, lineX) {
 	EXPECT_RGBf_EQ(buffer[220], 1.0f, 0.0f, 0.0f);
 }
 
-TEST(TMappingPixelBuffer3d, lineY) {
-	TMappingPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
+TEST(TPixelBuffer3d, lineY) {
+	TPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
 
 	buffer.clear();
 	buffer.lineY(2, 2, 2, 3, HTML::White);
@@ -87,8 +101,8 @@ TEST(TMappingPixelBuffer3d, lineY) {
 	EXPECT_RGBf_EQ(buffer[202], 1.0f, 0.0f, 0.0f);
 }
 
-TEST(TMappingPixelBuffer3d, lineZ) {
-	TMappingPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
+TEST(TPixelBuffer3d, lineZ) {
+	TPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
 
 	buffer.clear();
 	buffer.lineZ(2, 2, 2, 3, HTML::White);
@@ -105,8 +119,8 @@ TEST(TMappingPixelBuffer3d, lineZ) {
 	EXPECT_RGBf_EQ(buffer[ 22], 1.0f, 0.0f, 0.0f);
 }
 
-TEST(TMappingPixelBuffer3d, lineTo) {
-	TMappingPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
+TEST(TPixelBuffer3d, lineTo) {
+	TPixelBuffer3d<TRGB, float> buffer(10, 10, 10);
 
 	buffer.clear();
 	buffer.lineTo(2, 2, 2, 5, 5, 5, HTML::Red);
@@ -151,7 +165,7 @@ TEST(TMappingPixelBuffer3d, lineTo) {
 
 TEST(TMappingPixelBuffer, creation) {
 
-	PointMapping mapping;
+	TPointMapping<float> mapping;
 
 	mapping.addPoint(Point3f(10, 9, 8), 2);
 	mapping.addPoint(Point3f(9, 4, 2), 1);
@@ -164,14 +178,14 @@ TEST(TMappingPixelBuffer, creation) {
 	EXPECT_EQ(buffer.depth, 9);
 }
 
-TEST(TMappingPixelBuffer, lookupXYZ) {
-	PointMapping mapping;
+TEST(TMappingPixelBuffer3d, lookupXYZ) {
+	TPointMapping<int> mapping;
 
-	mapping.addPoint(Point3f(10, 9, 8), 2);
-	mapping.addPoint(Point3f(9, 4, 2), 1);
-	mapping.addPoint(Point3f(5, 6, 3), 3);
+	mapping.addPoint(Point3i(10, 9, 8), 2);
+	mapping.addPoint(Point3i(9, 4, 2), 1);
+	mapping.addPoint(Point3i(5, 6, 3), 3);
 
-	TMappingPixelBuffer<TRGB, float> buffer(mapping);
+	TMappingPixelBuffer3d<TRGB, float> buffer(mapping);
 
 	EXPECT_EQ(buffer.xyz(10, 9, 8), 2);
 	EXPECT_EQ(buffer.xyz(9, 4, 2), 1);
@@ -179,23 +193,8 @@ TEST(TMappingPixelBuffer, lookupXYZ) {
 	EXPECT_EQ(buffer.xyz(-5, 3, 1), -1);
 }
 
-TEST(TMappingPixelBuffer, lookupXY) {
-	PointMapping mapping;
-
-	mapping.addPoint(Point2f(10, 9), 2);
-	mapping.addPoint(Point2f(9, 4), 1);
-	mapping.addPoint(Point2f(5, 6), 3);
-
-	TMappingPixelBuffer<TRGB, float> buffer(mapping);
-
-	EXPECT_EQ(buffer.xy(10, 9), 2);
-	EXPECT_EQ(buffer.xy(9, 4), 1);
-	EXPECT_EQ(buffer.xy(5, 3), -1);
-	EXPECT_EQ(buffer.xy(-5, 3), -1);
-}
-
 TEST(TMappingPixelBuffer, setMapping) {
-	PointMapping mapping;
+	TPointMapping<float> mapping;
 
 	mapping.addPoint(Point3f(10, 9, 8), 2);
 	mapping.addPoint(Point3f(9, 4, 2), 1);
@@ -207,7 +206,7 @@ TEST(TMappingPixelBuffer, setMapping) {
 	EXPECT_EQ(buffer.height, 10);
 	EXPECT_EQ(buffer.depth, 9);
 
-	PointMapping mapping2;
+	TPointMapping<float> mapping2;
 
 	mapping2.addPoint(Point2f(10, 9), 2);
 	mapping2.addPoint(Point2f(9, 4), 1);
@@ -215,105 +214,5 @@ TEST(TMappingPixelBuffer, setMapping) {
 
 	buffer.setMapping(mapping2);
 
-	EXPECT_EQ(buffer.getLength(), 4);
-	EXPECT_EQ(buffer.xy(10, 9), 2);
-	EXPECT_EQ(buffer.xy(9, 4), 1);
+	EXPECT_EQ(buffer.getSize(), 4);
 }
-
-/*
-TEST(TPixelBuffer, indexAccess) {
-	TPixelBuffer<TRGB> buffer(30);
-
-	buffer[0] = RGBu(10, 20, 30);
-	RGBu col = buffer[0];
-
-	EXPECT_RGBu_EQ(col, 10, 20, 30);
-}
-
-TEST(TPixelBuffer, setPixel) {
-	TPixelBuffer<TRGB> buffer(30);
-
-	buffer.setPixel(0, RGBu(10, 20, 30));
-	RGBu col = buffer[0];
-
-	EXPECT_RGBu_EQ(buffer[0], 10, 20, 30);
-}
-
-TEST(TPixelBuffer, setPixelAA) {
-	TPixelBuffer<TRGB> buffer(30);
-
-	buffer[0] = RGBu(20, 40, 60);
-	buffer[1] = RGBu(60, 80, 100);
-
-	buffer.setPixelAA(0.75, RGBu(200, 200, 200));
-
-	EXPECT_RGBu_EQ(buffer[0], 65, 80, 95);
-	EXPECT_RGBu_EQ(buffer[1], 165, 170, 175);
-}
-
-TEST(TPixelBuffer, setPixels) {
-	TPixelBuffer<TRGB> buffer(30);
-
-	buffer.setPixels(4, 10, RGBu(10, 20, 30));
-
-	for (int i = 0; i < 10; i++) {
-		EXPECT_RGBu_EQ(buffer[i + 4], 10, 20, 30);
-	}
-}
-
-TEST(TPixelBuffer, setMirroredPixel) {
-	TPixelBuffer<TRGB> buffer(30);
-
-	buffer.setMirroredPixel(4, RGBu(10, 20, 30));
-
-	EXPECT_RGBu_EQ(buffer[4], 10, 20, 30);
-	EXPECT_RGBu_EQ(buffer[25], 10, 20, 30);
-}
-
-TEST(TPixelBuffer, clear) {
-	TPixelBuffer<TRGB> buffer(30);
-
-	buffer.setMirroredPixel(4, RGBu(10, 20, 30));
-	buffer.clear();
-
-	for (int i = 0; i < 30; i++) {
-		EXPECT_RGBu_EQ(buffer[i], 0, 0, 0);
-	}
-}
-
-TEST(TPixelBuffer, fillColor) {
-	TPixelBuffer<TRGB> buffer(30);
-
-	buffer.setMirroredPixel(4, RGBu(10, 20, 30));
-	buffer.clear();
-
-	for (int i = 0; i < 30; i++) {
-		EXPECT_RGBu_EQ(buffer[i], 0, 0, 0);
-	}
-}
-
-TEST(TPixelBuffer, fade) {
-	TPixelBuffer<TRGB, uint8_t> buffer(30);
-
-	buffer.fillColor(RGBu(100, 80, 60));
-	buffer.fade(191);
-
-	for (int i = 0; i < 30; i++) {
-		EXPECT_RGBu_EQ(buffer[i], 75, 60, 45);
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/

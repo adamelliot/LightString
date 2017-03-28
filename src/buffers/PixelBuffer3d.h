@@ -6,40 +6,49 @@
 namespace LightString {
 
 template <template <typename> class T, typename FORMAT = uint8_t>
-class TMappingPixelBuffer3d : public TPixelBuffer<T, FORMAT> {
+class TPixelBuffer3d : public TPixelBuffer<T, FORMAT> {
 	typedef T<FORMAT> (* BlendOperator)(T<FORMAT> &, const T<FORMAT> &);
 
 private:
+	// Raw pixels points at pixels - 1. The space right before the buffer
+	// is used as a dummy pixel that can be mapped to for things we don't
+	// actually want to see.
 	T<FORMAT> *rawPixels;
+
 
 public:
 	uint16_t width = 1, height = 1, depth = 1;
 
-	inline TMappingPixelBuffer3d(const uint16_t length)
+	TPixelBuffer3d(const uint16_t length)
 		: TPixelBuffer<T, FORMAT>(length + 1) {
 		rawPixels = this->pixels;
 		this->pixels++;
 		this->length--;
 	}
 
-	inline TMappingPixelBuffer3d(const uint16_t width, const uint16_t height, const uint16_t depth, const uint16_t length)
+	TPixelBuffer3d(const uint16_t width, const uint16_t height, const uint16_t depth, const uint16_t length)
 		: TPixelBuffer<T, FORMAT>(length + 1), width(width), height(height), depth(depth) {
 		rawPixels = this->pixels;
 		this->pixels++;
 		this->length--;
 	}
 
-	inline TMappingPixelBuffer3d(const uint16_t width, const uint16_t height, const uint16_t depth)
-		: TMappingPixelBuffer3d(width, height, depth, width * height * depth) {}
+	TPixelBuffer3d(const uint16_t width, const uint16_t height, const uint16_t depth)
+		: TPixelBuffer3d(width, height, depth, width * height * depth) {}
 
 	// Pixels here should represent the whole space + 1 pixel
-	inline TMappingPixelBuffer3d(T<FORMAT> *pixels, const uint16_t width, const uint16_t height, const uint16_t depth)
-		: TPixelBuffer<T, FORMAT>(pixels + 1, width * height * depth), width(width), height(height), depth(depth)
+	TPixelBuffer3d(T<FORMAT> *pixels, const uint16_t width, const uint16_t height, const uint16_t depth)
+		: TPixelBuffer<T, FORMAT>(pixels, width * height * depth), width(width), height(height), depth(depth)
 	{
 		this->rawPixels = pixels;
+		this->pixels++;
 	}
 
-	virtual inline ~TMappingPixelBuffer3d() {
+	TPixelBuffer3d(T<FORMAT> *pixels, const uint16_t size)
+		: TPixelBuffer<T, FORMAT>(pixels, size), width(1), height(1), depth(1)
+	{}
+
+	virtual ~TPixelBuffer3d() {
 		// Put pixels back so it deletes properly.
 		this->pixels = rawPixels;
 	}
@@ -223,7 +232,7 @@ public:
 	template <BlendOperator BLEND_OP = blendCOPY>
 	inline void drawCuboid(TCuboid<float> cuboid, T<FORMAT> col) {
 		drawCuboid<BLEND_OP>(Point3f(cuboid.x, cuboid.y, cuboid.z),
-			Point3f(cuboid.x + cuboid.width, cuboid.y + cuboid.height, cuboid.z + cuboid.depth));
+		                     Point3f(cuboid.x + cuboid.width, cuboid.y + cuboid.height, cuboid.z + cuboid.depth));
 	}
 
 	template <BlendOperator BLEND_OP = blendCOPY>
@@ -382,6 +391,80 @@ public:
 			}
 		}
 		this->pixels[xyz(x1, y1, z1)] = col;
+	}
+};
+
+/**
+ * The Mapping Pixel Buffer 3d assumes rectilinear separation
+ * of points in 3d space which then treats the spaces as a voxel
+ * volume with associated drawing routines.
+ * It uses a mapping
+ */
+template <template <typename> class T, typename FORMAT = uint8_t>
+class TMappingPixelBuffer3d : public TPixelBuffer3d<T, FORMAT> {
+
+private:
+	std::vector<int16_t> mapping;
+
+public:
+	TMappingPixelBuffer3d(const uint16_t length) : TPixelBuffer3d<T, FORMAT>(length) {}
+
+	TMappingPixelBuffer3d(const uint16_t width, const uint16_t height, const uint16_t depth, const uint16_t length)
+		: TPixelBuffer3d<T, FORMAT>(width, height, depth, length) {}
+
+	TMappingPixelBuffer3d(const uint16_t width, const uint16_t height, const uint16_t depth)
+		: TPixelBuffer3d<T, FORMAT>(width, height, depth, width * height * depth) {}
+
+	TMappingPixelBuffer3d(T<FORMAT> *pixels, const uint16_t width, const uint16_t height, const uint16_t depth)
+		: TPixelBuffer3d<T, FORMAT>(pixels, width, height, depth) {}
+
+	TMappingPixelBuffer3d(T<FORMAT> *pixels, const uint16_t size)
+		: TPixelBuffer3d<T, FORMAT>(pixels, size) {}
+
+	template<typename TYPE = uint16_t>
+	TMappingPixelBuffer3d(const TPointMapping<TYPE> &mapping) : TPixelBuffer3d<T, FORMAT>(1) {
+		uint16_t w = std::ceil(mapping.bounds.width);
+		uint16_t h = std::ceil(mapping.bounds.height);
+		uint16_t d = std::ceil(mapping.bounds.depth);
+		this->resize(w * h * d);
+		setMapping(mapping);
+	}
+
+	/**
+	 * The actual size of the buffer should be adjusted to fit the mapping.
+	 * Any points in the mapping that fall outside the bounds of the
+	 * actual LED buffer will be mapping to blank space (not-drawn).
+	 */
+	template<typename TYPE = uint16_t>
+	void setMapping(const TPointMapping<TYPE> &newMapping) {
+		this->width  = std::ceil(newMapping.bounds.width + 1);
+		this->height = std::ceil(newMapping.bounds.height + 1);
+		this->depth  = std::ceil(newMapping.bounds.depth + 1);
+
+		uint16_t &w = this->width;
+		uint16_t &h = this->height;
+		uint16_t &d = this->depth;
+
+		auto size = w * h * d;
+		mapping.clear();
+		mapping.resize(size);
+
+		std::fill(mapping.begin(), mapping.end(), -1);
+
+		for (auto &point : newMapping.points) {
+			if (point.index >= this->getSize()) continue;
+			mapping[point.x + (point.y * w) + (point.z * w * h)] = point.index;
+		}
+	}
+
+	virtual int16_t xyz(int16_t x, int16_t y, int16_t z) {
+		if (x < 0 || y < 0 || z < 0) return -1;
+		auto &w = this->width;
+		auto &h = this->height;
+		auto &d = this->depth;
+
+		if (x >= w || y >= h || z >= d) return -1;
+		return mapping[x + (y * w) + (z * w * h)];
 	}
 };
 

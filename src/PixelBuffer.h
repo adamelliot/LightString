@@ -64,11 +64,11 @@ public:
 	uint16_t getLength() const { return length; }
 	uint16_t getSize() const { return length; }
 
-	inline T<FORMAT>& operator[] (uint16_t index) __attribute__((always_inline)) {
+	inline T<FORMAT>& operator[] (int16_t index) __attribute__((always_inline)) {
 		return pixels[index];
 	}
 
-	inline void setPixel(uint16_t index, T<FORMAT> col) __attribute__((always_inline)) {
+	inline void setPixel(int16_t index, T<FORMAT> col) __attribute__((always_inline)) {
 		pixels[index] = col;
 	}
 
@@ -87,13 +87,13 @@ public:
 		}
 	}
 
-	inline void setPixels(uint16_t index, uint8_t length, T<FORMAT> col) __attribute__((always_inline)) {
+	inline void setPixels(int16_t index, uint8_t length, T<FORMAT> col) __attribute__((always_inline)) {
 		for (uint16_t i = index; i < index + length; i++) {
 			pixels[i] = col;
 		}
 	}
 
-	inline void setMirroredPixel(uint16_t index, T<FORMAT> col) __attribute__((always_inline)) {
+	inline void setMirroredPixel(int16_t index, T<FORMAT> col) __attribute__((always_inline)) {
 		pixels[index] = col;
 		pixels[length - index - 1] = col;
 	}
@@ -214,5 +214,5 @@ typedef TPixelBuffer<TRGBA, uint8_t> RGBAuBuffer;
 };
 
 #include "buffers/MappingPixelBuffer2d.h"
-#include "buffers/MappingPixelBuffer3d.h"
+#include "buffers/PixelBuffer3d.h"
 #include "buffers/MappingPixelBuffer.h"

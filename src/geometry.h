@@ -169,7 +169,7 @@ struct TPoint : public TVecBase<TYPE, SIZE> {
 	using BASE::BASE;
 
 	template<unsigned S>
-	operator TPoint<TYPE, S>() {
+	operator TPoint<TYPE, S>() const {
 		TPoint<TYPE, S> ret;
 
 		for (int i = 0; i < std::min(S, SIZE); i++) {
@@ -277,6 +277,40 @@ struct PointSystem {
 	void setBounds(BoundingType bounds);
 	void addBoundedPoints(size_t pointCount, float velocity = 1.0);
 	void update();
+};
+
+template <typename TYPE, unsigned SIZE>
+struct TIndexedPoint : public TPoint<TYPE, SIZE> {
+	uint32_t index = 0;
+
+	template <typename T, unsigned S>
+	TIndexedPoint(uint32_t index, TPoint<T, S> val) : TPoint<TYPE, SIZE>(val), index(index) {}
+};
+
+template <typename TYPE>
+class TPointMapping {
+public:
+	std::vector<TIndexedPoint<TYPE, 3>> points;
+
+	uint32_t minIndex = 0;
+	uint32_t maxIndex = 0;
+
+	TCuboid<TYPE> bounds;
+
+	template <typename T, unsigned S>
+	void addPoint(const TPoint<T, S> &point, uint32_t index) {
+		if (points.size() == 0) {
+			minIndex = maxIndex = index;
+		}
+
+		if (index < minIndex) minIndex = index;
+		if (index > maxIndex) maxIndex = index;
+
+		bounds.includePoint(point);
+		points.push_back(TIndexedPoint<TYPE, 3>(index, point));
+	}
+
+	TPointMapping() {}
 };
 
 #include "geometry.tpp"
