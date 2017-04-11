@@ -20,64 +20,31 @@ public:
 	uint16_t width = 1, height = 1, depth = 1;
 
 	TPixelBuffer3d(const uint16_t length)
-		: TPixelBuffer<T, FORMAT>(length + 1) {
-		rawPixels = this->pixels;
-		this->pixels++;
-		this->length--;
-	}
+		: TPixelBuffer<T, FORMAT>(length, true) {}
 
 	TPixelBuffer3d(const uint16_t width, const uint16_t height, const uint16_t depth, const uint16_t length)
-		: TPixelBuffer<T, FORMAT>(length + 1), width(width), height(height), depth(depth) {
-		rawPixels = this->pixels;
-		this->pixels++;
-		this->length--;
-	}
+		: TPixelBuffer<T, FORMAT>(length, true), width(width), height(height), depth(depth) {}
 
 	TPixelBuffer3d(const uint16_t width, const uint16_t height, const uint16_t depth)
 		: TPixelBuffer3d(width, height, depth, width * height * depth) {}
 
 	// Pixels here should represent the whole space + 1 pixel
 	TPixelBuffer3d(T<FORMAT> *pixels, const uint16_t width, const uint16_t height, const uint16_t depth)
-		: TPixelBuffer<T, FORMAT>(pixels, width * height * depth), width(width), height(height), depth(depth)
-	{
-		this->rawPixels = pixels;
-		this->pixels++;
-	}
-
-	TPixelBuffer3d(T<FORMAT> *pixels, const uint16_t size)
-		: TPixelBuffer<T, FORMAT>(pixels, size), width(1), height(1), depth(1)
+		: TPixelBuffer<T, FORMAT>(pixels, width * height * depth, true), width(width), height(height), depth(depth)
 	{}
 
-	virtual ~TPixelBuffer3d() {
-		// Put pixels back so it deletes properly.
-		this->pixels = rawPixels;
-	}
+	TPixelBuffer3d(T<FORMAT> *pixels, const uint16_t size)
+		: TPixelBuffer<T, FORMAT>(pixels, size, true), width(1), height(1), depth(1)
+	{}
 
-	inline bool resize(uint16_t length) {
-		if (!this->shouldDelete && length > 0) {
-#ifdef ARDUINO
-			Serial.println("ERROR: Cannot resize buffer that is not owned by pixel buffer.");
-#else
-			fprintf(stderr, "ERROR: Cannot resize buffer that is not owned by pixel buffer.\n");
-#endif
-			return false;
-		}
+	using TPixelBuffer<T, FORMAT>::resize;
 
-		if (this->shouldDelete) {
-			delete this->rawPixels;
-		}
+	bool resize(uint16_t width, uint16_t height, uint8_t depth) {
+		this->width = width;
+		this->height = height;
+		this->depth = depth;
 
-		this->width = 1;
-		this->height = 1;
-		this->depth = 1;
-
-		this->length = length;
-		this->pixels = new T<FORMAT>[length + 1];
-		memset(this->pixels, 0, sizeof(T<FORMAT>) * length);
-		rawPixels = this->pixels;
-		this->pixels++;
-
-		return true;
+		return this->resize(width * height * depth);
 	}
 
 	virtual int16_t xyz(int16_t x, int16_t y, int16_t z) {
@@ -426,7 +393,7 @@ public:
 		uint16_t w = std::ceil(mapping.bounds.width);
 		uint16_t h = std::ceil(mapping.bounds.height);
 		uint16_t d = std::ceil(mapping.bounds.depth);
-		this->resize(w * h * d);
+		this->resize(w, h, d);
 		setMapping(mapping);
 	}
 

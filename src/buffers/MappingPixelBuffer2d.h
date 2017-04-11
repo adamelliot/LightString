@@ -4,71 +4,31 @@ namespace LightString {
 
 template <template <typename> class T, typename FORMAT = uint8_t>
 class TMappingPixelBuffer2d : public TPixelBuffer<T, FORMAT> {
-private:
-	// Raw pixels points at pixels - 1. The space right before the buffer
-	// is used as a dummy pixel that can be mapped to for things we don't
-	// actually want to see.
-	T<FORMAT> *rawPixels;
-
 public:
 
-	uint16_t width, height;
+	uint16_t width = 1, height = 1;
 
 	// Length is not necessarily proportionate to width & height
 	// as the mapping will put pixels where ever it choses in the buffer
 	// So we need to have a separate length
 	inline TMappingPixelBuffer2d(const uint16_t width, const uint16_t height, const uint16_t length)
-		: TPixelBuffer<T, FORMAT>(length + 1), width(width), height(height) {
-		rawPixels = this->pixels;
-		this->pixels++;
-		this->length--;
-	}
+		: TPixelBuffer<T, FORMAT>(length, true), width(width), height(height) {}
 
 	inline TMappingPixelBuffer2d(const uint16_t width, const uint16_t height)
 		: TMappingPixelBuffer2d<T, FORMAT>(width, height, width * height) {}
 
 	// Pixels here should represent the whole plane + 1 pixel
 	inline TMappingPixelBuffer2d(T<FORMAT> *pixels, const uint16_t width, const uint16_t height)
-		: TPixelBuffer<T, FORMAT>(pixels, width * height), width(width), height(height)
-	{
-		this->rawPixels = pixels;
-		this->pixels++;
-	}
+		: TPixelBuffer<T, FORMAT>(pixels, width * height + 1, true), width(width), height(height) {}
 
-	virtual inline ~TMappingPixelBuffer2d() {
-		// Put pixels back so it deletes properly.
-		this->pixels = rawPixels;
-	}
+	using TPixelBuffer<T, FORMAT>::resize;
 
-	inline bool resize(uint16_t width, uint16_t height) {
-		uint32_t length = width * height;
-
-		if (!this->shouldDelete && length > 0) {
-#ifdef ARDUINO
-			Serial.println("ERROR: Cannot resize buffer that is not owned by pixel buffer.");
-#else
-			fprintf(stderr, "ERROR: Cannot resize buffer that is not owned by pixel buffer.\n");
-#endif
-			return false;
-		}
-
-		if (this->shouldDelete) {
-			delete this->rawPixels;
-		}
-
+	virtual bool resize(uint16_t width, uint16_t height) {
 		this->width = width;
 		this->height = height;
 
-		this->length = length;
-		this->pixels = new T<FORMAT>[length + 1];
-		memset(this->pixels, 0, sizeof(T<FORMAT>) * length);
-		rawPixels = this->pixels;
-		this->pixels++;
-
-		return true;
+		return this->resize(width * height);
 	}
-
-
 
 	virtual int16_t xy(int16_t x, int16_t y) {
 		if (x < 0 || y < 0) return -1;

@@ -18,29 +18,55 @@ namespace LightString {
 
 template <template <typename> class T, typename FORMAT = uint8_t>
 class TPixelBuffer : public IPixelBuffer {
+private:
+	T<FORMAT> *rawPixels = nullptr;
+	// Leave space before the actual pixels so things mapped to -1 are allowable
+	bool hasDummyPixel = false;
+
 public:
-	T<FORMAT> *pixels;
+	T<FORMAT> *pixels = nullptr;
 
-	uint16_t length;
-	bool shouldDelete;
+	uint16_t length = 0;
+	bool shouldDelete = false;
 
-	inline TPixelBuffer()
-		: pixels(0), length(0), shouldDelete(false) {}
+	TPixelBuffer() {}
 
-	inline TPixelBuffer(T<FORMAT> *pixels, uint16_t length)
-		: pixels(pixels), length(length), shouldDelete(false) {}
+	/**
+	 * Allow to allocate space externally for the buffer. If `hasDummyPixel` is enabled
+	 * then length is assumed to include the `dummy pixel` thus the functional length
+	 * will be `length - 1`
+	 */
+	TPixelBuffer(T<FORMAT> *pixels, uint16_t length, bool hasDummyPixel = false)
+		: hasDummyPixel(hasDummyPixel), pixels(pixels), length(length), shouldDelete(false)
+	{
+		rawPixels = pixels;
 
-	inline TPixelBuffer(const uint16_t length) : length(length) {
-		pixels = new T<FORMAT>[length];
-		memset(pixels, 0, sizeof(T<FORMAT>) * length);
-		shouldDelete = true;
+		if (hasDummyPixel) {
+			this->length = length - 1;
+			this->pixels++;
+		}
 	}
 
-	virtual inline ~TPixelBuffer() {
-		if (shouldDelete) delete pixels;
+	TPixelBuffer(const uint16_t length, bool hasDummyPixel = false)
+		: hasDummyPixel(hasDummyPixel), length(length), shouldDelete(true)
+	{
+		auto len = length + (hasDummyPixel ? 1 : 0);
+
+		pixels = new T<FORMAT>[len];
+		memset(pixels, 0, sizeof(T<FORMAT>) * len);
+
+		rawPixels = pixels;
+
+		if (hasDummyPixel) {
+			this->pixels++;
+		}
 	}
 
-	inline bool resize(uint16_t length) {
+	virtual ~TPixelBuffer() {
+		if (shouldDelete) delete rawPixels;
+	}
+
+	virtual bool resize(uint16_t length) {
 		if (!shouldDelete && this->length > 0) {
 #ifdef ARDUINO
 			Serial.println("ERROR: Cannot resize buffer that is not owned by pixel buffer.");
@@ -51,12 +77,20 @@ public:
 		}
 
 		if (shouldDelete) {
-			delete pixels;
+			delete rawPixels;
 		}
 
+		auto len = length + (hasDummyPixel ? 1 : 0);
+
 		this->length = length;
-		pixels = new T<FORMAT>[length];
-		memset(pixels, 0, sizeof(T<FORMAT>) * length);
+		pixels = new T<FORMAT>[len];
+		memset(pixels, 0, sizeof(T<FORMAT>) * len);
+
+		rawPixels = pixels;
+
+		if (hasDummyPixel) {
+			pixels++;
+		}
 
 		return true;
 	}

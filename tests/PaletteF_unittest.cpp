@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "helpers.h"
-#include "../src/Palette.h"
+#include "../src/palette.h"
 
 using namespace LightString;
 
