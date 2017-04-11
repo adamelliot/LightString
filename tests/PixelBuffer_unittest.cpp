@@ -32,6 +32,25 @@ TEST(TPixelBuffer, creationExternalMemory) {
 	EXPECT_FALSE(buffer.shouldDelete);
 }
 
+TEST(TPixelBuffer, copyConstructor) {
+	RGBu rawBuff[30];
+	TPixelBuffer<TRGB> buffer(rawBuff, 30);
+	buffer[0] = HTML::Red;
+	buffer[1] = HTML::Red;
+	EXPECT_FALSE(buffer.shouldDelete);
+
+	TPixelBuffer<TRGB> buff2 = buffer;
+	buff2[1] = HTML::Lime;
+
+	EXPECT_RGBu_EQ(buffer[0], 255, 0, 0);
+	EXPECT_RGBu_EQ(buffer[1], 255, 0, 0);
+	EXPECT_RGBu_EQ(buff2[0], 255, 0, 0);
+	EXPECT_RGBu_EQ(buff2[1], 0, 255, 0);
+
+	EXPECT_EQ(buff2.length, 30);
+	EXPECT_TRUE(buff2.shouldDelete);
+}
+
 TEST(TPixelBuffer, resize) {
 	TPixelBuffer<TRGB, uint8_t> buffer(30);
 
@@ -137,52 +156,6 @@ TEST(TPixelBufferF, fade) {
 		EXPECT_RGBf_EQ(buffer[i], 0.5, 0.4, 0.3);
 	}
 }
-
-// ------------------ Mapping Buffers ---------------------
-
-TEST(TMappingPixelBuffer2d, creationExternalMemory) {
-	RGBu rawBuff[51];
-
-	TMappingPixelBuffer2d<TRGB> buffer(rawBuff, 10, 5);
-
-	EXPECT_EQ(buffer.width, 10);
-	EXPECT_EQ(buffer.height, 5);
-	EXPECT_EQ(buffer.pixels, (rawBuff + 1));
-	EXPECT_FALSE(buffer.shouldDelete);
-}
-
-TEST(TMappingPixelBuffer2d, resize) {
-	TMappingPixelBuffer2d<TRGB, uint8_t> buffer(10, 20);
-
-	EXPECT_EQ(buffer.length, 200);
-
-	buffer[buffer.xy(5, 5)] = RGBu(100, 200, 50);
-	EXPECT_RGBu_EQ(buffer[55], 100, 200, 50);
-
-	buffer.resize(30, 30);
-	EXPECT_EQ(buffer.length, 900);
-
-	uint32_t i = buffer.xy(5, 5);
-
-	EXPECT_EQ(i, 155);
-
-	buffer[i] = RGBu(0, 200, 50);
-	EXPECT_RGBu_EQ(buffer[155], 0, 200, 50);
-}
-
-TEST(TMappingPixelBuffer3d, creationExternalMemory) {
-	RGBu rawBuff[201];
-
-	TMappingPixelBuffer3d<TRGB> buffer(rawBuff, 20, 5, 4);
-
-	EXPECT_EQ(buffer.width, 20);
-	EXPECT_EQ(buffer.height, 5);
-	EXPECT_EQ(buffer.depth, 4);
-	EXPECT_EQ(buffer.pixels, (rawBuff + 1));
-	EXPECT_FALSE(buffer.shouldDelete);
-}
-
-
 
 // ---------------- Blending Tests -------------------
 

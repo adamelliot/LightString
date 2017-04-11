@@ -68,16 +68,17 @@ void LIGHT_SECTION_CLASS::update() {
 		ILightPattern *pattern = layers[i].getActivePattern();
 
 		if (pattern && !pattern->isFilterPattern()) {
-			TPixelBuffer<PIXEL, FORMAT> *buffer = (TPixelBuffer<PIXEL, FORMAT> *)pattern->getPixelBuffer();
+			auto adapter = static_cast<TPixelBufferAdapter<PIXEL, FORMAT> *>(pattern->getPixelBuffer());
+			auto &buffer = static_cast<TPixelBuffer<PIXEL, FORMAT> &>(adapter->getBuffer());
 
 			FORMAT opacity = TColorFormatHelper<FORMAT>::scale(layers[i].getOpacity(), layers[i].getTransitionOpacity());
 
 			if (opacity < layers[i].getMaxOpacity()) {
 				if (opacity > 0) {
-					outputBuffer->blendWith(*buffer, pattern->getBlendMode(), opacity);
+					outputBuffer->blendWith(buffer, pattern->getBlendMode(), opacity);
 				}
 			} else {
-				outputBuffer->blendWith(*buffer, pattern->getBlendMode());
+				outputBuffer->blendWith(buffer, pattern->getBlendMode());
 			}
 		}
 	}

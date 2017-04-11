@@ -5,28 +5,33 @@
 namespace LightString {
 
 template <template <typename> class T, typename FORMAT = uint8_t>
-class TMappingPixelBuffer : public TPixelBuffer<T, FORMAT> {
+class TMappingPixelBuffer : public TPixelBufferAdapter<T, FORMAT> {
 protected:
+	TPixelBuffer<T, FORMAT> &buffer;
 	TPointMapping<float> mapping;
 
 public:
-	TPoint<FORMAT, 3> origin;
-	float width, height, depth;
+	TPoint<float, 3> origin;
+	float width = 0, height = 0, depth = 0;
 
-	TMappingPixelBuffer() : LightString::TPixelBuffer<T, FORMAT>(1) {}
+	TMappingPixelBuffer(TPixelBuffer<T, FORMAT> &buffer) : buffer(buffer) {}
 
-	TMappingPixelBuffer(const TPointMapping<float> &mapping)
-		: TPixelBuffer<T, FORMAT>(mapping.maxIndex) {
+	TMappingPixelBuffer(TPixelBuffer<T, FORMAT> &buffer, const TPointMapping<float> &mapping)
+		: buffer(buffer) {
 		setMapping(mapping);
 	}
 
 	virtual ~TMappingPixelBuffer() {}
 
+	TPixelBuffer<T, FORMAT> &getBuffer() { return buffer; }
+
+	/* ------------ Mapping Methods -------------- */
+
 	const TPointMapping<float> &getMapping() const { return mapping; }
 	const std::vector<TIndexedPoint<float, 3>> &getPoints() const { return mapping.points; }
 
 	void setMapping(const TPointMapping<float> &mapping) {
-		this->resize(mapping.maxIndex + 1);
+		buffer.resize(mapping.maxIndex + 1);
 		this->mapping = mapping;
 
 		this->width  = mapping.bounds.width;

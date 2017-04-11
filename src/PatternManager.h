@@ -97,7 +97,7 @@ public:
 	uint8_t addLightSection(TPixelBuffer<OUTPUT_PIXEL, FORMAT> &pixelBuffer);
 	uint8_t getTotalSections() { return sections.size(); }
 
-	bool addBufferToLightSection(uint8_t sectionID, TPixelBuffer<PIXEL, FORMAT> &buffer);
+	bool addBufferToLightSection(uint8_t sectionID, IPixelBuffer &buffer);
 
 	bool update();
 };

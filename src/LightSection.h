@@ -12,6 +12,7 @@ template <template <typename> class PIXEL, typename FORMAT, template <typename> 
 class LightSection : public ILightSection {
 private:
 	std::vector<IPixelBuffer *> bufferPool;
+	// std::vector<IPixelBuffer *> bufferPool;
 	uint8_t activeBuffers = 0;
 
 	FORMAT brightness;

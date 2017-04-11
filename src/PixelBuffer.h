@@ -16,8 +16,27 @@ using namespace std;
 
 namespace LightString {
 
+template <template <typename> class T, typename FORMAT>
+class TPixelBuffer;
+
 template <template <typename> class T, typename FORMAT = uint8_t>
-class TPixelBuffer : public IPixelBuffer {
+class TPixelBufferAdapter : public IPixelBuffer {
+public:
+	virtual TPixelBuffer<T, FORMAT> &getBuffer() = 0;
+
+	virtual uint16_t getLength() { return getBuffer().getLength(); }
+
+	T<FORMAT> *getPixels() { return getBuffer().getPixels(); }
+	virtual void clear() { getBuffer().clear(); }
+	void fillColor(T<FORMAT> col) { getBuffer().fillColor(col); }
+	void fade(const FORMAT scale) { getBuffer(). fade(scale); }
+
+	T<FORMAT>& operator[] (int16_t index) { return getBuffer()[index]; }
+	void setPixel(int16_t index, T<FORMAT> col) { getBuffer().setPixel(index, col); }
+};
+
+template <template <typename> class T, typename FORMAT = uint8_t>
+class TPixelBuffer : public TPixelBufferAdapter<T, FORMAT> {
 private:
 	T<FORMAT> *rawPixels = nullptr;
 	// Leave space before the actual pixels so things mapped to -1 are allowable
@@ -60,9 +79,18 @@ public:
 		}
 	}
 
+	TPixelBuffer(const TPixelBuffer<T, FORMAT> &rhs)
+		: TPixelBuffer(rhs.length, rhs.hasDummyPixel)
+	{
+		auto len = hasDummyPixel ? length + 1 : length;
+		memcpy(pixels, rhs.pixels, len * sizeof(T<FORMAT>));
+	}
+
 	virtual ~TPixelBuffer() {
 		if (shouldDelete && rawPixels) delete[] rawPixels;
 	}
+
+	virtual TPixelBuffer<T, FORMAT> &getBuffer() { return *this; }
 
 	virtual bool resize(uint16_t length) {
 		if (!shouldDelete && this->length > 0) {
@@ -106,8 +134,8 @@ public:
 		}
 	}
 
-	uint16_t getLength() const { return length; }
-	uint16_t getSize() const { return length; }
+	virtual uint16_t getLength() { return length; }
+	T<FORMAT> *getPixels() { return pixels; }
 
 	inline T<FORMAT>& operator[] (int16_t index) __attribute__((always_inline)) {
 		return pixels[index];

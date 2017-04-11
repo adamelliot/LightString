@@ -287,7 +287,7 @@ uint8_t PATTERN_MANAGER_CLASS::addLightSection(TPixelBuffer<OUTPUT_PIXEL, FORMAT
 }
 
 PATTERN_MANAGER_TEMPLATE
-bool PATTERN_MANAGER_CLASS::addBufferToLightSection(uint8_t sectionID, TPixelBuffer<PIXEL, FORMAT> &buffer) {
+bool PATTERN_MANAGER_CLASS::addBufferToLightSection(uint8_t sectionID, IPixelBuffer &buffer) {
 	LIGHT_SECTION_CLASS *lightSection = getLightSection(sectionID);
 	if (!lightSection) return false;
 
