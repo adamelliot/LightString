@@ -245,25 +245,25 @@ void PATTERN_MANAGER_CLASS::clearPatternSequence(uint8_t layerID, uint8_t sectio
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::addLightPattern(ILightPattern &pattern, uint8_t layerID) {
+void PATTERN_MANAGER_CLASS::addLightPattern(pattern_id_t patternID, uint8_t layerID) {
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		ensureLayerIsSetup(i, layerID);
-		sections[i].layers[layerID].addLightPattern(pattern);
+		sections[i].layers[layerID].addLightPattern(patternID);
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID) {
+void PATTERN_MANAGER_CLASS::addLightPattern(pattern_id_t patternID, uint64_t modeList, uint8_t layerID) {
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		ensureLayerIsSetup(i, layerID);
-		sections[i].layers[layerID].addLightPattern(pattern, modeList);
+		sections[i].layers[layerID].addLightPattern(patternID, modeList);
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID, uint8_t sectionID) {
+void PATTERN_MANAGER_CLASS::addLightPattern(pattern_id_t patternID, uint64_t modeList, uint8_t layerID, uint8_t sectionID) {
 	ensureLayerIsSetup(sectionID, layerID);
-	sections[sectionID].layers[layerID].addLightPattern(pattern, modeList);
+	sections[sectionID].layers[layerID].addLightPattern(patternID, modeList);
 }
 
 // -------------------- Adding Sections -------------------
@@ -279,7 +279,7 @@ PATTERN_MANAGER_TEMPLATE
 uint8_t PATTERN_MANAGER_CLASS::addLightSection(TPixelBuffer<OUTPUT_PIXEL, FORMAT> &pixelBuffer) {
 	auto id = sections.size();
 
-	sections.push_back(LIGHT_SECTION_CLASS());
+	sections.push_back(LIGHT_SECTION_CLASS(patternProvider));
 	sections[id].setSectionID(id);
 	sections[id].outputBuffer = &pixelBuffer;
 

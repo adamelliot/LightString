@@ -30,9 +30,11 @@ private:
 
 	void ensureLayerIsSetup(uint8_t sectionID, uint8_t layerID);
 
-public:
+protected:
+	PatternProvider &patternProvider;
 
-	PatternManager()
+public:
+	PatternManager(PatternProvider &patternProvider) : patternProvider(patternProvider)
 		{ lastTime = millis(); }
 
 	LIGHT_SECTION_CLASS *getLightSection(uint8_t sectionID);
@@ -88,9 +90,9 @@ public:
 	void clearPatternSequence();
 	void clearPatternSequence(uint8_t layerID, uint8_t sectionID = 0);
 
-	void addLightPattern(ILightPattern &pattern, uint8_t layerID = 0);
-	void addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID);
-	void addLightPattern(ILightPattern &pattern, uint64_t modeList, uint8_t layerID, uint8_t sectionID);
+	void addLightPattern(pattern_id_t patternID, uint8_t layerID = 0);
+	void addLightPattern(pattern_id_t patternID, uint64_t modeList, uint8_t layerID);
+	void addLightPattern(pattern_id_t patternID, uint64_t modeList, uint8_t layerID, uint8_t sectionID);
 
 	uint8_t addLightSection(TPixelBuffer<OUTPUT_PIXEL, FORMAT> &pixelBuffer);
 	uint8_t getTotalSections() { return sections.size(); }

@@ -7,8 +7,20 @@
 
 using namespace LightString;
 
+class TestPatternProvider : public PatternProvider {
+public:
+	virtual ILightPattern *patternForID(pattern_id_t patternID, ILightLayer *layer = nullptr) {
+		switch (patternID) {
+			case 1: return new TSolidColorPattern<TRGB, float>(HTML::Red);
+		}
+
+		return nullptr;
+	}
+};
+
 TEST(PatternManager, initialization) {
-	PatternManager<TRGB, uint8_t> patternManager;
+	TestPatternProvider provider;
+	PatternManager<TRGB, uint8_t> patternManager(provider);
 
 	auto section = patternManager.getLightSection(0);
 
@@ -16,7 +28,8 @@ TEST(PatternManager, initialization) {
 }
 
 TEST(PatternManager, sectionsExist) {
-	PatternManager<TRGB, uint8_t> patternManager;
+	TestPatternProvider provider;
+	PatternManager<TRGB, uint8_t> patternManager(provider);
 	TPixelBuffer<TRGB, uint8_t> buffer(5);
 
 	uint8_t sectionID = patternManager.addLightSection(buffer);
@@ -29,7 +42,8 @@ TEST(PatternManager, sectionsExist) {
 }
 
 TEST(PatternManager, startRunningUsingPlay) {
-	PatternManager<TRGB, uint8_t> patternManager;
+	TestPatternProvider provider;
+	PatternManager<TRGB, uint8_t> patternManager(provider);
 	TPixelBuffer<TRGB, uint8_t> leds(5);
 	TPixelBuffer<TRGB, uint8_t> buffer(5);
 
@@ -42,16 +56,15 @@ TEST(PatternManager, startRunningUsingPlay) {
 	section = patternManager.getLightSection(1);
 	EXPECT_TRUE(section == NULL);
 
-	TLightPattern<TRGB, uint8_t> testPattern;
-
-	patternManager.addLightPattern(testPattern);
+	patternManager.addLightPattern(1);
 	patternManager.play();
 
 	patternManager.update();
 }
 
 TEST(PatternManager, startRunningUsingRandom) {
-	PatternManager<TRGB, uint8_t> patternManager;
+	TestPatternProvider provider;
+	PatternManager<TRGB, uint8_t> patternManager(provider);
 	TPixelBuffer<TRGB, uint8_t> leds(5);
 	TPixelBuffer<TRGB, uint8_t> buffer(5);
 
@@ -64,16 +77,15 @@ TEST(PatternManager, startRunningUsingRandom) {
 	section = patternManager.getLightSection(1);
 	EXPECT_TRUE(section == NULL);
 
-	TLightPattern<TRGB, uint8_t> testPattern;
-
-	patternManager.addLightPattern(testPattern);
+	patternManager.addLightPattern(1);
 	patternManager.startRandomPattern();
 
 	patternManager.update();
 }
 
 TEST(PatternManager, ensureLayersGetConfigured) {
-	PatternManager<TRGB, uint8_t> patternManager;
+	TestPatternProvider provider;
+	PatternManager<TRGB, uint8_t> patternManager(provider);
 	TPixelBuffer<TRGB, uint8_t> leds(5);
 	TPixelBuffer<TRGB, uint8_t> buffer(5);
 
@@ -85,9 +97,7 @@ TEST(PatternManager, ensureLayersGetConfigured) {
 	auto section = patternManager.getLightSection(sectionID);
 	EXPECT_TRUE(section != NULL);
 
-	TLightPattern<TRGB, uint8_t> testPattern;
-
-	patternManager.addLightPattern(testPattern);
+	patternManager.addLightPattern(1);
 
 	EXPECT_EQ(section->getTotalLayers(), 1);
 	EXPECT_EQ(section->layers[0].getPatternDuration(), 500);

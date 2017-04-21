@@ -15,7 +15,7 @@ private:
 
 	ILightSection *section;
 
-	std::vector<ILightPattern *> lightPatterns;
+	PatternProvider &patternProvider;
 	std::vector<PatternCode> patternList;
 
 	// If pattern sequence is set play mode will use the sequence
@@ -26,8 +26,6 @@ private:
 	// - Settings from cue can still be over ridden by the pattern methods:
 	//		- isPatternFinished, getNextPatternCode, getInTransition, getOutTransition
 	PatternSequence *patternSequence = nullptr;
-
-	bool patternCloned = false;
 
 	uint8_t patternIndex = 0; // Index in the pattern order or the sequence
 
@@ -51,27 +49,24 @@ private:
 	ETransitionState transitionState = TRANSITION_DONE;
 	EPatternTransition currentTransition = TRANSITION_DEFAULT;
 
-	ILightPattern *getPattern(PatternCode patternCode);
 	void updatePatternIndex(PatternCode patternCode);
 	void finishPattern();
 
 	void setPlayState(EPlayState playState);
 
-	inline FORMAT getElapsedTimeRatio(int32_t transitionDuration);
+	FORMAT getElapsedTimeRatio(int32_t transitionDuration);
 
 	void startPattern(ILightPattern *pattern, uint8_t mode, PatternConfig *config = nullptr);
 	bool startSelectedPattern();
 
 public:
 
-	inline LightLayer() {}
+	LightLayer(PatternProvider &patternProvider) : patternProvider(patternProvider) {}
 	~LightLayer();
 
 	inline FORMAT getMaxOpacity();
 	EPlayState getPlayState() { return playState; }
 	bool isActive() { return playState != PATTERN_STOPPED; }
-
-	void setClonePatterns(bool val) { config.clonePatterns = val; }
 
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }
@@ -129,8 +124,8 @@ public:
 
 	void shufflePatterns();
 
-	void addLightPattern(ILightPattern &pattern, uint64_t modeList);
-	void addLightPattern(ILightPattern &pattern);
+	void addLightPattern(pattern_id_t patternID, uint64_t modeList);
+	void addLightPattern(pattern_id_t patternID);
 
 	void updateTransition(uint32_t timeDelta);
 	void update();

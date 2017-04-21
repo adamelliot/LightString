@@ -8,32 +8,17 @@
 using namespace LightString;
 
 TEST(PatternCode, equality) {
-	PatternCode patternCode1(10, 1, 3);
-	PatternCode patternCode2(11, 1, 3);
-	PatternCode patternCode3(10, 1, 3);
+	PatternCode patternCode1(10, 3);
+	PatternCode patternCode2(11, 3);
+	PatternCode patternCode3(10, 3);
 
 	EXPECT_FALSE(patternCode1 == patternCode2);
 	EXPECT_TRUE(patternCode1 == patternCode3);
 }
 
 TEST(LightPattern, initialization) {
-	TLightPattern<TRGB> pattern;
+	TLightPattern<TRGB, uint8_t, 3> pattern;
 
-	EXPECT_EQ(pattern.getModeCount(), 1);
+	EXPECT_EQ(pattern.getModeCount(), 3);
 }
 
-
-class CloneablePattern : public TCloneable<CloneablePattern, TLightPattern<TRGB>> {};
-
-TEST(LightPattern, cloning) {
-	TLightPattern<TRGB> pattern;
-	CloneablePattern cloneablePattern;
-
-	EXPECT_EQ(pattern.clone(), nullptr);
-
-	auto newPattern = cloneablePattern.clone();
-
-	EXPECT_NE(newPattern, nullptr);
-
-	delete newPattern;
-}

@@ -20,7 +20,9 @@ private:
 
 public:
 
-	ThinPatternManager() {
+	ThinPatternManager(PatternProvider &provider)
+		: LightLayer<FORMAT>(provider), LightSection<PIXEL, FORMAT, PIXEL>(provider)
+	{
 		this->setLightSection(this);
 	}
 

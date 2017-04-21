@@ -21,8 +21,6 @@ public:
 	// Specify a unique ID to identify this pattern. This can be used to load this pattern
 	// from other patterns.
 	// If you don't specify an ID they will all just be pooled under the general 0 id
-	uint8_t getPatternID() { return WHEEL_PATTERN; }
-
 	// Called when this pattern is activated
 	void setupMode(uint8_t mode, LightString::PatternConfig *config);
 

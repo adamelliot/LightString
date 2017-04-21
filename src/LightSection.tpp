@@ -2,7 +2,7 @@ LIGHT_SECTION_TEMPLATE
 void LIGHT_SECTION_CLASS::ensureLayerExists(uint8_t layerID) {
 	while (layerID >= layers.size()) {
 		auto i = layers.size();
-		layers.push_back(LightLayer<FORMAT>());
+		layers.push_back(LightLayer<FORMAT>(patternProvider));
 		layers[i].setLayerID(i);
 		layers[i].setLightSection(this);
 	}

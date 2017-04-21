@@ -8,14 +8,30 @@
 
 using namespace LightString;
 
+class SectionPatternProvider : public PatternProvider {
+public:
+	virtual ILightPattern *patternForID(pattern_id_t patternID, ILightLayer *layer = nullptr) {
+		printf("TEST\n");
+
+		switch (patternID) {
+		case 1:
+			return new TSolidColorPattern<TRGB, float>(HTML::Red);
+		}
+
+		return nullptr;
+	}
+};
+
 TEST(LightSection, initialization) {
-	LightSection<TRGB, uint8_t> lightSection;
+	SectionPatternProvider provider;
+	LightSection<TRGB, uint8_t> lightSection(provider);
 
 	EXPECT_TRUE(lightSection.outputBuffer == NULL);
 }
 
 TEST(LightSection, ensureLayerExists) {
-	LightSection<TRGB, uint8_t> lightSection;
+	SectionPatternProvider provider;
+	LightSection<TRGB, uint8_t> lightSection(provider);
 
 	lightSection.ensureLayerExists(4);
 
@@ -25,18 +41,17 @@ TEST(LightSection, ensureLayerExists) {
 }
 
 TEST(LightSection, adjustBrightness) {
-	LightSection<TRGB, float> lightSection;
+	SectionPatternProvider provider;
+	LightSection<TRGB, float> lightSection(provider);
 
 	TPixelBuffer<TRGB, float> buffer = TPixelBuffer<TRGB, float>(5);
 	TPixelBuffer<TRGB, float> leds = TPixelBuffer<TRGB, float>(5);
-
-	TSolidColorPattern<TRGB, float> pattern(HTML::Red);
 
 	lightSection.outputBuffer = &leds;
 	lightSection.addBuffer(&buffer);
 
 	lightSection.ensureLayerExists(0);
-	lightSection.layers[0].addLightPattern(pattern);
+	lightSection.layers[0].addLightPattern(1);
 	lightSection.layers[0].play();
 
 	lightSection.layers[0].getConfig().inTransition = TRANSITION_OVERWRITE;
@@ -58,7 +73,8 @@ TEST(LightSection, adjustBrightness) {
 }
 
 TEST(LightSection, backBuffersAreProvided) {
-	LightSection<TRGBA, float, TRGB> lightSection;
+	SectionPatternProvider provider;
+	LightSection<TRGBA, float, TRGB> lightSection(provider);
 
 	TPixelBuffer<TRGBA, float> buffer = TPixelBuffer<TRGBA, float>(5);
 	TPixelBuffer<TRGB, float> leds = TPixelBuffer<TRGB, float>(5);

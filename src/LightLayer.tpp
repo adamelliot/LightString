@@ -23,7 +23,7 @@ int LIGHT_LAYER_CLASS::getPlaybackCount() const {
 
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequence) {
-	auto currentCode = PatternCode(0xff, 0xff, 0xff);
+	auto currentCode = PatternCode(0xff, 0xff);
 	PatternCode newCode;
 	bool currentPatternChanged = false;
 
@@ -57,22 +57,6 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler, void *userData) {
 	this->config.patternEventHandler = patternEventHandler;
 	this->config.patternEventUserData = userData;
-}
-
-LIGHT_LAYER_TEMPLATE
-ILightPattern *LIGHT_LAYER_CLASS::getPattern(PatternCode patternCode) {
-	int copy = 0;
-	for (uint32_t i = 0; i < lightPatterns.size(); i++) {
-		if (lightPatterns[i]->getPatternID() == patternCode.patternID) {
-			if (copy == patternCode.copyID) {
-				return lightPatterns[i];
-			} else {
-				copy++;
-			}
-		}
-	}
-
-	return nullptr;
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -117,8 +101,10 @@ void LIGHT_LAYER_CLASS::finishPattern() {
 		section->unlockBuffer(activePattern->getPixelBuffer());
 	}
 
-	if (this->activePattern != nullptr && patternCloned) delete this->activePattern;
-	patternCloned = false;
+	if (this->activePattern != nullptr) {
+		patternProvider.finishedWithPattern(this->activePattern);
+		this->activePattern = nullptr;
+	}
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -173,30 +159,7 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, PatternConfig *config) {
 	this->transitionOpacity = getMaxOpacity();
 
-	if (this->config.clonePatterns) {
-		auto clonedPattern = pattern->clone();
-		if (!clonedPattern) {
-			clonedPattern = pattern;
-#ifdef __DISPLAY_ERROR
-#ifdef ARDUINO
-			Serial.print("Pattern not cloned, running original pattern -- pattern: 0x");
-			Serial.print(pattern->getGatternID(), HEX);
-			Serial.print(" on Layer: ");
-			Serial.println(layerID);
-#else
-			printf("Pattern not cloned, running original pattern -- pattern: 0x%x\t on Layer: %d\n",
-			       pattern->getGatternID(), layerID);
-#endif
-#endif
-		} else {
-			patternCloned = true;
-		}
-
-		this->activePattern = clonedPattern;
-	} else {
-		this->activePattern = pattern;
-	}
-
+	this->activePattern = pattern;
 	this->activePattern->setLayer(this);
 
 	if (this->activePattern->isFilterPattern()) {
@@ -233,11 +196,13 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 		auto cue = patternSequence->getPatternCue(patternIndex);
 		code = cue.code;
 		config = &cue;
-	} else {
+	} else if (patternList.size() > 0) {
 		code = patternList[patternIndex];
+	} else {
+		return false;
 	}
 
-	auto pattern = getPattern(code);
+	auto pattern = patternProvider.patternForID(code.patternID, this);
 
 	if (!pattern) {
 #ifdef __DISPLAY_ERROR
@@ -247,6 +212,8 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 		Serial.println(layerID);
 #endif
 		return false;
+	} else {
+		pattern->setPatternID(code.patternID);
 	}
 
 	startPattern(pattern, code.mode, config);
@@ -276,10 +243,6 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 		Serial.print(patternCode.mode);
 	}
 
-	if (patternCode.copyID > 0) {
-		Serial.print(F("\tC: "));
-		Serial.print(patternCode.copyID, DEC);
-	}
 	Serial.print(F("\tLayer: "));
 	Serial.println(layerID);
 #else
@@ -289,9 +252,6 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 	} else {
 		printf("%d", patternCode.mode);
 	}
-	if (patternCode.copyID > 0) {
-		printf("\tC: %d", patternCode.copyID);
-	}
 	printf("\tLayer: %d\n", layerID);
 #endif
 #endif
@@ -299,7 +259,7 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 	bool randomMode = patternCode.mode == 0xff;
 	if (randomMode) patternCode.mode = 0;
 
-	ILightPattern *pattern = getPattern(patternCode);
+	ILightPattern *pattern = patternProvider.patternForID(patternCode.patternID, this);
 	if (!pattern) {
 #ifdef __DISPLAY_ERROR
 		Serial.print("Pattern not found: 0x");
@@ -308,6 +268,8 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 		Serial.println(layerID);
 #endif
 		return false;
+	} else {
+		pattern->setPatternID(patternCode.patternID);
 	}
 
 	if (randomMode) {
@@ -353,7 +315,7 @@ bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
 		}
 
 		patternIndex++;
-		patternIndex %= size;
+		if (size > 0) patternIndex %= size;
 
 		return startSelectedPattern();
 	}
@@ -401,51 +363,42 @@ void LIGHT_LAYER_CLASS::shufflePatterns() {
 
 // TODO: This will only support up to 64 pattern modes currently, should really support 256
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::addLightPattern(ILightPattern &pattern, uint64_t modeList) {
-	uint8_t patternID = pattern.getPatternID();
-
-	int copyID = 0;
-	for (int i = 0; i < lightPatterns.size(); i++) {
-		if (lightPatterns[i]->getPatternID() == patternID) {
-			copyID++;
-		}
-	}
-
-	lightPatterns.push_back(&pattern);
-
-	if (!pattern.hideFromPatternList()) {
-		for (uint8_t mode = 0; modeList; mode++) {
-			if ((modeList & 1) == 0) {
-				modeList >>= 1;
-				continue;
-			}
+void LIGHT_LAYER_CLASS::addLightPattern(pattern_id_t patternID, uint64_t modeList) {
+	for (uint8_t mode = 0; modeList; mode++) {
+		if ((modeList & 1) == 0) {
 			modeList >>= 1;
+			continue;
+		}
+		modeList >>= 1;
 
 #ifdef LS_VERBOSE
 #ifdef ARDUINO
-			Serial.print(F("Adding Pattern Code: "));
-			Serial.print((patternID << 8) | mode, HEX);
-			Serial.print(" at: ");
-			Serial.println((uint32_t)&pattern);
+		Serial.print(F("Adding Pattern Code: "));
+		Serial.print((patternID << 8) | mode, HEX);
+		Serial.print(" at: ");
+		Serial.println((uint32_t)&pattern);
 #else
-			printf("Adding Pattern Code: 0x%x\n", (patternID << 8) | mode);
+		printf("Adding Pattern Code: 0x%x\n", (patternID << 8) | mode);
 #endif
 #endif
 
-			patternList.push_back(PatternCode(patternID, copyID, mode));
-		}
+		patternList.push_back(PatternCode(patternID, mode));
 	}
 }
 
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::addLightPattern(ILightPattern &pattern) {
+void LIGHT_LAYER_CLASS::addLightPattern(pattern_id_t patternID) {
 	uint64_t modeList = 0;
+	auto pattern = patternProvider.patternForID(patternID);
+	if (!pattern) return;
 
-	for (uint32_t i = 0; i < pattern.getModeCount(); i++) {
+	for (uint32_t i = 0; i < pattern->getModeCount(); i++) {
 		modeList |= 1 << i;
 	}
 
-	addLightPattern(pattern, modeList);
+	patternProvider.finishedWithPattern(pattern);
+
+	addLightPattern(patternID, modeList);
 }
 
 template <>
@@ -627,7 +580,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 				case PLAY_MODE_CONTINUOUS:
 				{
 					PatternCode code = activePattern->getNextPatternCode();
-					if (code == PatternCode(0xff, 0xff, 0xff)) {
+					if (code.mode == 0xff) {
 						loadPrevious ? prevPattern() : nextPattern();
 					} else {
 						startPattern(code);

@@ -101,24 +101,24 @@ inline float TColorFormatHelper<float>::scale(float a, float b) {
 	return a * b;
 }
 
+typedef uint8_t pattern_id_t;
 
 struct PatternCode {
-	uint8_t patternID = 0; // Name of pattern
-	uint8_t copyID = 0; // Which copy of the pattern
+	pattern_id_t patternID = 0; // Name of pattern
 	uint8_t mode = 0; // Which mode is specified
 
-	inline PatternCode(uint8_t patternID = 0, uint8_t copyID = 0, uint8_t mode = 0) :
-		patternID(patternID), copyID(copyID), mode(mode) {}
+	inline PatternCode(pattern_id_t patternID = 0, uint8_t mode = 0) :
+		patternID(patternID), mode(mode) {}
 
 	inline PatternCode(const PatternCode& code) :
-		patternID(code.patternID), copyID(code.copyID), mode(code.mode) {}
+		patternID(code.patternID), mode(code.mode) {}
 
 	inline bool operator== (const PatternCode &rhs) __attribute__((always_inline)) {
-		return this->patternID == rhs.patternID && this->copyID == rhs.copyID && this->mode == rhs.mode;
+		return this->patternID == rhs.patternID && this->mode == rhs.mode;
 	}
 
 	inline bool operator!= (const PatternCode &rhs) __attribute__((always_inline)) {
-		return this->patternID != rhs.patternID || this->copyID != rhs.copyID || this->mode != rhs.mode;
+		return this->patternID != rhs.patternID || this->mode != rhs.mode;
 	}
 };
 
@@ -219,10 +219,6 @@ struct LightLayerConfig : PatternConfig {
 
 	// What playback mode the layer is in
 	EPlayMode playMode = PLAY_MODE_CONTINUOUS;
-
-	// Cloning patterns is used when patterns could run in parallel and should
-	// be controlled by the wrapping section and pattern manager
-	bool clonePatterns = false;
 };
 
 class ILightLayer {
@@ -242,6 +238,8 @@ public:
 	virtual ILightSection *getLightSection() = 0;
 	
 	virtual ILightPattern *getActivePattern() = 0;
+
+	virtual uint8_t getPatternIndex() const = 0;
 
 	virtual bool startPattern(PatternCode patternCode) = 0;
 	virtual bool startRandomPattern() = 0;

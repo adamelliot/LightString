@@ -8,20 +8,20 @@ namespace LightString {
 class ILightPattern {
 protected:
 	ILightLayer *layer = nullptr;
-	
-	uint8_t mode;
-	uint8_t modeCount;
 
+	// PatternID is set when a pattern is pulled out of the PatternProvider
+	// It's use it for patterns to be able to identify one another. All 
+	// Pattern ID setup is done from the PatternProvider
+	pattern_id_t patternID = 0;
+	uint8_t mode;
 	EBlendMode blendMode;
 
 public:
-	ILightPattern(uint8_t modeCount = 1) : modeCount(modeCount), blendMode(BLEND_COPY) {}
+	static const uint8_t modeCount = 1;
+
+	ILightPattern() : blendMode(BLEND_COPY) {}
 	virtual ~ILightPattern() {}
 
-	// If the clone method isn't supplied the system will default to using the
-	// existing instance of the class and will report a warning
-	virtual ILightPattern *clone() const { return nullptr; }
-	
 	void setLayer(ILightLayer *layer) { this->layer = layer; }
 	ILightLayer* getLayer() { return layer; }
 
@@ -36,7 +36,7 @@ public:
 	
 	void setMode(uint8_t mode, PatternConfig *config = nullptr) { this->mode = mode; setupMode(mode, config); }
 	uint8_t getMode() { return mode; }
-	uint8_t getModeCount() { return modeCount; }
+	virtual uint8_t getModeCount() { return modeCount; }
 
 	void setBlendMode(EBlendMode blendMode) { this->blendMode = blendMode; }
 	EBlendMode getBlendMode() { return blendMode; }
@@ -45,13 +45,13 @@ public:
 	ILightLayer *layerBelow();
 
 	bool startPatternAbove(PatternCode patternCode);
-	bool startPatternAbove(uint8_t patternID, uint8_t copyID = 0, uint8_t mode = 0);
+	bool startPatternAbove(pattern_id_t patternID, uint8_t mode = 0);
 	
 	bool startPatternBelow(PatternCode patternCode);
-	bool startPatternBelow(uint8_t patternID, uint8_t copyID = 0, uint8_t mode = 0);
+	bool startPatternBelow(pattern_id_t patternID, uint8_t mode = 0);
 
 	bool startPatternOnLayer(uint8_t layerID, PatternCode patternCode);
-	bool startPatternOnLayer(uint8_t layerID, uint8_t patternID, uint8_t copyID = 0, uint8_t mode = 0);
+	bool startPatternOnLayer(uint8_t layerID, pattern_id_t patternID, uint8_t mode = 0);
 
 	virtual void setPalette(IPalette *palette) {}
 
@@ -62,11 +62,10 @@ public:
 
 	virtual bool isFilterPattern() { return false; }
 
-	// Pattern IDs are used to target effects from one pattern to another
-	// if that isn't needed this can be left as zero
-	virtual uint8_t getPatternID() { return 0; }
+	pattern_id_t getPatternID() { return patternID; }
+	void setPatternID(pattern_id_t val) { patternID = val; }
 
-	virtual PatternCode getNextPatternCode() { return PatternCode(0xff, 0xff, 0xff); /* Any pattern */ }
+	virtual PatternCode getNextPatternCode() { return PatternCode(0xff, 0xff); /* Any pattern */ }
 
 	// DEPRECATED
 	virtual EPatternTransition getTransition() { return getOutTransition(); }
@@ -79,9 +78,6 @@ public:
 	virtual int32_t getInTransitionDuration() { return getTransitionDuration(); }
 	virtual int32_t getOutTransitionDuration() { return getTransitionDuration(); }
 
-	// If false the pattern can only be activated by getNextPatternCode()
-	virtual bool hideFromPatternList() { return false; }
-
 	// Flags that the next pattern should be loaded. This will take precedence over
 	// any settings from sequences or layers.
 	virtual bool isPatternFinished() { return false; }
@@ -93,24 +89,31 @@ public:
 	virtual void update(uint32_t ms) {}
 };
 
-template <typename DERIVED, typename BASE>
-class TCloneable : public BASE {
+class PatternProvider {
 public:
-	using BASE::BASE;
+	// Called to create a pattern that will be run in the system
+	virtual ILightPattern *patternForID(pattern_id_t patternID, ILightLayer *layer = nullptr) {
+		return nullptr;
+	}
 
-	virtual BASE *clone() const {
-		return new DERIVED(static_cast<DERIVED const &>(*this));
+	// Pattern provider will need to clean up the pattern it created in `createPatternForID`
+	virtual bool finishedWithPattern(ILightPattern *pattern, ILightLayer *layer = nullptr) {
+		if (pattern) delete pattern;
+		return true;
 	}
 };
 
-template <template <typename> class PIXEL, typename FORMAT = uint8_t>
+template <template <typename> class PIXEL, typename FORMAT = uint8_t, unsigned MODE_COUNT = 1>
 class TLightPattern : public ILightPattern {
 protected:
 	TPixelBuffer<PIXEL, FORMAT> *pixelBuffer;
 
 public:
-	TLightPattern(uint8_t modeCount = 1) __attribute__((always_inline))
-		: ILightPattern(modeCount), pixelBuffer(0) {}
+	TLightPattern() __attribute__((always_inline))
+		: pixelBuffer(0) {}
+
+	static const uint8_t modeCount = MODE_COUNT;
+	virtual uint8_t getModeCount() { return MODE_COUNT; }
 
 	void setPixelBuffer(IPixelBuffer *pixelBuffer) {
 		this->pixelBuffer = (TPixelBuffer<PIXEL, FORMAT> *)pixelBuffer;
@@ -128,9 +131,8 @@ private:
 	PIXEL<FORMAT> color;
 
 public:
-	TSolidColorPattern(PIXEL<FORMAT> color) : TLightPattern<PIXEL, FORMAT>(1), color(color) {}
+	TSolidColorPattern(PIXEL<FORMAT> color) : color(color) {}
 
-	uint8_t getPatternID() { return 0xfe; }
 	void update(uint32_t) { this->pixelBuffer->fillColor(color); }
 };
 
@@ -138,9 +140,7 @@ public:
 // output buffer.
 class FilterLightPattern : public TLightPattern<TRGB, uint8_t> {
 public:
-	inline FilterLightPattern(uint8_t modeCount = 1) __attribute__((always_inline))
-		: TLightPattern(modeCount) {}
-
+	inline FilterLightPattern() {}
 	bool isFilterPattern() { return true; } 
 };
 

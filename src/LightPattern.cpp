@@ -36,8 +36,8 @@ bool ILightPattern::startPatternAbove(PatternCode patternCode) {
 	return false;
 }
 
-bool ILightPattern::startPatternAbove(uint8_t patternID, uint8_t copyID, uint8_t mode) {
-	return startPatternAbove(PatternCode(patternID, copyID, mode));
+bool ILightPattern::startPatternAbove(pattern_id_t patternID, uint8_t mode) {
+	return startPatternAbove(PatternCode(patternID, mode));
 }
 
 bool ILightPattern::startPatternBelow(PatternCode patternCode) {
@@ -48,8 +48,8 @@ bool ILightPattern::startPatternBelow(PatternCode patternCode) {
 	return false;
 }
 
-bool ILightPattern::startPatternBelow(uint8_t patternID, uint8_t copyID, uint8_t mode) {
-	return startPatternBelow(PatternCode(patternID, copyID, mode));
+bool ILightPattern::startPatternBelow(pattern_id_t patternID, uint8_t mode) {
+	return startPatternBelow(PatternCode(patternID, mode));
 }
 
 bool ILightPattern::startPatternOnLayer(uint8_t layerID, PatternCode patternCode) {
@@ -64,7 +64,7 @@ bool ILightPattern::startPatternOnLayer(uint8_t layerID, PatternCode patternCode
 	return false;
 }
 
-bool ILightPattern::startPatternOnLayer(uint8_t layerID, uint8_t patternID, uint8_t copyID, uint8_t mode) {
-	return startPatternOnLayer(layerID, PatternCode(patternID, copyID, mode));
+bool ILightPattern::startPatternOnLayer(uint8_t layerID, pattern_id_t patternID, uint8_t mode) {
+	return startPatternOnLayer(layerID, PatternCode(patternID, mode));
 }
 

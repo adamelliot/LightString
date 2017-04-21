@@ -23,12 +23,16 @@ private:
 
 	void updateFadeLevel();
 
+protected:
+	PatternProvider &patternProvider;
+
 public:
 
-	LightSection() : 
+	LightSection(PatternProvider &patternProvider) :
 		brightness(TColorFormatHelper<FORMAT>::getMaxValue()),
 		fade(TColorFormatHelper<FORMAT>::getMaxValue()),
-		targetFade(TColorFormatHelper<FORMAT>::getMaxValue()) {}
+		targetFade(TColorFormatHelper<FORMAT>::getMaxValue()),
+		patternProvider(patternProvider) {}
 
 	TPixelBuffer<OUTPUT_PIXEL, FORMAT> *outputBuffer = nullptr;
 	std::vector<LightLayer<FORMAT>> layers;
