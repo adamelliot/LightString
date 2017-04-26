@@ -271,12 +271,12 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 	} else {
 		pattern->setPatternID(patternCode.patternID);
 	}
+	finishPattern();
 
 	if (randomMode) {
 		patternCode.mode = random(pattern->getModeCount());
 	}
 
-	finishPattern();
 	updatePatternIndex(patternCode);
 
 	startPattern(pattern, patternCode.mode);

@@ -11,15 +11,17 @@ public:
 	// Length is not necessarily proportionate to width & height
 	// as the mapping will put pixels where ever it choses in the buffer
 	// So we need to have a separate length
-	inline TMappingPixelBuffer2d(const uint16_t width, const uint16_t height, const uint16_t length)
+	TMappingPixelBuffer2d(const uint16_t width, const uint16_t height, const uint16_t length)
 		: TPixelBuffer<T, FORMAT>(length, true), width(width), height(height) {}
 
-	inline TMappingPixelBuffer2d(const uint16_t width, const uint16_t height)
+	TMappingPixelBuffer2d(const uint16_t width, const uint16_t height)
 		: TMappingPixelBuffer2d<T, FORMAT>(width, height, width * height) {}
 
 	// Pixels here should represent the whole plane + 1 pixel
-	inline TMappingPixelBuffer2d(T<FORMAT> *pixels, const uint16_t width, const uint16_t height)
+	TMappingPixelBuffer2d(T<FORMAT> *pixels, const uint16_t width, const uint16_t height)
 		: TPixelBuffer<T, FORMAT>(pixels, width * height + 1, true), width(width), height(height) {}
+
+	virtual ~TMappingPixelBuffer2d() {}
 
 	using TPixelBuffer<T, FORMAT>::resize;
 

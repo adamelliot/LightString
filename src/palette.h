@@ -86,7 +86,7 @@ public:
 
 	TPalette<T, FORMAT>& operator= (const TPalette<TRGB, FORMAT> &rhs) {
 		if (size != rhs.size) {
-			delete colorStops;
+			delete[] colorStops;
 			size = rhs.size;
 			alloc();
 		}
@@ -100,7 +100,7 @@ public:
 
 	TPalette<T, FORMAT>& operator= (const TPalette<TRGBA, FORMAT> &rhs) {
 		if (size != rhs.size) {
-			delete colorStops;
+			delete[] colorStops;
 			size = rhs.size;
 			alloc();
 		}
@@ -165,7 +165,7 @@ public:
 		for (uint8_t i = 0; i < size; i++) colors[i] = T<FORMAT>(data[i]);
 	}
 
-	~TPalette() { if (size > 0) delete colorStops; }
+	~TPalette() { if (size > 0) delete[] colorStops; }
 	
 	inline TPalette& scale8(uint8_t scale) {
 		for (uint8_t i = 0; i < size; i++) {

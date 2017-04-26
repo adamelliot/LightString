@@ -53,8 +53,6 @@ public:
 		auto len = length + (hasDummyPixel ? 1 : 0);
 
 		pixels = new T<FORMAT>[len];
-		memset(pixels, 0, sizeof(T<FORMAT>) * len);
-
 		rawPixels = pixels;
 
 		if (hasDummyPixel) {
@@ -63,7 +61,7 @@ public:
 	}
 
 	virtual ~TPixelBuffer() {
-		if (shouldDelete) delete rawPixels;
+		if (shouldDelete && rawPixels) delete[] rawPixels;
 	}
 
 	virtual bool resize(uint16_t length) {
@@ -77,15 +75,13 @@ public:
 		}
 
 		if (shouldDelete) {
-			delete rawPixels;
+			delete[] rawPixels;
 		}
 
 		auto len = length + (hasDummyPixel ? 1 : 0);
 
 		this->length = length;
 		pixels = new T<FORMAT>[len];
-		memset(pixels, 0, sizeof(T<FORMAT>) * len);
-
 		rawPixels = pixels;
 
 		if (hasDummyPixel) {
@@ -93,6 +89,21 @@ public:
 		}
 
 		return true;
+	}
+
+	void setPixelData(T<FORMAT> *pixels, uint16_t length, bool hasDummyPixel = false) {
+		if (shouldDelete && rawPixels) delete[] rawPixels;
+
+		shouldDelete = false;
+		rawPixels = pixels;
+		this->length = length;
+		this->pixels = this->rawPixels;
+		this->hasDummyPixel = hasDummyPixel;
+
+		if (hasDummyPixel) {
+			this->length = length - 1;
+			this->pixels++;
+		}
 	}
 
 	uint16_t getLength() const { return length; }

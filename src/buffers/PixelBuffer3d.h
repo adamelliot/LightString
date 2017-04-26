@@ -9,13 +9,6 @@ template <template <typename> class T, typename FORMAT = uint8_t>
 class TPixelBuffer3d : public TPixelBuffer<T, FORMAT> {
 	typedef T<FORMAT> (* BlendOperator)(T<FORMAT> &, const T<FORMAT> &);
 
-private:
-	// Raw pixels points at pixels - 1. The space right before the buffer
-	// is used as a dummy pixel that can be mapped to for things we don't
-	// actually want to see.
-	T<FORMAT> *rawPixels;
-
-
 public:
 	uint16_t width = 1, height = 1, depth = 1;
 
@@ -36,6 +29,8 @@ public:
 	TPixelBuffer3d(T<FORMAT> *pixels, const uint16_t size)
 		: TPixelBuffer<T, FORMAT>(pixels, size, true), width(1), height(1), depth(1)
 	{}
+
+	virtual ~TPixelBuffer3d() {}
 
 	using TPixelBuffer<T, FORMAT>::resize;
 
@@ -396,6 +391,8 @@ public:
 		this->resize(w, h, d);
 		setMapping(mapping);
 	}
+
+	virtual ~TMappingPixelBuffer3d() {}
 
 	/**
 	 * The actual size of the buffer should be adjusted to fit the mapping.

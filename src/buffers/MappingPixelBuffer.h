@@ -20,6 +20,8 @@ public:
 		setMapping(mapping);
 	}
 
+	virtual ~TMappingPixelBuffer() {}
+
 	const TPointMapping<float> &getMapping() const { return mapping; }
 	const std::vector<TIndexedPoint<float, 3>> &getPoints() const { return mapping.points; }
 
@@ -27,9 +29,9 @@ public:
 		this->resize(mapping.maxIndex + 1);
 		this->mapping = mapping;
 
-		this->width  = mapping.bounds.width + 1;
-		this->height = mapping.bounds.height + 1;
-		this->depth  = mapping.bounds.depth + 1;
+		this->width  = mapping.bounds.width;
+		this->height = mapping.bounds.height;
+		this->depth  = mapping.bounds.depth;
 
 		origin.x = mapping.bounds.x;
 		origin.y = mapping.bounds.y;
