@@ -127,7 +127,7 @@ struct IPalette;
 class ILightLayer;
 class ILightPattern;
 
-typedef void (* PatternEvent)(ILightPattern &lightPattern, EPlayState event, void *userData);
+typedef void (* PatternEvent)(ILightPattern *lightPattern, EPlayState event, void *userData);
 
 class ILightSection {
 protected:

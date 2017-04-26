@@ -11,8 +11,6 @@ using namespace LightString;
 class SectionPatternProvider : public PatternProvider {
 public:
 	virtual ILightPattern *patternForID(pattern_id_t patternID, ILightLayer *layer = nullptr) {
-		printf("TEST\n");
-
 		switch (patternID) {
 		case 1:
 			return new TSolidColorPattern<TRGB, float>(HTML::Red);

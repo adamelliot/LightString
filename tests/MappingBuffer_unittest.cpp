@@ -173,9 +173,9 @@ TEST(TMappingPixelBuffer, creation) {
 	TMappingPixelBuffer<TRGB, float> buffer(mapping);
 
 	EXPECT_EQ(buffer.getLength(), 3);
-	EXPECT_EQ(buffer.width, 11);
-	EXPECT_EQ(buffer.height, 10);
-	EXPECT_EQ(buffer.depth, 9);
+	EXPECT_EQ(buffer.width, 10);
+	EXPECT_EQ(buffer.height, 9);
+	EXPECT_EQ(buffer.depth, 8);
 }
 
 TEST(TMappingPixelBuffer3d, lookupXYZ) {
@@ -202,9 +202,9 @@ TEST(TMappingPixelBuffer, setMapping) {
 	TMappingPixelBuffer<TRGB, float> buffer(mapping);
 
 	EXPECT_EQ(buffer.getLength(), 3);
-	EXPECT_EQ(buffer.width, 11);
-	EXPECT_EQ(buffer.height, 10);
-	EXPECT_EQ(buffer.depth, 9);
+	EXPECT_EQ(buffer.width, 10);
+	EXPECT_EQ(buffer.height, 9);
+	EXPECT_EQ(buffer.depth, 8);
 
 	TPointMapping<float> mapping2;
 
