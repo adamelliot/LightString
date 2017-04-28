@@ -21,10 +21,19 @@ class TPixelBuffer;
 
 template <template <typename> class T, typename FORMAT = uint8_t>
 class TPixelBufferAdapter : public IPixelBuffer {
-public:
-	virtual TPixelBuffer<T, FORMAT> &getBuffer() = 0;
+protected:
+	TPixelBuffer<T, FORMAT> &buffer;
 
-	virtual uint16_t getLength() { return getBuffer().getLength(); }
+public:
+	TPixelBufferAdapter(TPixelBuffer<T, FORMAT> &buffer)
+		: buffer(buffer) {}
+
+	const TPixelBuffer<T, FORMAT> &getBuffer() const { return buffer; }
+	TPixelBuffer<T, FORMAT> &getBuffer() { return buffer; }
+//		return const_cast<TPixelBuffer<T, FORMAT> &>(const_cast<const TPixelBufferAdapter<T, FORMAT> *>(this)->getBuffer());
+//	}
+
+	virtual uint16_t getLength() const { return getBuffer().getLength(); }
 
 	T<FORMAT> *getPixels() { return getBuffer().getPixels(); }
 	virtual void clear() { getBuffer().clear(); }
@@ -48,7 +57,7 @@ public:
 	uint16_t length = 0;
 	bool shouldDelete = false;
 
-	TPixelBuffer() {}
+	TPixelBuffer() : TPixelBufferAdapter<T, FORMAT>(*this) {}
 
 	/**
 	 * Allow to allocate space externally for the buffer. If `hasDummyPixel` is enabled
@@ -56,7 +65,7 @@ public:
 	 * will be `length - 1`
 	 */
 	TPixelBuffer(T<FORMAT> *pixels, uint16_t length, bool hasDummyPixel = false)
-		: hasDummyPixel(hasDummyPixel), pixels(pixels), length(length), shouldDelete(false)
+		: TPixelBufferAdapter<T, FORMAT>(*this), hasDummyPixel(hasDummyPixel), pixels(pixels), length(length), shouldDelete(false)
 	{
 		rawPixels = pixels;
 
@@ -67,7 +76,7 @@ public:
 	}
 
 	TPixelBuffer(const uint16_t length, bool hasDummyPixel = false)
-		: hasDummyPixel(hasDummyPixel), length(length), shouldDelete(true)
+		: TPixelBufferAdapter<T, FORMAT>(*this), hasDummyPixel(hasDummyPixel), length(length), shouldDelete(true)
 	{
 		auto len = length + (hasDummyPixel ? 1 : 0);
 
@@ -89,8 +98,6 @@ public:
 	virtual ~TPixelBuffer() {
 		if (shouldDelete && rawPixels) delete[] rawPixels;
 	}
-
-	virtual TPixelBuffer<T, FORMAT> &getBuffer() { return *this; }
 
 	virtual bool resize(uint16_t length) {
 		if (!shouldDelete && this->length > 0) {
@@ -134,7 +141,7 @@ public:
 		}
 	}
 
-	virtual uint16_t getLength() { return length; }
+	virtual uint16_t getLength() const { return length; }
 	T<FORMAT> *getPixels() { return pixels; }
 
 	inline T<FORMAT>& operator[] (int16_t index) __attribute__((always_inline)) {

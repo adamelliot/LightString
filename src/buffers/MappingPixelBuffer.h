@@ -7,23 +7,21 @@ namespace LightString {
 template <template <typename> class T, typename FORMAT = uint8_t>
 class TMappingPixelBuffer : public TPixelBufferAdapter<T, FORMAT> {
 protected:
-	TPixelBuffer<T, FORMAT> &buffer;
+	using TPixelBufferAdapter<T, FORMAT>::buffer;
 	TPointMapping<float> mapping;
 
 public:
 	TPoint<float, 3> origin;
 	float width = 0, height = 0, depth = 0;
 
-	TMappingPixelBuffer(TPixelBuffer<T, FORMAT> &buffer) : buffer(buffer) {}
+	TMappingPixelBuffer(TPixelBuffer<T, FORMAT> &buffer) : TPixelBufferAdapter<T, FORMAT>(buffer) {}
 
 	TMappingPixelBuffer(TPixelBuffer<T, FORMAT> &buffer, const TPointMapping<float> &mapping)
-		: buffer(buffer) {
+		: TPixelBufferAdapter<T, FORMAT>(buffer) {
 		setMapping(mapping);
 	}
 
 	virtual ~TMappingPixelBuffer() {}
-
-	TPixelBuffer<T, FORMAT> &getBuffer() { return buffer; }
 
 	/* ------------ Mapping Methods -------------- */
 

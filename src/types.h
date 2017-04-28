@@ -23,8 +23,8 @@ typedef enum {
 
 // Place holder type for all generated TPixelBuffers
 struct IPixelBuffer {
-	virtual uint16_t getLength() = 0;
-	uint16_t getSize() { return getLength(); }
+	virtual uint16_t getLength() const = 0;
+	uint16_t getSize() const { return getLength(); }
 
 	virtual void clear() = 0;
 };

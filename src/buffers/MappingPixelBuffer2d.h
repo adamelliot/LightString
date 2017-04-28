@@ -10,16 +10,14 @@ private:
 	// actually want to see.
 	T<FORMAT> *rawPixels;
 */
-protected:
-	TPixelBuffer<T, FORMAT> &buffer;
 
 public:
 
 	uint16_t width = 1, height = 1;
 
-	TMappingPixelBuffer2d(TPixelBuffer<T, FORMAT> &buffer) : buffer(buffer) {}
+	TMappingPixelBuffer2d(TPixelBuffer<T, FORMAT> &buffer) : TPixelBufferAdapter<T, FORMAT>(buffer) {}
 	TMappingPixelBuffer2d(TPixelBuffer<T, FORMAT> &buffer, const uint16_t width, const uint16_t height)
-		: buffer(buffer), width(width), height(height) {}
+		: TPixelBufferAdapter<T, FORMAT>(buffer), width(width), height(height) {}
 
    	virtual ~TMappingPixelBuffer2d() {}
 /*
@@ -45,8 +43,6 @@ public:
 		return this->resize(width * height);
 	}
 */
-
-	TPixelBuffer<T, FORMAT> &getBuffer() { return buffer; }
 
 	/* -------------- 2d Methods ---------------- */
 

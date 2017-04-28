@@ -8,16 +8,15 @@ namespace LightString {
 template <template <typename> class T, typename FORMAT = uint8_t>
 class TPixelBuffer3d : public TPixelBufferAdapter<T, FORMAT> {
 	typedef T<FORMAT> (* BlendOperator)(T<FORMAT> &, const T<FORMAT> &);
-
 protected:
-	TPixelBuffer<T, FORMAT> &buffer;
+	using TPixelBufferAdapter<T, FORMAT>::buffer;
 
 public:
 	uint16_t width = 1, height = 1, depth = 1;
 
-	TPixelBuffer3d(TPixelBuffer<T, FORMAT> &buffer) : buffer(buffer) {}
+	TPixelBuffer3d(TPixelBuffer<T, FORMAT> &buffer) : TPixelBufferAdapter<T, FORMAT>(buffer) {}
 	TPixelBuffer3d(TPixelBuffer<T, FORMAT> &buffer, const uint16_t width, const uint16_t height, const uint16_t depth)
-		: buffer(buffer), width(width), height(height), depth(depth) {}
+		: TPixelBufferAdapter<T, FORMAT>(buffer), width(width), height(height), depth(depth) {}
 /*
 	TPixelBuffer3d(const uint16_t length)
 		: TPixelBuffer<T, FORMAT>(length, true) {}
@@ -54,8 +53,6 @@ public:
 
 		return (x + (y * width) + (z * width * height));
 	}
-
-	TPixelBuffer<T, FORMAT> &getBuffer() { return buffer; }
 
 	/* --------------- 2d Methods ----------------- */
 
