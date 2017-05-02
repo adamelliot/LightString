@@ -14,9 +14,11 @@ public:
 	TPoint<float, 3> origin;
 	float width = 0, height = 0, depth = 0;
 
-	TMappingPixelBuffer(TPixelBuffer<T, FORMAT> &buffer) : TPixelBufferAdapter<T, FORMAT>(buffer) {}
+	TMappingPixelBuffer() {}
 
-	TMappingPixelBuffer(TPixelBuffer<T, FORMAT> &buffer, const TPointMapping<float> &mapping)
+	TMappingPixelBuffer(TPixelBuffer<T, FORMAT> *buffer) : TPixelBufferAdapter<T, FORMAT>(buffer) {}
+
+	TMappingPixelBuffer(TPixelBuffer<T, FORMAT> *buffer, const TPointMapping<float> &mapping)
 		: TPixelBufferAdapter<T, FORMAT>(buffer) {
 		setMapping(mapping);
 	}
@@ -28,8 +30,10 @@ public:
 	const TPointMapping<float> &getMapping() const { return mapping; }
 	const std::vector<TIndexedPoint<float, 3>> &getPoints() const { return mapping.points; }
 
+	uint32_t getRequiredBufferSize() { return mapping.maxIndex + 1; }
+
 	void setMapping(const TPointMapping<float> &mapping) {
-		buffer.resize(mapping.maxIndex + 1);
+		if (buffer) buffer->resize(mapping.maxIndex + 1);
 		this->mapping = mapping;
 
 		this->width  = mapping.bounds.width;
@@ -40,29 +44,7 @@ public:
 		origin.y = mapping.bounds.y;
 		origin.z = mapping.bounds.z;
 	}
-/*
-	// [[deprecated("Inverse mapping is inefficient and incompatible with full point clouds.")]]
-	virtual int16_t xy(int16_t x, int16_t y) {
-		Point3f pt(x, y, 0);
-		auto key = mapping.mappedPoints.find(pt);
-		if (key == mapping.mappedPoints.end()) {
-			return -1;
-		} else {
-			return (int16_t)key->second;
-		}
-	}
 
-	// [[deprecated("Inverse mapping is inefficient and incompatible with full point clouds.")]]
-	virtual int16_t xyz(int16_t x, int16_t y, int16_t z) {
-		Point3f pt(x, y, z);
-		auto key = mapping.mappedPoints.find(pt);
-		if (key == mapping.mappedPoints.end()) {
-			return -1;
-		} else {
-			return (int16_t)key->second;
-		}
-		return -1;
-	}*/
 };
 
 };

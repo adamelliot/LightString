@@ -16,36 +16,8 @@ using namespace std;
 
 namespace LightString {
 
-template <template <typename> class T, typename FORMAT>
-class TPixelBuffer;
-
 template <template <typename> class T, typename FORMAT = uint8_t>
-class TPixelBufferAdapter : public IPixelBuffer {
-protected:
-	TPixelBuffer<T, FORMAT> &buffer;
-
-public:
-	TPixelBufferAdapter(TPixelBuffer<T, FORMAT> &buffer)
-		: buffer(buffer) {}
-
-	const TPixelBuffer<T, FORMAT> &getBuffer() const { return buffer; }
-	TPixelBuffer<T, FORMAT> &getBuffer() { return buffer; }
-//		return const_cast<TPixelBuffer<T, FORMAT> &>(const_cast<const TPixelBufferAdapter<T, FORMAT> *>(this)->getBuffer());
-//	}
-
-	virtual uint16_t getLength() const { return getBuffer().getLength(); }
-
-	T<FORMAT> *getPixels() { return getBuffer().getPixels(); }
-	virtual void clear() { getBuffer().clear(); }
-	void fillColor(T<FORMAT> col) { getBuffer().fillColor(col); }
-	void fade(const FORMAT scale) { getBuffer(). fade(scale); }
-
-	T<FORMAT>& operator[] (int16_t index) { return getBuffer()[index]; }
-	void setPixel(int16_t index, T<FORMAT> col) { getBuffer().setPixel(index, col); }
-};
-
-template <template <typename> class T, typename FORMAT = uint8_t>
-class TPixelBuffer : public TPixelBufferAdapter<T, FORMAT> {
+class TPixelBuffer : public IPixelBuffer {
 private:
 	T<FORMAT> *rawPixels = nullptr;
 	// Leave space before the actual pixels so things mapped to -1 are allowable
@@ -57,7 +29,7 @@ public:
 	uint16_t length = 0;
 	bool shouldDelete = false;
 
-	TPixelBuffer() : TPixelBufferAdapter<T, FORMAT>(*this) {}
+	TPixelBuffer() {}
 
 	/**
 	 * Allow to allocate space externally for the buffer. If `hasDummyPixel` is enabled
@@ -65,7 +37,7 @@ public:
 	 * will be `length - 1`
 	 */
 	TPixelBuffer(T<FORMAT> *pixels, uint16_t length, bool hasDummyPixel = false)
-		: TPixelBufferAdapter<T, FORMAT>(*this), hasDummyPixel(hasDummyPixel), pixels(pixels), length(length), shouldDelete(false)
+		: hasDummyPixel(hasDummyPixel), pixels(pixels), length(length), shouldDelete(false)
 	{
 		rawPixels = pixels;
 
@@ -76,7 +48,7 @@ public:
 	}
 
 	TPixelBuffer(const uint16_t length, bool hasDummyPixel = false)
-		: TPixelBufferAdapter<T, FORMAT>(*this), hasDummyPixel(hasDummyPixel), length(length), shouldDelete(true)
+		: hasDummyPixel(hasDummyPixel), length(length), shouldDelete(true)
 	{
 		auto len = length + (hasDummyPixel ? 1 : 0);
 
@@ -284,6 +256,32 @@ public:
 
 		return *this;
 	}
+};
+
+template <template <typename> class T, typename FORMAT = uint8_t>
+class TPixelBufferAdapter : public IPixelBuffer {
+protected:
+	TPixelBuffer<T, FORMAT> *buffer = nullptr;
+
+public:
+	TPixelBufferAdapter() {}
+	TPixelBufferAdapter(TPixelBuffer<T, FORMAT> *buffer)
+		: buffer(buffer) {}
+
+	void setPixelBuffer(TPixelBuffer<T, FORMAT> *buffer) { this->buffer = buffer; }
+
+	const TPixelBuffer<T, FORMAT> &getBuffer() const { return *buffer; }
+	TPixelBuffer<T, FORMAT> &getBuffer() { return *buffer; }
+
+	virtual uint16_t getLength() const { return getBuffer().getLength(); }
+
+	T<FORMAT> *getPixels() { return getBuffer().getPixels(); }
+	virtual void clear() { getBuffer().clear(); }
+	void fillColor(T<FORMAT> col) { getBuffer().fillColor(col); }
+	void fade(const FORMAT scale) { getBuffer().fade(scale); }
+
+	T<FORMAT>& operator[] (int16_t index) { return getBuffer()[index]; }
+	void setPixel(int16_t index, T<FORMAT> col) { getBuffer().setPixel(index, col); }
 };
 
 typedef TPixelBuffer<TRGB, uint8_t> RGBuBuffer;

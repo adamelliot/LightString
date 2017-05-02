@@ -14,40 +14,11 @@ protected:
 public:
 	uint16_t width = 1, height = 1, depth = 1;
 
-	TPixelBuffer3d(TPixelBuffer<T, FORMAT> &buffer) : TPixelBufferAdapter<T, FORMAT>(buffer) {}
-	TPixelBuffer3d(TPixelBuffer<T, FORMAT> &buffer, const uint16_t width, const uint16_t height, const uint16_t depth)
+	TPixelBuffer3d() {}
+	TPixelBuffer3d(TPixelBuffer<T, FORMAT> *buffer) : TPixelBufferAdapter<T, FORMAT>(buffer) {}
+	TPixelBuffer3d(TPixelBuffer<T, FORMAT> *buffer, const uint16_t width, const uint16_t height, const uint16_t depth)
 		: TPixelBufferAdapter<T, FORMAT>(buffer), width(width), height(height), depth(depth) {}
-/*
-	TPixelBuffer3d(const uint16_t length)
-		: TPixelBuffer<T, FORMAT>(length, true) {}
 
-	TPixelBuffer3d(const uint16_t width, const uint16_t height, const uint16_t depth, const uint16_t length)
-		: TPixelBuffer<T, FORMAT>(length, true), width(width), height(height), depth(depth) {}
-
-	TPixelBuffer3d(const uint16_t width, const uint16_t height, const uint16_t depth)
-		: TPixelBuffer3d(width, height, depth, width * height * depth) {}
-
-	// Pixels here should represent the whole space + 1 pixel
-	TPixelBuffer3d(T<FORMAT> *pixels, const uint16_t width, const uint16_t height, const uint16_t depth)
-		: TPixelBuffer<T, FORMAT>(pixels, width * height * depth, true), width(width), height(height), depth(depth)
-	{}
-
-	TPixelBuffer3d(T<FORMAT> *pixels, const uint16_t size)
-		: TPixelBuffer<T, FORMAT>(pixels, size, true), width(1), height(1), depth(1)
-	{}
-
-	virtual ~TPixelBuffer3d() {}
-
-	using TPixelBuffer<T, FORMAT>::resize;
-
-	bool resize(uint16_t width, uint16_t height, uint8_t depth) {
-		this->width = width;
-		this->height = height;
-		this->depth = depth;
-
-		return this->resize(width * height * depth);
-	}
-*/
 	virtual int16_t xyz(int16_t x, int16_t y, int16_t z) {
 		if (x < 0 || y < 0 || z < 0) return -1;
 
@@ -57,7 +28,7 @@ public:
 	/* --------------- 2d Methods ----------------- */
 
 	void setPixel(uint16_t x, uint16_t y, T<FORMAT> col) __attribute__((always_inline)) {
-		buffer.pixels[xyz(x, y, 0)] = col;
+		buffer->pixels[xyz(x, y, 0)] = col;
 	}
 
 	/* --------------- 3d Methods ----------------- */
@@ -83,28 +54,28 @@ public:
 		float a = col.a;
 
 		col.a = dx0 * dy0 * dz0 * a;
-		BLEND_OP(buffer.pixels[xyz(x + 0, y + 0, z + 0)], col);
+		BLEND_OP(buffer->pixels[xyz(x + 0, y + 0, z + 0)], col);
 
 		col.a = dx1 * dy0 * dz0 * a;
-		BLEND_OP(buffer.pixels[xyz(x + 1, y + 0, z + 0)], col);
+		BLEND_OP(buffer->pixels[xyz(x + 1, y + 0, z + 0)], col);
 
 		col.a = dx1 * dy1 * dz0 * a;
-		BLEND_OP(buffer.pixels[xyz(x + 1, y + 1, z + 0)], col);
+		BLEND_OP(buffer->pixels[xyz(x + 1, y + 1, z + 0)], col);
 
 		col.a = dx1 * dy1 * dz1 * a;
-		BLEND_OP(buffer.pixels[xyz(x + 1, y + 1, z + 1)], col);
+		BLEND_OP(buffer->pixels[xyz(x + 1, y + 1, z + 1)], col);
 
 		col.a = dx0 * dy1 * dz1 * a;
-		BLEND_OP(buffer.pixels[xyz(x + 0, y + 1, z + 1)], col);
+		BLEND_OP(buffer->pixels[xyz(x + 0, y + 1, z + 1)], col);
 
 		col.a = dx0 * dy0 * dz1 * a;
-		BLEND_OP(buffer.pixels[xyz(x + 0, y + 0, z + 1)], col);
+		BLEND_OP(buffer->pixels[xyz(x + 0, y + 0, z + 1)], col);
 
 		col.a = dx1 * dy0 * dz1 * a;
-		BLEND_OP(buffer.pixels[xyz(x + 1, y + 0, z + 1)], col);
+		BLEND_OP(buffer->pixels[xyz(x + 1, y + 0, z + 1)], col);
 
 		col.a = dx0 * dy1 * dz0 * a;
-		BLEND_OP(buffer.pixels[xyz(x + 0, y + 1, z + 0)], col);
+		BLEND_OP(buffer->pixels[xyz(x + 0, y + 1, z + 0)], col);
 	}
 
 	/**
@@ -136,13 +107,13 @@ public:
 		for (; x < x1; x++) {
 			// Draw corners
 			col.a = a * dy0 * dz0;
-			BLEND_OP(buffer.pixels[xyz(x, iy0, iz0)], col);
+			BLEND_OP(buffer->pixels[xyz(x, iy0, iz0)], col);
 			col.a = a * dy1 * dz0;
-			BLEND_OP(buffer.pixels[xyz(x, iy1, iz0)], col);
+			BLEND_OP(buffer->pixels[xyz(x, iy1, iz0)], col);
 			col.a = a * dy1 * dz1;
-			BLEND_OP(buffer.pixels[xyz(x, iy1, iz1)], col);
+			BLEND_OP(buffer->pixels[xyz(x, iy1, iz1)], col);
 			col.a = a * dy0 * dz1;
-			BLEND_OP(buffer.pixels[xyz(x, iy0, iz1)], col);
+			BLEND_OP(buffer->pixels[xyz(x, iy0, iz1)], col);
 
 			float y0_1 =  y0 + 1;
 			float z0_1 =  z0 + 1;
@@ -214,22 +185,22 @@ public:
 
 	template <BlendOperator BLEND_OP = blendCOPY>
 	inline void drawPixel(Point3i pt, T<FORMAT> col) {
-		BLEND_OP(buffer.pixels[xyz(pt.x, pt.y, pt.z)], col);
+		BLEND_OP(buffer->pixels[xyz(pt.x, pt.y, pt.z)], col);
 	}
 
 	template <BlendOperator BLEND_OP = blendCOPY>
 	inline void lineX_nc(int16_t x, int16_t y, int16_t z, int16_t x1, T<FORMAT> col) {
-		for (; x < x1; x++) BLEND_OP(buffer.pixels[xyz(x, y, z)], col);
+		for (; x < x1; x++) BLEND_OP(buffer->pixels[xyz(x, y, z)], col);
 	}
 
 	template <BlendOperator BLEND_OP = blendCOPY>
 	inline void lineY_nc(int16_t x, int16_t y, int16_t z, int16_t y1, T<FORMAT> col) {
-		for (; y < y1; y++) BLEND_OP(buffer.pixels[xyz(x, y, z)], col);
+		for (; y < y1; y++) BLEND_OP(buffer->pixels[xyz(x, y, z)], col);
 	}
 
 	template <BlendOperator BLEND_OP = blendCOPY>
 	inline void lineZ_nc(int16_t x, int16_t y, int16_t z, int16_t z1, T<FORMAT> col) {
-		for (; z < z1; z++) BLEND_OP(buffer.pixels[xyz(x, y, z)], col);
+		for (; z < z1; z++) BLEND_OP(buffer->pixels[xyz(x, y, z)], col);
 	}
 
 	template <BlendOperator BLEND_OP = blendCOPY>
@@ -243,7 +214,7 @@ public:
 		x -= step;
 
 		for (; len; len -= step) {
-			buffer.pixels[xyz(x + len, y, z)] = col;
+			buffer->pixels[xyz(x + len, y, z)] = col;
 		}
 	}
 
@@ -253,7 +224,7 @@ public:
 		y -= step;
 
 		for (; len; len -= step) {
-			buffer.pixels[xyz(x, y + len, z)] = col;
+			buffer->pixels[xyz(x, y + len, z)] = col;
 		}
 	}
 
@@ -263,7 +234,7 @@ public:
 		z -= step;
 
 		for (; len; len -= step) {
-			buffer.pixels[xyz(x, y, z + len)] = col;
+			buffer->pixels[xyz(x, y, z + len)] = col;
 		}
 	}
 
@@ -276,7 +247,7 @@ public:
 		for (int16_t x = pt1.x; x < pt2.x; x++) {
 			for (int16_t y = pt1.y; y < pt2.y; y++) {
 				for (int16_t z = pt1.z; z < pt2.z; z++) {
-					BLEND_OP(buffer.pixels[xyz(x, y, z)], col);
+					BLEND_OP(buffer->pixels[xyz(x, y, z)], col);
 				}
 			}
 		}
@@ -310,7 +281,7 @@ public:
 			err_1 = dy2 - l;
 			err_2 = dz2 - l;
 			for (i = 0; i < l; i++) {
-				buffer.pixels[xyz(x1, y1, z1)] = col;
+				buffer->pixels[xyz(x1, y1, z1)] = col;
 				if (err_1 > 0) {
 					y1 += y_inc;
 					err_1 -= dx2;
@@ -327,7 +298,7 @@ public:
 			err_1 = dx2 - m;
 			err_2 = dz2 - m;
 			for (i = 0; i < m; i++) {
-				buffer.pixels[xyz(x1, y1, z1)] = col;
+				buffer->pixels[xyz(x1, y1, z1)] = col;
 				if (err_1 > 0) {
 					x1 += x_inc;
 					err_1 -= dy2;
@@ -344,7 +315,7 @@ public:
 			err_1 = dy2 - n;
 			err_2 = dx2 - n;
 			for (i = 0; i < n; i++) {
-				buffer.pixels[xyz(x1, y1, z1)] = col;
+				buffer->pixels[xyz(x1, y1, z1)] = col;
 				if (err_1 > 0) {
 					y1 += y_inc;
 					err_1 -= dz2;
@@ -358,7 +329,7 @@ public:
 				z1 += z_inc;
 			}
 		}
-		buffer.pixels[xyz(x1, y1, z1)] = col;
+		buffer->pixels[xyz(x1, y1, z1)] = col;
 	}
 };
 
@@ -376,8 +347,9 @@ protected:
 
 public:
 
-	TMappingPixelBuffer3d(TPixelBuffer<T, FORMAT> &buffer) : TPixelBuffer3d<T, FORMAT>(buffer) {}
-	TMappingPixelBuffer3d(TPixelBuffer<T, FORMAT> &buffer, const uint16_t width, const uint16_t height, const uint16_t depth)
+	TMappingPixelBuffer3d() {}
+	TMappingPixelBuffer3d(TPixelBuffer<T, FORMAT> *buffer) : TPixelBuffer3d<T, FORMAT>(buffer) {}
+	TMappingPixelBuffer3d(TPixelBuffer<T, FORMAT> *buffer, const uint16_t width, const uint16_t height, const uint16_t depth)
 		: TPixelBuffer3d<T, FORMAT>(buffer, width, height, depth) {}
 /*
 	TMappingPixelBuffer3d(const uint16_t length) : TPixelBuffer3d<T, FORMAT>(length) {}
@@ -395,13 +367,16 @@ public:
 		: TPixelBuffer3d<T, FORMAT>(pixels, size) {}
 */
 	template<typename TYPE = uint16_t>
-	TMappingPixelBuffer3d(TPixelBuffer<T, FORMAT> &buffer, const TPointMapping<TYPE> &mapping)
+	TMappingPixelBuffer3d(TPixelBuffer<T, FORMAT> *buffer, const TPointMapping<TYPE> &mapping)
 		: TPixelBuffer3d<T, FORMAT>(buffer)
 	{
 		uint16_t w = std::ceil(mapping.bounds.width);
 		uint16_t h = std::ceil(mapping.bounds.height);
 		uint16_t d = std::ceil(mapping.bounds.depth);
-		buffer.resize(w * h * d);
+
+		if (buffer) {
+			buffer->resize(w * h * d);
+		}
 		setMapping(mapping);
 	}
 
@@ -426,10 +401,12 @@ public:
 		mapping.clear();
 		mapping.resize(size);
 
+		if (this->buffer) size = this->getSize();
+
 		std::fill(mapping.begin(), mapping.end(), -1);
 
 		for (auto &point : newMapping.points) {
-			if (point.index >= this->getSize()) continue;
+			if (point.index >= size) continue;
 			mapping[point.x + (point.y * w) + (point.z * w * h)] = point.index;
 		}
 	}

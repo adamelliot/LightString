@@ -3,46 +3,16 @@
 namespace LightString {
 
 template <template <typename> class T, typename FORMAT = uint8_t>
-class TMappingPixelBuffer2d : public TPixelBufferAdapter<T, FORMAT> {/*
-private:
-	// Raw pixels points at pixels - 1. The space right before the buffer
-	// is used as a dummy pixel that can be mapped to for things we don't
-	// actually want to see.
-	T<FORMAT> *rawPixels;
-*/
-
+class TMappingPixelBuffer2d : public TPixelBufferAdapter<T, FORMAT> {
 public:
 
 	uint16_t width = 1, height = 1;
 
-	TMappingPixelBuffer2d(TPixelBuffer<T, FORMAT> &buffer) : TPixelBufferAdapter<T, FORMAT>(buffer) {}
-	TMappingPixelBuffer2d(TPixelBuffer<T, FORMAT> &buffer, const uint16_t width, const uint16_t height)
+	TMappingPixelBuffer2d(TPixelBuffer<T, FORMAT> *buffer) : TPixelBufferAdapter<T, FORMAT>(buffer) {}
+	TMappingPixelBuffer2d(TPixelBuffer<T, FORMAT> *buffer, const uint16_t width, const uint16_t height)
 		: TPixelBufferAdapter<T, FORMAT>(buffer), width(width), height(height) {}
 
    	virtual ~TMappingPixelBuffer2d() {}
-/*
-	// Length is not necessarily proportionate to width & height
-	// as the mapping will put pixels where ever it choses in the buffer
-	// So we need to have a separate length
-	TMappingPixelBuffer2d(const uint16_t width, const uint16_t height, const uint16_t length)
-		: TPixelBuffer<T, FORMAT>(length, true), width(width), height(height) {}
-
-	TMappingPixelBuffer2d(const uint16_t width, const uint16_t height)
-		: TMappingPixelBuffer2d<T, FORMAT>(width, height, width * height) {}
-
-	// Pixels here should represent the whole plane + 1 pixel
-	TMappingPixelBuffer2d(T<FORMAT> *pixels, const uint16_t width, const uint16_t height)
-		: TPixelBuffer<T, FORMAT>(pixels, width * height + 1, true), width(width), height(height) {}
-
-	using TPixelBuffer<T, FORMAT>::resize;
-
-	virtual bool resize(uint16_t width, uint16_t height) {
-		this->width = width;
-		this->height = height;
-
-		return this->resize(width * height);
-	}
-*/
 
 	/* -------------- 2d Methods ---------------- */
 

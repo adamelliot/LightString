@@ -11,7 +11,7 @@ using namespace LightString;
 
 TEST(TMappingPixelBuffer2d, indexing) {
 	TPixelBuffer<TRGB, uint8_t> baseBuffer(400, true);
-	TMappingPixelBuffer2d<TRGB, uint8_t> buffer(baseBuffer, 20, 20);
+	TMappingPixelBuffer2d<TRGB, uint8_t> buffer(&baseBuffer, 20, 20);
 
 	EXPECT_EQ(buffer.xy(10, 10), 210);
 	EXPECT_EQ(buffer.xy(-10, 10), -1);
@@ -20,7 +20,7 @@ TEST(TMappingPixelBuffer2d, indexing) {
 
 TEST(TMappingPixelBuffer2d, dummyPixelAccess) {
 	TPixelBuffer<TRGB, float> baseBuffer(100, true);
-	TMappingPixelBuffer2d<TRGB, float> buffer(baseBuffer, 10, 10);
+	TMappingPixelBuffer2d<TRGB, float> buffer(&baseBuffer, 10, 10);
 
 	buffer[-1] = RGBf(0.3, 1, 0.2);
 	EXPECT_RGBf_EQ(baseBuffer[-1], 0.3, 1, 0.2);	
@@ -30,7 +30,7 @@ TEST(TMappingPixelBuffer2d, dummyPixelAccess) {
 
 TEST(TPixelBuffer3d, indexing) {
 	TPixelBuffer<TRGB, float> baseBuffer(1000, true);
-	TPixelBuffer3d<TRGB, float> buffer(baseBuffer, 10, 10, 10);
+	TPixelBuffer3d<TRGB, float> buffer(&baseBuffer, 10, 10, 10);
 
 	EXPECT_EQ(buffer.xyz(2, 2, 2), 222);
 	EXPECT_EQ(buffer.xyz(-10, 10, 2), -1);
@@ -39,7 +39,7 @@ TEST(TPixelBuffer3d, indexing) {
 
 TEST(TPixelBuffer3d, dummyPixelAccess) {
 	TPixelBuffer<TRGB, float> baseBuffer(1000, true);
-	TPixelBuffer3d<TRGB, float> buffer(baseBuffer, 10, 10, 10);
+	TPixelBuffer3d<TRGB, float> buffer(&baseBuffer, 10, 10, 10);
 
 	buffer[-1] = RGBf(0.3, 1, 0.2);
 	EXPECT_RGBf_EQ(baseBuffer[-1], 0.3, 1, 0.2);	
@@ -47,7 +47,7 @@ TEST(TPixelBuffer3d, dummyPixelAccess) {
 
 TEST(TPixelBuffer3d, lineX) {
 	TPixelBuffer<TRGB, float> baseBuffer(1000, true);
-	TPixelBuffer3d<TRGB, float> buffer(baseBuffer, 10, 10, 10);
+	TPixelBuffer3d<TRGB, float> buffer(&baseBuffer, 10, 10, 10);
 
 	buffer.clear();
 	buffer.lineX(2, 2, 2, 3, HTML::White);
@@ -66,7 +66,7 @@ TEST(TPixelBuffer3d, lineX) {
 
 TEST(TPixelBuffer3d, lineY) {
 	TPixelBuffer<TRGB, float> baseBuffer(1000, true);
-	TPixelBuffer3d<TRGB, float> buffer(baseBuffer, 10, 10, 10);
+	TPixelBuffer3d<TRGB, float> buffer(&baseBuffer, 10, 10, 10);
 
 	buffer.clear();
 	buffer.lineY(2, 2, 2, 3, HTML::White);
@@ -85,7 +85,7 @@ TEST(TPixelBuffer3d, lineY) {
 
 TEST(TPixelBuffer3d, lineZ) {
 	TPixelBuffer<TRGB, float> baseBuffer(1000, true);
-	TPixelBuffer3d<TRGB, float> buffer(baseBuffer, 10, 10, 10);
+	TPixelBuffer3d<TRGB, float> buffer(&baseBuffer, 10, 10, 10);
 
 	buffer.clear();
 	buffer.lineZ(2, 2, 2, 3, HTML::White);
@@ -104,7 +104,7 @@ TEST(TPixelBuffer3d, lineZ) {
 
 TEST(TPixelBuffer3d, lineTo) {
 	TPixelBuffer<TRGB, float> baseBuffer(1000, true);
-	TPixelBuffer3d<TRGB, float> buffer(baseBuffer, 10, 10, 10);
+	TPixelBuffer3d<TRGB, float> buffer(&baseBuffer, 10, 10, 10);
 
 	buffer.clear();
 	buffer.lineTo(2, 2, 2, 5, 5, 5, HTML::Red);
@@ -155,7 +155,7 @@ TEST(TMappingPixelBuffer, creation) {
 	mapping.addPoint(Point3f(9, 4, 2), 1);
 
 	TPixelBuffer<TRGB, float> baseBuffer(1000, true);
-	TMappingPixelBuffer<TRGB, float> buffer(baseBuffer, mapping);
+	TMappingPixelBuffer<TRGB, float> buffer(&baseBuffer, mapping);
 
 	EXPECT_EQ(buffer.getLength(), 3);
 	EXPECT_EQ(buffer.width, 10);
@@ -171,7 +171,7 @@ TEST(TMappingPixelBuffer3d, lookupXYZ) {
 	mapping.addPoint(Point3i(5, 6, 3), 3);
 
 	TPixelBuffer<TRGB, float> baseBuffer(1000, true);
-	TMappingPixelBuffer3d<TRGB, float> buffer(baseBuffer, mapping);
+	TMappingPixelBuffer3d<TRGB, float> buffer(&baseBuffer, mapping);
 
 	EXPECT_EQ(buffer.xyz(10, 9, 8), 2);
 	EXPECT_EQ(buffer.xyz(9, 4, 2), 1);
@@ -186,7 +186,7 @@ TEST(TMappingPixelBuffer, setMapping) {
 	mapping.addPoint(Point3f(9, 4, 2), 1);
 
 	TPixelBuffer<TRGB, float> baseBuffer(1000, true);
-	TMappingPixelBuffer<TRGB, float> buffer(baseBuffer, mapping);
+	TMappingPixelBuffer<TRGB, float> buffer(&baseBuffer, mapping);
 
 	EXPECT_EQ(buffer.getLength(), 3);
 	EXPECT_EQ(buffer.width, 10);

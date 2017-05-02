@@ -102,7 +102,7 @@ void LIGHT_LAYER_CLASS::finishPattern() {
 	}
 
 	if (this->activePattern != nullptr) {
-		patternProvider.finishedWithPattern(this->activePattern);
+		patternProvider.finishedWithPattern(this->activePattern, this);
 		this->activePattern = nullptr;
 	}
 }
