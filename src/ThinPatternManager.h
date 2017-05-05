@@ -43,9 +43,34 @@ public:
 		outputBuffer = buffer;
 	}
 
-	void setMaxFPS(uint16_t targetFPS) { 
-		msPerFrame = (targetFPS == 0) ? 0 : 1000 / targetFPS; 
+	void setMaxFPS(uint16_t targetFPS) {
+		msPerFrame = (targetFPS == 0) ? 0 : 1000 / targetFPS;
 	}
+
+	virtual void pause() {
+		pause(true, true);
+	}
+
+	virtual void pause(bool blackout, bool fade = true) {
+		if (blackout) {
+			if (fade) {
+				this->fadeDown();
+				this->pauseAfterFade = true;
+			} else {
+				this->setBrightness(0);
+				LightLayer<FORMAT>::pause();
+			}
+		} else {
+			if (!fade) {
+				LightLayer<FORMAT>::pause();
+			}
+		}
+	}
+
+	virtual void unpause() {
+		LightLayer<FORMAT>::unpause();
+	}
+
 
 	bool update();
 

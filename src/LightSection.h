@@ -19,12 +19,12 @@ private:
 	FORMAT fade, targetFade;
 	uint32_t fadeEnd = 0;
 	int32_t fadeDuration = 1000;
-	bool pauseAfterFade = false;
 
 	void updateFadeLevel();
 
 protected:
 	PatternProvider &patternProvider;
+	bool pauseAfterFade = false;
 
 public:
 
@@ -53,8 +53,8 @@ public:
 	// Update all the layers and then compact them together into the outputBuffer
 	void update();
 
-	void pause(bool blackout = true, bool fade = true);
-	void unpause();
+	virtual void pause(bool blackout = true, bool fade = true);
+	virtual void unpause();
 
 	void fadeDown();
 	void fadeUp(bool forceZero = true);

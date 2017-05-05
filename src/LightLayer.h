@@ -71,6 +71,10 @@ public:
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }
 
+	uint8_t getPatternIndex() { return patternIndex; }
+	uint32_t getElapsedTime() { return millis() - patternStartedAt; }
+	uint32_t getTransitionTimeElapsed() { return millis() - transitionStartedAt; }
+
 	void setConfig(const LightLayerConfig &config) { this->config = config; }
 	LightLayerConfig &getConfig() { return config; }
 
@@ -113,8 +117,8 @@ public:
 	// Play control
 	void play(); // Starts from a stopped state, or unpauses.
 	void stop();
-	void pause();
-	void unpause();
+	virtual void pause();
+	virtual void unpause();
 
 	bool enqueuePattern(PatternCode patternCode, bool waitToFinish = false);
 	bool startPattern(PatternCode patternCode);

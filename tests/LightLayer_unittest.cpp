@@ -233,6 +233,60 @@ TEST_F(LightLayerTest, patternsLoopPastEndProperly) {
 	EXPECT_EQ(pattern->getPatternID(), 1);
 }
 
+TEST_F(LightLayerTest, playStatesProperlyChange) {
+	PatternSequence sequence;
+
+	sequence.addPatternCue(PatternCode(2, 0), 500, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 50);
+	sequence.addPatternCue(PatternCode(1, 0), 500, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 50);
+	sequence.addPatternCue(PatternCode(3, 0), 500, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 50);
+
+	lightLayer.setPatternSequence(sequence);
+
+	EXPECT_EQ(lightLayer.getPlayState(), PATTERN_STOPPED);
+	lightLayer.play();
+
+	lightLayer.update();
+	EXPECT_EQ(lightLayer.getPlayState(), PATTERN_PLAYING_IN_TRANSITION);
+	usleep(55000);
+
+	lightLayer.update();
+	EXPECT_EQ(lightLayer.getPlayState(), PATTERN_PLAYING);
+	usleep(500000);
+
+	lightLayer.update();
+	EXPECT_EQ(lightLayer.getPlayState(), PATTERN_PLAYING_OUT_TRANSITION);
+	usleep(50000);
+
+	lightLayer.update();
+	EXPECT_EQ(lightLayer.getPlayState(), PATTERN_STARTED);
+	usleep(25000);
+
+	lightLayer.update();
+	EXPECT_EQ(lightLayer.getPlayState(), PATTERN_PLAYING_IN_TRANSITION);
+	usleep(1000);
+	lightLayer.update();
+
+	lightLayer.pause(true, false);
+	EXPECT_EQ(lightLayer.getPlayState(), PATTERN_PAUSED);
+	usleep(1000);
+	lightLayer.update();
+
+	lightLayer.unpause();
+	EXPECT_EQ(lightLayer.getPlayState(), PATTERN_PLAYING_IN_TRANSITION);
+	usleep(1000);
+	lightLayer.update();
+
+	usleep(50000);
+
+	lightLayer.update();
+	EXPECT_EQ(lightLayer.getPlayState(), PATTERN_PLAYING);
+	usleep(50000);
+
+	lightLayer.pause();
+
+
+}
+
 TEST_F(LightLayerTest, changedSequenceUpdatesPlayingPattern) {
 	PatternSequence sequence1;
 	PatternSequence sequence2;

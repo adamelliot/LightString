@@ -118,7 +118,9 @@ void LIGHT_LAYER_CLASS::setPlayState(EPlayState playState) {
 
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::play() {
-	if (playState == PATTERN_PLAYING) return;
+	if (playState == PATTERN_PLAYING ||
+		playState == PATTERN_PLAYING_IN_TRANSITION ||
+		playState == PATTERN_PLAYING_OUT_TRANSITION) return;
 	if (playState == PATTERN_PAUSED) {
 		unpause();
 		return;
@@ -148,7 +150,11 @@ LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::unpause() {
 	if (playState != PATTERN_PAUSED) return;
 
-	setPlayState(PATTERN_PLAYING);
+	if (transitionState != TRANSITION_DONE) {
+		setPlayState(runningBeginTransition ? PATTERN_PLAYING_IN_TRANSITION : PATTERN_PLAYING_OUT_TRANSITION);
+	} else {
+		setPlayState(PATTERN_PLAYING);
+	}
 
 	uint32_t timeDelta = millis() - pauseStartedAt;
 	patternStartedAt += timeDelta;
@@ -178,8 +184,6 @@ void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, Patte
 	this->transitionState = TRANSITION_STARTING;
 
 	runningBeginTransition = true;
-
-	setPlayState(PATTERN_PLAYING);
 }
 
 /**
@@ -526,7 +530,13 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 		transitionState = TRANSITION_RUNNING;
 		transitionStartedAt = millis();
 
-		currentTransition = runningBeginTransition ? getSelectedInTransition() : getSelectedOutTransition();
+		if (runningBeginTransition) {
+			currentTransition = getSelectedInTransition();
+			setPlayState(PATTERN_PLAYING_IN_TRANSITION);
+		} else {
+			currentTransition = getSelectedOutTransition();
+			setPlayState(PATTERN_PLAYING_OUT_TRANSITION);
+		}
 	}
 
 	int32_t transitionDuration = runningBeginTransition ? getSelectedInTransitionDuration() : getSelectedOutTransitionDuration();
@@ -600,6 +610,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 			}
 			loadPrevious = false;
 		} else {
+			setPlayState(PATTERN_PLAYING);
 			runningBeginTransition = false;
 		}
 	}

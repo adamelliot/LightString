@@ -39,7 +39,9 @@ typedef enum {
 typedef enum {
 	PATTERN_SETUP = 0,
 	PATTERN_STARTED,
+	PATTERN_PLAYING_IN_TRANSITION,
 	PATTERN_PLAYING,
+	PATTERN_PLAYING_OUT_TRANSITION,
 	PATTERN_FINISHED, // Happens when a pattern ends
 	PATTERN_PAUSED,
 	PATTERN_STOPPED // Happens after a pattern finishes, but another isn't started
