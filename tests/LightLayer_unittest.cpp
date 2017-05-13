@@ -364,3 +364,17 @@ TEST_F(LightLayerTest, changedSequenceStartsFromBeginIfPastEnd) {
 	pattern = lightLayer.getActivePattern();
 	EXPECT_EQ(pattern->getPatternID(), 3);
 }
+
+TEST_F(LightLayerTest, emptySequenceShouldJustStopPlayback) {
+	PatternSequence sequence1;
+
+	lightLayer.setPatternSequence(sequence1);
+
+	lightLayer.play();
+	lightLayer.prevPattern();
+
+	EXPECT_EQ(lightLayer.getPlayState(), PATTERN_STOPPED);
+
+	auto pattern = lightLayer.getActivePattern();
+	EXPECT_EQ(pattern, nullptr);
+}

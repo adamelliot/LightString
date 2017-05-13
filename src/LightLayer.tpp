@@ -197,6 +197,11 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 	PatternConfig *config = nullptr;
 
 	if (patternSequence) {
+		if (patternSequence->getSequence().size() == 0) {
+			setPlayState(PATTERN_STOPPED);
+			return false;
+		}
+
 		auto cue = patternSequence->getPatternCue(patternIndex);
 		code = cue.code;
 		config = &cue;
