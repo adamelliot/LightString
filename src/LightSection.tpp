@@ -101,6 +101,9 @@ void LIGHT_SECTION_CLASS::pause(bool blackout, bool fade) {
 			pauseAfterFade = true;
 		} else {
 			setBrightness(0);
+			for (uint32_t j = 0; j < getTotalLayers(); j++) {
+				layers[j].pause();
+			}
 		}
 	} else {
 		if (!fade) {

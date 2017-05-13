@@ -41,7 +41,9 @@ typedef enum {
 typedef enum {
 	PATTERN_SETUP = 0,
 	PATTERN_STARTED,
+	PATTERN_PLAYING_IN_TRANSITION,
 	PATTERN_PLAYING,
+	PATTERN_PLAYING_OUT_TRANSITION,
 	PATTERN_FINISHED, // Happens when a pattern ends
 	PATTERN_PAUSED,
 	PATTERN_STOPPED // Happens after a pattern finishes, but another isn't started
@@ -129,6 +131,8 @@ struct IPalette;
 class ILightLayer;
 class ILightPattern;
 
+class PatternProvider;
+
 typedef void (* PatternEvent)(ILightPattern *lightPattern, EPlayState event, void *userData);
 
 class ILightSection {
@@ -145,6 +149,8 @@ public:
 	virtual IPixelBuffer *lockBuffer() = 0;
 	virtual void unlockBuffer(IPixelBuffer *buffer) = 0;
 	virtual bool addBuffer(IPixelBuffer *buffer) = 0;
+
+	virtual PatternProvider &getPatternProvider() = 0;
 
 	void setSectionID(uint8_t val) { sectionID = val; }
 	uint8_t getSectionID() { return sectionID; }
