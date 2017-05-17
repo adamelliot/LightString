@@ -65,7 +65,7 @@ void LIGHT_SECTION_CLASS::update() {
 
 	for (uint32_t i = 0; i < getTotalLayers(); i++) {
 		layers[i].update();
-		ILightPattern *pattern = layers[i].getActivePattern();
+		auto pattern = layers[i].getActivePattern();
 
 		if (pattern && !pattern->isFilterPattern()) {
 			auto buffer = static_cast<TPixelBuffer<PIXEL, FORMAT> *>(pattern->getPixelBuffer());

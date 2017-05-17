@@ -60,6 +60,9 @@ public:
 	virtual void setPixelBuffer(IPixelBuffer *pixelBuffer) {}
 	virtual IPixelBuffer *getPixelBuffer() { return NULL; }
 
+	virtual void setPixelBufferAdapter(IPixelBufferAdapter *) {}
+	virtual IPixelBufferAdapter *getPixelBufferAdapter() { return nullptr; }
+
 	virtual bool isFilterPattern() { return false; }
 
 	pattern_id_t getPatternID() { return patternID; }

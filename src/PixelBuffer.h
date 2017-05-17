@@ -258,8 +258,21 @@ public:
 	}
 };
 
+
+class IPixelBufferAdapter : public IPixelBuffer {
+public:
+	virtual void setPixelBuffer(IPixelBuffer *buffer) = 0;
+
+	virtual const IPixelBuffer &getBuffer() const = 0;
+	virtual IPixelBuffer &getBuffer() = 0;
+
+	virtual uint16_t getLength() const { return getBuffer().getLength(); }
+
+	virtual void clear() { getBuffer().clear(); }
+};
+
 template <template <typename> class T, typename FORMAT = uint8_t>
-class TPixelBufferAdapter : public IPixelBuffer {
+class TPixelBufferAdapter : public IPixelBufferAdapter {
 protected:
 	TPixelBuffer<T, FORMAT> *buffer = nullptr;
 
@@ -268,15 +281,14 @@ public:
 	TPixelBufferAdapter(TPixelBuffer<T, FORMAT> *buffer)
 		: buffer(buffer) {}
 
-	void setPixelBuffer(TPixelBuffer<T, FORMAT> *buffer) { this->buffer = buffer; }
+	void setPixelBuffer(IPixelBuffer *buffer) {
+		this->buffer = static_cast<TPixelBuffer<T, FORMAT> *>(buffer);
+	}
 
 	const TPixelBuffer<T, FORMAT> &getBuffer() const { return *buffer; }
 	TPixelBuffer<T, FORMAT> &getBuffer() { return *buffer; }
 
-	virtual uint16_t getLength() const { return getBuffer().getLength(); }
-
 	T<FORMAT> *getPixels() { return getBuffer().getPixels(); }
-	virtual void clear() { getBuffer().clear(); }
 	void fillColor(T<FORMAT> col) { getBuffer().fillColor(col); }
 	void fade(const FORMAT scale) { getBuffer().fade(scale); }
 

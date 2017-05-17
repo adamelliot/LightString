@@ -640,6 +640,11 @@ void LIGHT_LAYER_CLASS::update() {
 		}
 	}
 
+	// We set the adapter at update so other patterns can share the same adapter
+	if (activePattern->getPixelBufferAdapter()) {
+		activePattern->getPixelBufferAdapter()->setPixelBuffer(activePattern->getPixelBuffer());
+	}
+
 	if (transitionState != TRANSITION_DONE) {
 		updateTransition(timeDelta);
 	} else {
