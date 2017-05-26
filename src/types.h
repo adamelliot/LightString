@@ -129,6 +129,8 @@ struct IPalette;
 class ILightLayer;
 class ILightPattern;
 
+class PatternProvider;
+
 typedef void (* PatternEvent)(ILightPattern *lightPattern, EPlayState event, void *userData);
 
 class ILightSection {
@@ -145,6 +147,8 @@ public:
 	virtual IPixelBuffer *lockBuffer() = 0;
 	virtual void unlockBuffer(IPixelBuffer *buffer) = 0;
 	virtual bool addBuffer(IPixelBuffer *buffer) = 0;
+
+	virtual PatternProvider &getPatternProvider() = 0;
 
 	void setSectionID(uint8_t val) { sectionID = val; }
 	uint8_t getSectionID() { return sectionID; }
