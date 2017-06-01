@@ -215,18 +215,18 @@ void PATTERN_MANAGER_CLASS::ensureLayerIsSetup(uint8_t sectionID, uint8_t layerI
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSequence) {
+void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, bool restartPattern) {
 	for (uint32_t i = 0; i < sections.size(); i++) {
 		for (uint32_t j = 0; j < sections[i].getTotalLayers(); j++) {
-			sections[i].layers[j].setPatternSequence(patternSequence);
+			sections[i].layers[j].setPatternSequence(patternSequence, newPlayIndex, restartPattern);
 		}
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSequence, uint8_t layerID, uint8_t sectionID) {
+void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, bool restartPattern, uint8_t layerID, uint8_t sectionID) {
 	ensureLayerIsSetup(sectionID, layerID);
-	sections[sectionID].layers[layerID].setPatternSequence(patternSequence);
+	sections[sectionID].layers[layerID].setPatternSequence(patternSequence, newPlayIndex, restartPattern);
 }
 
 PATTERN_MANAGER_TEMPLATE

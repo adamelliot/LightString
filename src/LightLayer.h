@@ -72,7 +72,7 @@ public:
 	uint8_t getLayerID() { return layerID; }
 
 	uint8_t getPatternIndex() { return patternIndex; }
-	uint32_t getElapsedTime() { return millis() - patternStartedAt; }
+	uint32_t getElapsedTime() { return (patternStartedAt == 0) ? 0 : millis() - patternStartedAt; }
 	uint32_t getTransitionTimeElapsed() { return millis() - transitionStartedAt; }
 
 	void setConfig(const LightLayerConfig &config) { this->config = config; }
@@ -92,7 +92,7 @@ public:
 
 	void setPalette(IPalette *palette) { if (activePattern) activePattern->setPalette(palette); }
 
-	void setPatternSequence(const PatternSequence &patternSequence);
+	void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = 0, bool restartPattern = true);
 	void clearPatternSequence();
 
 	EPatternTransition getSelectedInTransition();

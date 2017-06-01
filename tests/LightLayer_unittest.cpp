@@ -93,7 +93,7 @@ TEST_F(LightLayerTest, creatingPatternSequence) {
 	sequence.addPatternCue(PatternCode(2, 0), 5000, TRANSITION_OVERWRITE);
 	sequence.addPatternCue(PatternCode(1, 0), 5000, TRANSITION_FADE_DOWN);
 
-	lightLayer.setPatternSequence(sequence);
+	lightLayer.setPatternSequence(sequence, 1);
 
 	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
 
@@ -311,7 +311,7 @@ TEST_F(LightLayerTest, changedSequenceUpdatesPlayingPattern) {
 	EXPECT_EQ(pattern->getPatternID(), 3);
 }
 
-TEST_F(LightLayerTest, changedSequenceKeepsCurrentPattern) {
+TEST_F(LightLayerTest, changedSequenceSelectsPattern) {
 	PatternSequence sequence1;
 	PatternSequence sequence2;
 
@@ -332,12 +332,12 @@ TEST_F(LightLayerTest, changedSequenceKeepsCurrentPattern) {
 	auto pattern = lightLayer.getActivePattern();
 	EXPECT_EQ(pattern->getPatternID(), 1);
 
-	lightLayer.setPatternSequence(sequence2);
+	lightLayer.setPatternSequence(sequence2, 1);
 
 	pattern = lightLayer.getActivePattern();
 	EXPECT_EQ(pattern->getPatternID(), 1);
 
-	EXPECT_EQ(setup1Count, 1);
+	EXPECT_EQ(setup1Count, 2);
 }
 
 TEST_F(LightLayerTest, changedSequenceStartsFromBeginIfPastEnd) {

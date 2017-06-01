@@ -84,8 +84,8 @@ public:
 
 	void shufflePatterns();
 
-	void setPatternSequence(const PatternSequence &patternSequence);
-	void setPatternSequence(const PatternSequence &patternSequence, uint8_t layerID, uint8_t sectionID = 0);
+	void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = 0, bool restartPattern = true);
+	void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, bool restartPattern, uint8_t layerID, uint8_t sectionID = 0);
 
 	void clearPatternSequence();
 	void clearPatternSequence(uint8_t layerID, uint8_t sectionID = 0);
