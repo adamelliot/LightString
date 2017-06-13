@@ -213,7 +213,10 @@ public:
 	}
 
 	std::vector<PatternCue> &getSequence() { return sequence; }
+	const std::vector<PatternCue> &getSequence() const { return sequence; }
+
 	PatternCue &getPatternCue(uint16_t index) { return sequence[index]; }
+	const PatternCue &getPatternCue(uint16_t index) const { return sequence[index]; }
 };
 
 struct LightLayerConfig : PatternConfig {
