@@ -91,6 +91,10 @@ void LIGHT_LAYER_CLASS::updatePatternIndex(PatternCode patternCode) {
 			i %= sequence.size();
 		}
 	} else {
+		if (patternIndex <= patternList.size()) {
+			patternIndex = 0;
+			return;
+		}
 		if (patternList[patternIndex] == patternCode) return;
 
 		auto size = patternList.size();
@@ -110,7 +114,7 @@ void LIGHT_LAYER_CLASS::finishPattern() {
 	setPlayState(PATTERN_FINISHED);
 	activePattern->patternFinished();
 
-	if (!activePattern->isFilterPattern()) {
+	if (!activePattern->isFilterPattern() && section != nullptr) {
 		section->unlockBuffer(activePattern->getPixelBuffer());
 	}
 
@@ -181,11 +185,23 @@ void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, Patte
 	this->activePattern = pattern;
 	this->activePattern->setLayer(this);
 
-	if (this->activePattern->isFilterPattern()) {
-		this->activePattern->setPixelBuffer(this->section->getOutputBuffer());
-	} else {
-		this->activePattern->setPixelBuffer(this->section->lockBuffer());
+	IPixelBuffer *buffer = nullptr;
+
+	if (this->section) {
+		if (this->activePattern->isFilterPattern()) {
+			buffer = this->section->getOutputBuffer();
+		} else {
+			buffer = this->section->lockBuffer();
+		}
 	}
+
+	if (!buffer) {
+		finishPattern();
+		setPlayState(PATTERN_STOPPED);
+		return;
+	}
+
+	this->activePattern->setPixelBuffer(buffer);
 
 	setPlayState(PATTERN_SETUP);
 

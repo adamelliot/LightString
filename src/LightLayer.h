@@ -11,9 +11,9 @@ class LightLayer : public ILightLayer {
 private:
 	LightLayerConfig config;
 
-	uint8_t layerID;
+	uint8_t layerID = 0;
 
-	ILightSection *section;
+	ILightSection *section = nullptr;
 
 	PatternProvider &patternProvider;
 	std::vector<PatternCode> patternList;

@@ -85,6 +85,16 @@ TEST(LightLayer, initialization) {
 	EXPECT_EQ(lightLayer.getActivePattern(), nullptr);
 }
 
+TEST(LightLayer, startPatternWithNoBuffersFailsGracefully) {
+	TestPatternProvider provider;
+	LightLayer<float> lightLayer(provider);
+
+	lightLayer.startPattern(1);
+
+	EXPECT_EQ(lightLayer.getActivePattern(), nullptr);
+	EXPECT_EQ(lightLayer.getPlayState(), PATTERN_STOPPED);
+}
+
 TEST_F(LightLayerTest, creatingPatternSequence) {
 	PatternSequence sequence;
 
