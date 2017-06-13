@@ -231,7 +231,7 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 			return false;
 		}
 
-		auto cue = patternSequence.getPatternCue(patternIndex);
+		auto &cue = patternSequence.getPatternCue(patternIndex);
 		code = cue.code;
 		config = &cue;
 	} else if (patternList.size() > 0) {
