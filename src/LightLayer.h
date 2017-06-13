@@ -25,7 +25,8 @@ private:
 	// - If the layer is sequenced randomizing has no effect
 	// - Settings from cue can still be over ridden by the pattern methods:
 	//		- isPatternFinished, getNextPatternCode, getInTransition, getOutTransition
-	PatternSequence *patternSequence = nullptr;
+	PatternSequence patternSequence;
+	bool hasPatternSequence = false;
 
 	uint8_t patternIndex = 0; // Index in the pattern order or the sequence
 
