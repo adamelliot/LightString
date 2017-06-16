@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 #include "utils.h"
 #include "types.h"
@@ -34,8 +35,15 @@ public:
 		targetFade(TColorFormatHelper<FORMAT>::getMaxValue()),
 		patternProvider(patternProvider) {}
 
+	virtual ~LightSection() {
+		for (auto i = 0; i < layers.size(); i++) {
+			delete layers[i];
+			layers[i] = nullptr;
+		}
+	}
+
 	TPixelBuffer<OUTPUT_PIXEL, FORMAT> *outputBuffer = nullptr;
-	std::vector<LightLayer<FORMAT>> layers;
+	std::vector<LightLayer<FORMAT> *> layers;
 
 	PatternProvider &getPatternProvider() { return patternProvider; }
 
@@ -45,7 +53,7 @@ public:
 	IPixelBuffer *getOutputBuffer() { return outputBuffer; }
 
 	uint8_t getTotalLayers() { return layers.size(); }
-	ILightLayer *getLayer(uint8_t layerID) { return &layers[layerID]; }
+	ILightLayer *getLayer(uint8_t layerID) { return layers[layerID]; }
 	void ensureLayerExists(uint8_t layerID);
 
 	IPixelBuffer *lockBuffer();

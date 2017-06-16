@@ -49,10 +49,10 @@ TEST(LightSection, adjustBrightness) {
 	lightSection.addBuffer(&buffer);
 
 	lightSection.ensureLayerExists(0);
-	lightSection.layers[0].addLightPattern(1);
-	lightSection.layers[0].play();
+	lightSection.layers[0]->addLightPattern(1);
+	lightSection.layers[0]->play();
 
-	lightSection.layers[0].getConfig().inTransition = TRANSITION_OVERWRITE;
+	lightSection.layers[0]->getConfig().inTransition = TRANSITION_OVERWRITE;
 
 	lightSection.update();
 	EXPECT_RGBf_EQ(leds[0], 1, 0, 0);

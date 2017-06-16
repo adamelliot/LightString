@@ -63,7 +63,7 @@ private:
 public:
 
 	LightLayer(PatternProvider &patternProvider) : patternProvider(patternProvider) {}
-	~LightLayer();
+	virtual ~LightLayer();
 
 	inline FORMAT getMaxOpacity();
 	EPlayState getPlayState() { return playState; }

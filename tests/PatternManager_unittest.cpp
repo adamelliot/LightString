@@ -100,7 +100,7 @@ TEST(PatternManager, ensureLayersGetConfigured) {
 	patternManager.addLightPattern(1);
 
 	EXPECT_EQ(section->getTotalLayers(), 1);
-	EXPECT_EQ(section->layers[0].getPatternDuration(), 500);
+	EXPECT_EQ(section->layers[0]->getPatternDuration(), 500);
 
 	patternManager.play();
 

@@ -1,11 +1,16 @@
 LIGHT_SECTION_TEMPLATE
 void LIGHT_SECTION_CLASS::ensureLayerExists(uint8_t layerID) {
-	while (layerID >= layers.size()) {
-		auto i = layers.size();
-		layers.push_back(LightLayer<FORMAT>(patternProvider));
-		layers[i].setLayerID(i);
-		layers[i].setLightSection(this);
+	if (layerID < layers.size() && layers[layerID] != nullptr) return;
+	if (layerID >= layers.size()) {
+		layers.resize(layerID + 1);
 	}
+
+	auto layer = new LightLayer<FORMAT>(patternProvider);
+
+	layer->setLayerID(layerID);
+	layer->setLightSection(this);
+
+	layers[layerID] = layer;
 }
 
 LIGHT_SECTION_TEMPLATE
@@ -63,16 +68,18 @@ void LIGHT_SECTION_CLASS::update() {
 		outputBuffer->clear();
 	}
 
-	for (uint32_t i = 0; i < getTotalLayers(); i++) {
-		layers[i].update();
-		ILightPattern *pattern = layers[i].getActivePattern();
+	for (auto layer : layers) {
+		if (!layer) continue;
+		layer->update();
+
+		auto pattern = layer->getActivePattern();
 
 		if (pattern && !pattern->isFilterPattern()) {
 			TPixelBuffer<PIXEL, FORMAT> *buffer = (TPixelBuffer<PIXEL, FORMAT> *)pattern->getPixelBuffer();
 
-			FORMAT opacity = TColorFormatHelper<FORMAT>::scale(layers[i].getOpacity(), layers[i].getTransitionOpacity());
+			FORMAT opacity = TColorFormatHelper<FORMAT>::scale(layer->getOpacity(), layer->getTransitionOpacity());
 
-			if (opacity < layers[i].getMaxOpacity()) {
+			if (opacity < layer->getMaxOpacity()) {
 				if (opacity > 0) {
 					outputBuffer->blendWith(*buffer, pattern->getBlendMode(), opacity);
 				}
@@ -101,14 +108,16 @@ void LIGHT_SECTION_CLASS::pause(bool blackout, bool fade) {
 			pauseAfterFade = true;
 		} else {
 			setBrightness(0);
-			for (uint32_t j = 0; j < getTotalLayers(); j++) {
-				layers[j].pause();
+			for (auto layer : layers) {
+				if (!layer) continue;
+				layer->pause();
 			}
 		}
 	} else {
 		if (!fade) {
-			for (uint32_t j = 0; j < getTotalLayers(); j++) {
-				layers[j].pause();
+			for (auto layer : layers) {
+				if (!layer) continue;
+				layer->pause();
 			}
 		}
 	}
@@ -118,8 +127,9 @@ LIGHT_SECTION_TEMPLATE
 void LIGHT_SECTION_CLASS::unpause() {
 	fadeUp();
 
-	for (uint32_t j = 0; j < getTotalLayers(); j++) {
-		layers[j].unpause();
+	for (auto layer : layers) {
+		if (!layer) continue;
+		layer->unpause();
 	}
 }
 
