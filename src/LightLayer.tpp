@@ -91,10 +91,14 @@ void LIGHT_LAYER_CLASS::updatePatternIndex(PatternCode patternCode) {
 			i %= sequence.size();
 		}
 	} else {
-		if (patternIndex <= patternList.size()) {
+		if (patternList.size() == 0) {
 			patternIndex = 0;
 			return;
 		}
+		if (patternIndex >= patternList.size()) {
+			patternIndex = 0;
+		}
+
 		if (patternList[patternIndex] == patternCode) return;
 
 		auto size = patternList.size();
