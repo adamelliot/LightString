@@ -4,6 +4,7 @@
 #define _LIGHTPROGRAMMANAGER_H_
 
 #include <vector>
+#include <memory>
 
 #include "types.h"
 #include "LightPattern.h"
@@ -17,7 +18,7 @@ namespace LightString {
 template <template <typename> class PIXEL = TRGB, typename FORMAT = uint8_t, template <typename> class OUTPUT_PIXEL = TRGB>
 class PatternManager {
 private:
-	std::vector<LIGHT_SECTION_CLASS> sections;
+	std::vector<std::shared_ptr<LIGHT_SECTION_CLASS>> sections;
 
 	uint32_t lastTime = 0;
 	uint16_t msPerFrame = 25;
@@ -28,7 +29,7 @@ private:
 
 	LightLayerConfig layerConfig;
 
-	void ensureLayerIsSetup(uint8_t sectionID, uint8_t layerID);
+	void ensureLayerIsSetup(LIGHT_SECTION_CLASS &section, uint8_t layerID);
 
 protected:
 	PatternProvider &patternProvider;
@@ -37,6 +38,7 @@ public:
 	PatternManager(PatternProvider &patternProvider) : patternProvider(patternProvider)
 		{ lastTime = millis(); }
 
+	LIGHT_SECTION_CLASS &getSection(uint8_t sectionID);
 	LIGHT_SECTION_CLASS *getLightSection(uint8_t sectionID);
 
 	void setLayerConfig(const LightLayerConfig &config);

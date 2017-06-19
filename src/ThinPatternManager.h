@@ -29,7 +29,7 @@ public:
 	IPixelBuffer *getOutputBuffer() { return outputBuffer; }
 
 	uint8_t getTotalLayers() { return 1; }
-	ILightLayer *getLayer(uint8_t layerID) { return this; }
+	LightLayer<FORMAT> &getLayer(uint8_t layerID) { return *this; }
 	void ensureLayerExists(uint8_t layerID) {}
 
 	IPixelBuffer *lockBuffer() { return outputBuffer; }

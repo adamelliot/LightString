@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include <stdint.h>
 
+#include <exception>
+
 #define LIGHT_LAYER_TEMPLATE template <typename FORMAT>//, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES>
 #define LIGHT_LAYER_CLASS LightLayer<FORMAT>//, MAX_LIGHT_PROGRAMS, MAX_MODES>
 
@@ -14,6 +16,27 @@
 #define PATTERN_MANAGER_CLASS PatternManager<PIXEL, FORMAT, OUTPUT_PIXEL>//MAX_LAYERS, MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LIGHT_SECTIONS>
 
 namespace LightString {
+
+typedef enum {
+	SECTION_DOES_NOT_EXIST  = 1,
+	LAYER_DOES_NOT_EXIST    = 2
+} EErrorCode;
+
+class Exception : public std::exception {
+	EErrorCode errorCode;
+
+	virtual const char *what() const throw() {
+		switch (errorCode) {
+			case SECTION_DOES_NOT_EXIST:
+				return "Section specified does not exist";
+			case LAYER_DOES_NOT_EXIST:
+				return "Layer specified does not exist";
+		}
+	}
+public:
+	Exception(EErrorCode code) : errorCode(code) {}
+
+};
 
 typedef enum {
 	BLEND_COPY = 0,
@@ -138,10 +161,13 @@ protected:
 	uint8_t sectionID = 0;
 
 public:
+	virtual ~ILightSection() {}
+
 	virtual IPixelBuffer *getOutputBuffer() = 0;
 
 	virtual uint8_t getTotalLayers() = 0;
-	virtual ILightLayer *getLayer(uint8_t layerID) = 0;
+	virtual ILightLayer &getLayer(uint8_t layerID) = 0;
+	virtual bool hasLayer(uint8_t layerID) = 0;
 	virtual void ensureLayerExists(uint8_t layerID) = 0;
 
 	virtual IPixelBuffer *lockBuffer() = 0;
@@ -199,7 +225,6 @@ private:
 	std::vector<PatternCue> sequence;
 
 public:
-
 	void addPatternCue(const PatternCue &patternCue) {
 		sequence.emplace_back(patternCue);
 	}
@@ -232,7 +257,8 @@ struct LightLayerConfig : PatternConfig {
 
 class ILightLayer {
 public:
-	
+	virtual ~ILightLayer() {}
+
 	virtual EPlayState getPlayState() = 0;
 
 	virtual void setLayerID(uint8_t layerID) = 0;
@@ -248,7 +274,7 @@ public:
 	
 	virtual ILightPattern *getActivePattern() = 0;
 
-	virtual uint8_t getPatternIndex() const = 0;
+	virtual int getPatternIndex() const = 0;
 
 	virtual bool startPattern(PatternCode patternCode) = 0;
 	virtual bool startRandomPattern() = 0;

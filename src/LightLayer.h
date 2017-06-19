@@ -28,7 +28,7 @@ private:
 	PatternSequence patternSequence;
 	bool hasPatternSequence = false;
 
-	uint8_t patternIndex = 0; // Index in the pattern order or the sequence
+	int patternIndex = 0; // Index in the pattern order or the sequence
 
 	uint32_t lastTime = 0;
 	uint32_t patternStartedAt = 0;
@@ -62,8 +62,9 @@ private:
 
 public:
 
+	// LightLayer() : patternProvider(nullptr) {}
 	LightLayer(PatternProvider &patternProvider) : patternProvider(patternProvider) {}
-	virtual ~LightLayer();
+	virtual ~LightLayer() {}
 
 	inline FORMAT getMaxOpacity();
 	EPlayState getPlayState() { return playState; }
@@ -72,7 +73,7 @@ public:
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }
 
-	uint8_t getPatternIndex() { return patternIndex; }
+	int getPatternIndex() { return patternIndex; }
 	uint32_t getElapsedTime() { return (patternStartedAt == 0) ? 0 : millis() - patternStartedAt; }
 	uint32_t getTransitionTimeElapsed() { return millis() - transitionStartedAt; }
 
@@ -83,7 +84,7 @@ public:
 	ILightSection *getLightSection() { return section; }
 	ILightPattern *getActivePattern() { return activePattern; }
 
-	uint8_t getPatternIndex() const { return patternIndex; }
+	int getPatternIndex() const { return patternIndex; }
 	PatternCode getPatternCodeFromIndex(uint8_t index);
 	int getPlaybackCount() const;
 
@@ -121,7 +122,9 @@ public:
 	virtual void pause();
 	virtual void unpause();
 
-	bool enqueuePattern(PatternCode patternCode, bool waitToFinish = false);
+	void enqueuePattern(PatternCode patternCode, bool waitToFinish = false);
+
+	bool startPatternAtIndex(int index);
 	bool startPattern(PatternCode patternCode);
 	bool startRandomPattern();
 	bool nextPattern(bool transition = false);

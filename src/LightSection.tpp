@@ -5,12 +5,10 @@ void LIGHT_SECTION_CLASS::ensureLayerExists(uint8_t layerID) {
 		layers.resize(layerID + 1);
 	}
 
-	auto layer = new LightLayer<FORMAT>(patternProvider);
+	layers[layerID] = std::make_shared<LightLayer<FORMAT>>(patternProvider);
 
-	layer->setLayerID(layerID);
-	layer->setLightSection(this);
-
-	layers[layerID] = layer;
+	layers[layerID]->setLayerID(layerID);
+	layers[layerID]->setLightSection(this);
 }
 
 LIGHT_SECTION_TEMPLATE
@@ -68,8 +66,8 @@ void LIGHT_SECTION_CLASS::update() {
 		outputBuffer->clear();
 	}
 
-	for (auto layer : layers) {
-		if (!layer) continue;
+	for (auto &layer : layers) {
+		if (layer == nullptr) continue;
 		layer->update();
 
 		auto pattern = layer->getActivePattern();
@@ -108,14 +106,14 @@ void LIGHT_SECTION_CLASS::pause(bool blackout, bool fade) {
 			pauseAfterFade = true;
 		} else {
 			setBrightness(0);
-			for (auto layer : layers) {
+			for (auto &layer : layers) {
 				if (!layer) continue;
 				layer->pause();
 			}
 		}
 	} else {
 		if (!fade) {
-			for (auto layer : layers) {
+			for (auto &layer : layers) {
 				if (!layer) continue;
 				layer->pause();
 			}
@@ -127,7 +125,7 @@ LIGHT_SECTION_TEMPLATE
 void LIGHT_SECTION_CLASS::unpause() {
 	fadeUp();
 
-	for (auto layer : layers) {
+	for (auto &layer : layers) {
 		if (!layer) continue;
 		layer->unpause();
 	}

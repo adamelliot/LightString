@@ -35,15 +35,10 @@ public:
 		targetFade(TColorFormatHelper<FORMAT>::getMaxValue()),
 		patternProvider(patternProvider) {}
 
-	virtual ~LightSection() {
-		for (auto i = 0; i < layers.size(); i++) {
-			delete layers[i];
-			layers[i] = nullptr;
-		}
-	}
+	virtual ~LightSection() {}
 
 	TPixelBuffer<OUTPUT_PIXEL, FORMAT> *outputBuffer = nullptr;
-	std::vector<LightLayer<FORMAT> *> layers;
+	std::vector<std::shared_ptr<LightLayer<FORMAT>>> layers;
 
 	PatternProvider &getPatternProvider() { return patternProvider; }
 
@@ -53,7 +48,14 @@ public:
 	IPixelBuffer *getOutputBuffer() { return outputBuffer; }
 
 	uint8_t getTotalLayers() { return layers.size(); }
-	ILightLayer *getLayer(uint8_t layerID) { return layers[layerID]; }
+	bool hasLayer(uint8_t layerID)
+	{ return layerID < layers.size() && layers[layerID] != nullptr; }
+
+	LightLayer<FORMAT> &getLayer(uint8_t layerID) {
+		if (!hasLayer(layerID)) throw Exception(LAYER_DOES_NOT_EXIST);
+		return *layers[layerID];
+	}
+
 	void ensureLayerExists(uint8_t layerID);
 
 	IPixelBuffer *lockBuffer();

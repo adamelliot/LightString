@@ -1,7 +1,4 @@
 LIGHT_LAYER_TEMPLATE
-LIGHT_LAYER_CLASS::~LightLayer() {}
-
-LIGHT_LAYER_TEMPLATE
 PatternCode LIGHT_LAYER_CLASS::getPatternCodeFromIndex(uint8_t index) {
 	if (hasPatternSequence) {
 		return patternSequence.getSequence()[index].code;
@@ -263,7 +260,7 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 }
 
 LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::enqueuePattern(PatternCode patternCode, bool waitToFinish) {
+void LIGHT_LAYER_CLASS::enqueuePattern(PatternCode patternCode, bool waitToFinish) {
 	enqueuedPattern = patternCode;
 	loadEnqueued = true;
 	loadPrevious = false;
