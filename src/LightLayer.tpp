@@ -21,28 +21,43 @@ int LIGHT_LAYER_CLASS::getPlaybackCount() const {
 	}
 }
 
+/**
+ * patternSequence: the new Pattern Sequence
+ * playIndex: index we are going to start playing at, defaults to 0
+ * restartPattern: If the pattern is already playing this flag will cause the pattern to restart, otherwise
+ *   playback will just continue for the pattern.
+ */
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequence) {
+void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, bool restartPattern) {
 	auto currentCode = PatternCode(0xff, 0xff);
-	PatternCode newCode;
-	bool currentPatternChanged = false;
+	bool patternChanged = false;
 
-	if (this->patternSequence && patternIndex < this->patternSequence->getSequence().size()) {
+	if (this->patternSequence && (patternIndex < this->patternSequence->getSequence().size())) {
 		currentCode = this->patternSequence->getPatternCue(patternIndex).code;
 	}
 
+	delete this->patternSequence;
 	this->patternSequence = new PatternSequence(patternSequence);
+
+	patternIndex = newPlayIndex;
+
 	if (patternIndex >= this->patternSequence->getSequence().size()) {
 		patternIndex = 0;
-		currentPatternChanged = true;
-	} else {
-		newCode = this->patternSequence->getPatternCue(patternIndex).code;
-		if (newCode != currentCode) {
-			currentPatternChanged = true;
-		}
 	}
 
-	if (currentPatternChanged && isActive()) {
+	if (this->patternSequence->getSequence().size() > 0) {
+		auto newCode = this->patternSequence->getPatternCue(patternIndex).code;
+		if (newCode != currentCode) {
+			patternChanged = true;
+		}
+	} else {
+		stop();
+		return;
+	}
+
+	if (restartPattern) patternChanged = true;
+
+	if (patternChanged && isActive()) {
 		startSelectedPattern();
 	}
 }
@@ -197,6 +212,11 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 	PatternConfig *config = nullptr;
 
 	if (patternSequence) {
+		if (patternSequence->getSequence().size() == 0) {
+			setPlayState(PATTERN_STOPPED);
+			return false;
+		}
+
 		auto cue = patternSequence->getPatternCue(patternIndex);
 		code = cue.code;
 		config = &cue;
