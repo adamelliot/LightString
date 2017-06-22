@@ -396,7 +396,7 @@ TEST_F(LightLayerTest, prevPatternWithTransition) {
 	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
 }
 
-TEST_F(LightLayerTest, resumeSuspendedPattern) {
+TEST_F(LightLayerTest, resumeSequence) {
 	PatternSequence sequence;
 
 	lightLayer.getConfig().patternDuration = 500;
@@ -421,7 +421,7 @@ TEST_F(LightLayerTest, resumeSuspendedPattern) {
 	EXPECT_TRUE(lightLayer.hasSuspendedPattern());
 	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 5);
 
-	lightLayer.resumeSuspendedPattern();
+	lightLayer.resumeSequence();
 	EXPECT_FALSE(lightLayer.hasSuspendedPattern());
 	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
 	runLayerFor(200);
@@ -429,7 +429,7 @@ TEST_F(LightLayerTest, resumeSuspendedPattern) {
 
 }
 
-TEST_F(LightLayerTest, resumeSuspendedPatternWithTransition) {
+TEST_F(LightLayerTest, resumeSequenceWithTransition) {
 	PatternSequence sequence;
 
 	lightLayer.getConfig().patternDuration = 500;
@@ -450,7 +450,7 @@ TEST_F(LightLayerTest, resumeSuspendedPatternWithTransition) {
 	EXPECT_TRUE(lightLayer.hasSuspendedPattern());
 	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 5);
 
-	lightLayer.resumeSuspendedPattern(true);
+	lightLayer.resumeSequence(true);
 	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 5);
 	EXPECT_TRUE(lightLayer.hasSuspendedPattern());
 	runLayerFor(300);
@@ -517,7 +517,7 @@ TEST_F(LightLayerTest, stop) {
 	runLayerFor(100);
 	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
 
-	lightLayer.stop();
+	lightLayer.stop(false);
 	EXPECT_FALSE(lightLayer.isActive());
 	runLayerFor(100);
 	EXPECT_FALSE(lightLayer.isActive());
@@ -539,7 +539,7 @@ TEST_F(LightLayerTest, stopWithFadeOut) {
 	runLayerFor(100);
 	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
 
-	lightLayer.stop(true);
+	lightLayer.stop();
 	EXPECT_TRUE(lightLayer.isActive());
 	runLayerFor(200);
 	EXPECT_TRUE(lightLayer.isActive());
@@ -747,8 +747,6 @@ TEST_F(LightLayerTest, playStatesProperlyChange) {
 	usleep(50000);
 
 	lightLayer.pause();
-
-
 }
 
 TEST_F(LightLayerTest, changedSequenceUpdatesPlayingPattern) {
@@ -762,17 +760,39 @@ TEST_F(LightLayerTest, changedSequenceUpdatesPlayingPattern) {
 	sequence2.addPatternCue(PatternCode(3, 0), 6000, TRANSITION_FADE_DOWN, TRANSITION_FREEZE_FADE, 700);
 	sequence2.addPatternCue(PatternCode(1, 0), -1);
 
-	lightLayer.setPatternSequence(sequence1);
+	lightLayer.setPatternSequence(sequence1, 0);
 
 	lightLayer.play();
 
 	auto pattern = lightLayer.getActivePattern();
 	EXPECT_EQ(pattern->getPatternID(), 2);
 
-	lightLayer.setPatternSequence(sequence2);
+	lightLayer.setPatternSequence(sequence2, 1);
 
 	pattern = lightLayer.getActivePattern();
-	EXPECT_EQ(pattern->getPatternID(), 3);
+	EXPECT_EQ(pattern->getPatternID(), 1);
+}
+
+TEST_F(LightLayerTest, changedSequenceStopsPlayingPattern) {
+	PatternSequence sequence1;
+	PatternSequence sequence2;
+
+	sequence1.addPatternCue(PatternCode(2, 0), 4000, TRANSITION_OVERWRITE, TRANSITION_FREEZE_FADE, 500);
+	sequence1.addPatternCue(PatternCode(1, 0), -1);
+	sequence1.addPatternCue(PatternCode(3, 0), 6000, TRANSITION_FADE_DOWN, TRANSITION_FREEZE_FADE, 700);
+
+	sequence2.addPatternCue(PatternCode(3, 0), 6000, TRANSITION_FADE_DOWN, TRANSITION_FREEZE_FADE, 700);
+	sequence2.addPatternCue(PatternCode(1, 0), -1);
+
+	lightLayer.setPatternSequence(sequence1, 0);
+
+	lightLayer.play();
+
+	auto pattern = lightLayer.getActivePattern();
+	EXPECT_EQ(pattern->getPatternID(), 2);
+
+	lightLayer.setPatternSequence(sequence2, -1, false, false);
+	EXPECT_EQ(lightLayer.isActive(), false);
 }
 
 TEST_F(LightLayerTest, changedSequenceSelectsPattern) {
@@ -815,7 +835,7 @@ TEST_F(LightLayerTest, changedSequenceStartsFromBeginIfPastEnd) {
 	sequence2.addPatternCue(PatternCode(3, 0), 6000, TRANSITION_FADE_DOWN, TRANSITION_FREEZE_FADE, 700);
 	sequence2.addPatternCue(PatternCode(1, 0), -1);
 
-	lightLayer.setPatternSequence(sequence1);
+	lightLayer.setPatternSequence(sequence1, 0);
 
 	lightLayer.play();
 	lightLayer.prevPattern();
@@ -823,7 +843,7 @@ TEST_F(LightLayerTest, changedSequenceStartsFromBeginIfPastEnd) {
 	auto pattern = lightLayer.getActivePattern();
 	EXPECT_EQ(pattern->getPatternID(), 1);
 
-	lightLayer.setPatternSequence(sequence2);
+	lightLayer.setPatternSequence(sequence2, 0);
 
 	pattern = lightLayer.getActivePattern();
 	EXPECT_EQ(pattern->getPatternID(), 3);

@@ -86,11 +86,11 @@ public:
 
 	void shufflePatterns();
 
-	void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = 0, bool restartPattern = true);
-	void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, bool restartPattern, uint8_t layerID, uint8_t sectionID = 0);
+	void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = 0, bool restartPattern = true, bool fadeOut = true);
+	void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, bool restartPattern, uint8_t layerID, uint8_t sectionID = 0, bool fadeOut = true);
 
-	void clearPatternSequence();
-	void clearPatternSequence(uint8_t layerID, uint8_t sectionID = 0);
+	void clearPatternSequence(bool fadeOut = true);
+	void clearPatternSequence(uint8_t layerID, uint8_t sectionID = 0, bool fadeOut = true);
 
 	void addLightPattern(pattern_id_t patternID, uint8_t layerID = 0);
 	void addLightPattern(pattern_id_t patternID, uint64_t modeList, uint8_t layerID);

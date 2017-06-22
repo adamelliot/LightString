@@ -282,8 +282,8 @@ public:
 
 	virtual void setPalette(IPalette *) {}
 
-	virtual void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = 0, bool restartPattern = true) = 0;
-	virtual void clearPatternSequence() = 0;
+	virtual void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = 0, bool restartPattern = true, bool fadeOut = true) = 0;
+	virtual void clearPatternSequence(bool fadeOut = true) = 0;
 
 	virtual void setLightSection(ILightSection *section) = 0;
 	virtual ILightSection *getLightSection() = 0;
@@ -303,11 +303,11 @@ public:
 	virtual bool prevPattern(bool transition = false) = 0;
 
 	virtual bool hasSuspendedPattern() = 0;
-	virtual bool resumeSuspendedPattern(bool transition = true) = 0;
+	virtual bool resumeSequence(bool transition = true) = 0;
 
 	virtual void shufflePatterns() = 0;
 
-	virtual void stop(bool fadeOut = false) = 0;
+	virtual void stop(bool fadeOut = true) = 0;
 	virtual void pause() = 0;
 	virtual void unpause() = 0;
 };

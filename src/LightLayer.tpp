@@ -23,9 +23,11 @@ int LIGHT_LAYER_CLASS::getPlaybackCount() const {
  *   playback will just continue for the pattern.
  */
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, bool restartPattern) {
+void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, bool restartPattern, bool fadeOut) {
 	auto currentCode = PatternCode(0xff, 0xff);
 	bool patternChanged = false;
+
+	bool playFromSequence = newPlayIndex >= 0;
 
 	if (hasPatternSequence && (patternIndex < this->patternSequence.getSequence().size())) {
 		currentCode = this->patternSequence.getPatternCue(patternIndex).code;
@@ -36,31 +38,39 @@ void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequenc
 
 	patternIndex = newPlayIndex;
 
-	if (patternIndex >= this->patternSequence.getSequence().size()) {
+	if (patternIndex >= this->patternSequence.getSequence().size() || !playFromSequence) {
 		patternIndex = 0;
 	}
 
-	if (this->patternSequence.getSequence().size() > 0) {
-		auto newCode = this->patternSequence.getPatternCue(patternIndex).code;
-		if (newCode != currentCode) {
-			patternChanged = true;
-		}
+	if (!playFromSequence && runningPatternFromSequence) {
+		stop(fadeOut);
 	} else {
-		stop();
-		return;
-	}
+		if (this->patternSequence.getSequence().size() > 0) {
+			auto newCode = this->patternSequence.getPatternCue(patternIndex).code;
+			if (newCode != currentCode) {
+				patternChanged = true;
+			}
+		} else {
+			stop(fadeOut);
+			return;
+		}
 
-	if (restartPattern) patternChanged = true;
+		if (restartPattern) patternChanged = true;
 
-	if (patternChanged && isActive()) {
-		startSelectedPattern();
+		if (patternChanged && isActive()) {
+			startSelectedPattern();
+		}
 	}
 }
 
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::clearPatternSequence() {
+void LIGHT_LAYER_CLASS::clearPatternSequence(bool fadeOut) {
 	this->patternSequence.getSequence().clear();
 	hasPatternSequence = false;
+
+	if (runningPatternFromSequence) {
+		stop(fadeOut);
+	}
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -325,7 +335,7 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 		pattern->setPatternID(patternCode.patternID);
 	}
 
-	if (!shouldSuspendActivePattern || !suspendPattern()) {
+	if (!suspendPattern()) {
 		finishPattern();
 	}
 
@@ -442,7 +452,7 @@ bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
  * @param transition setting this true will cause the suspended pattern to switch with transition
  */
 LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::resumeSuspendedPattern(bool transition) {
+bool LIGHT_LAYER_CLASS::resumeSequence(bool transition) {
 	if (!suspendedPattern) return false;
 
 	if (transition) {
@@ -737,7 +747,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 					break;
 
 				case LOAD_SUSPENDED_PATTERN:
-					shouldStop = !resumeSuspendedPattern();
+					shouldStop = !resumeSequence();
 					break;
 
 				case FADE_TO_STOP:

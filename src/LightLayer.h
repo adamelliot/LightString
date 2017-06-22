@@ -69,7 +69,6 @@ private:
 	FORMAT transitionOpacity = getMaxOpacity();
 
 	bool runningPatternFromSequence = false;
-	bool shouldSuspendActivePattern = true;
 
 	ILightPattern *suspendedPattern = nullptr;
 	ILightPattern *activePattern = nullptr;
@@ -131,8 +130,8 @@ public:
 
 	void setPalette(IPalette *palette) { if (activePattern) activePattern->setPalette(palette); }
 
-	void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = 0, bool restartPattern = true);
-	void clearPatternSequence();
+	void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = -1, bool restartPattern = true, bool fadeOut = true);
+	void clearPatternSequence(bool fadeOut = true);
 
 	EPatternTransition getSelectedInTransition();
 	EPatternTransition getSelectedOutTransition();
@@ -153,12 +152,9 @@ public:
 	void setPlayMode(EPlayMode playMode) { this->config.playMode = playMode; }
 	uint32_t getPlayMode() { return config.playMode; }
 
-	bool getShouldSuspendActivePattern() { return shouldSuspendActivePattern; }
-	void setShouldSuspendActivePattern(bool val) { shouldSuspendActivePattern = val; }
-
 	// Play control
 	void play(); // Starts from a stopped state, or unpauses.
-	void stop(bool fadeOut = false);
+	void stop(bool fadeOut = true);
 	virtual void pause();
 	virtual void unpause();
 
@@ -173,7 +169,7 @@ public:
 	bool prevPattern(bool transition = false);
 
 	bool hasSuspendedPattern() { return suspendedPattern != nullptr; }
-	bool resumeSuspendedPattern(bool transition = false);
+	bool resumeSequence(bool transition = false);
 
 	void shufflePatterns();
 
