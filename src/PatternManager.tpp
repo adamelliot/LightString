@@ -33,7 +33,7 @@ PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setLayerConfig(const LightLayerConfig &config, uint8_t layerID, uint8_t sectionID) {
 	auto section = getSection(sectionID);
 	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID).setConfig(config);
+	section->getLayer(layerID)->setConfig(config);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -53,7 +53,7 @@ PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler, void *userData, uint8_t layerID, uint8_t sectionID) {
 	auto section = getSection(sectionID);
 	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID).setPatternEventHandler(patternEventHandler, userData);
+	section->getLayer(layerID)->setPatternEventHandler(patternEventHandler, userData);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -73,7 +73,7 @@ PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternDuration(uint32_t patternDuration, uint8_t layerID, uint8_t sectionID) {
 	auto section = getSection(sectionID);
 	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID).setTransitionDuration(patternDuration);
+	section->getLayer(layerID)->setTransitionDuration(patternDuration);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -94,7 +94,7 @@ PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setTransitionDuration(uint32_t transitionDuration, uint8_t layerID, uint8_t sectionID) {
 	auto section = getSection(sectionID);
 	ensureLayerIsSetup(*section, layerID);
-	section.getLayer(layerID).getConfig().transitionDuration = transitionDuration;
+	section.getLayer(layerID)->getConfig().transitionDuration = transitionDuration;
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -124,14 +124,14 @@ PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPlayMode(EPlayMode playMode, uint8_t layerID, uint8_t sectionID) {
 	auto section = getSection(sectionID);
 	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID).setPlayMode(playMode);
+	section->getLayer(layerID)->setPlayMode(playMode);
 }
 
 PATTERN_MANAGER_TEMPLATE
 bool PATTERN_MANAGER_CLASS::startPattern(PatternCode patternCode, uint8_t layerID, uint8_t sectionID) {
 	auto section = getSection(sectionID);
 	ensureLayerIsSetup(*section, layerID);
-	return section->getLayer(layerID).startPattern(patternCode);
+	return section->getLayer(layerID)->startPattern(patternCode);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -166,7 +166,7 @@ PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::startRandomPattern(uint8_t layerID, uint8_t sectionID) {
 	auto section = getSection(sectionID);
 	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID).startRandomPattern();
+	section->getLayer(layerID)->startRandomPattern();
 }
 
 
@@ -183,17 +183,17 @@ void PATTERN_MANAGER_CLASS::play() {
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::play(uint8_t layerID, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	auto &layer = section->getLayer(layerID);
+	auto layer = section->getLayer(layerID);
 
-	layer.play();
+	layer->play();
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::nextPattern(bool transition, uint8_t layerID, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	auto &layer = section->getLayer(layerID);
+	auto layer = section->getLayer(layerID);
 
-	layer.nextPattern(transition);
+	layer->nextPattern(transition);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -210,9 +210,9 @@ void PATTERN_MANAGER_CLASS::nextPattern(bool transition) {
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::prevPattern(bool transition, uint8_t layerID, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	auto &layer = section->getLayer(layerID);
+	auto layer = section->getLayer(layerID);
 
-	layer.prevPattern(transition);
+	layer->prevPattern(transition);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -262,7 +262,7 @@ PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, bool restartPattern, uint8_t layerID, uint8_t sectionID, bool fadeOut) {
 	auto section = getSection(sectionID);
 	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID).setPatternSequence(patternSequence, newPlayIndex, restartPattern, fadeOut);
+	section->getLayer(layerID)->setPatternSequence(patternSequence, newPlayIndex, restartPattern, fadeOut);
 }
 
 PATTERN_MANAGER_TEMPLATE
