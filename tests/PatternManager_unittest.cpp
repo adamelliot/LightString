@@ -22,7 +22,7 @@ TEST(PatternManager, initialization) {
 	TestPatternProvider provider;
 	PatternManager<TRGB, uint8_t> patternManager(provider);
 
-	ASSERT_THROW(patternManager.getSection(0), LightString::Exception);
+	EXPECT_EQ(patternManager.getSection(0), nullptr);
 }
 
 TEST(PatternManager, sectionsExist) {
@@ -32,10 +32,9 @@ TEST(PatternManager, sectionsExist) {
 
 	uint8_t sectionID = patternManager.addLightSection(buffer);
 
-	auto &section = patternManager.getSection(sectionID);
-	EXPECT_EQ(section.getSectionID(), sectionID);
-
-	ASSERT_THROW(patternManager.getSection(1), LightString::Exception);
+	auto section = patternManager.getSection(sectionID);
+	EXPECT_EQ(section->getSectionID(), sectionID);
+	EXPECT_EQ(patternManager.getSection(1), nullptr);
 }
 
 TEST(PatternManager, startRunningUsingPlay) {
@@ -47,10 +46,9 @@ TEST(PatternManager, startRunningUsingPlay) {
 	uint8_t sectionID = patternManager.addLightSection(leds);
 	patternManager.addBufferToLightSection(sectionID, buffer);
 
-	auto &section = patternManager.getSection(sectionID);
-	EXPECT_EQ(section.getSectionID(), sectionID);
-
-	ASSERT_THROW(patternManager.getSection(1), LightString::Exception);
+	auto section = patternManager.getSection(sectionID);
+	EXPECT_EQ(section->getSectionID(), sectionID);
+	EXPECT_EQ(patternManager.getSection(1), nullptr);
 
 	patternManager.addLightPattern(1);
 	patternManager.play();
@@ -67,10 +65,9 @@ TEST(PatternManager, startRunningUsingRandom) {
 	uint8_t sectionID = patternManager.addLightSection(leds);
 	patternManager.addBufferToLightSection(sectionID, buffer);
 
-	auto &section = patternManager.getSection(sectionID);
-	EXPECT_EQ(section.getSectionID(), sectionID);
-
-	ASSERT_THROW(patternManager.getSection(1), LightString::Exception);
+	auto section = patternManager.getSection(sectionID);
+	EXPECT_EQ(section->getSectionID(), sectionID);
+	EXPECT_EQ(patternManager.getSection(1), nullptr);
 
 	patternManager.addLightPattern(1);
 	patternManager.startRandomPattern();
@@ -89,13 +86,13 @@ TEST(PatternManager, ensureLayersGetConfigured) {
 
 	patternManager.setPatternDuration(500);
 
-	auto &section = patternManager.getSection(sectionID);
-	EXPECT_EQ(section.getSectionID(), sectionID);
+	auto section = patternManager.getSection(sectionID);
+	EXPECT_EQ(section->getSectionID(), sectionID);
 
 	patternManager.addLightPattern(1);
 
-	EXPECT_EQ(section.getTotalLayers(), 1);
-	EXPECT_EQ(section.layers[0]->getPatternDuration(), 500);
+	EXPECT_EQ(section->getTotalLayers(), 1);
+	EXPECT_EQ(section->layers[0]->getPatternDuration(), 500);
 
 	patternManager.play();
 

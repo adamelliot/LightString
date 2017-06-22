@@ -7,9 +7,7 @@ ILightLayer *ILightPattern::layerAbove() {
 		ILightSection *section = layer->getLightSection();
 		uint8_t targetLayerID = layer->getLayerID() + 1;
 
-		if (section->hasLayer(targetLayerID)) {
-			return &section->getLayer(targetLayerID);
-		}
+		return section->getLayer(targetLayerID);
 	}
 
 	return nullptr;
@@ -22,9 +20,7 @@ ILightLayer *ILightPattern::layerBelow() {
 		ILightSection *section = layer->getLightSection();
 		uint8_t targetLayerID = layer->getLayerID() - 1;
 
-		if (section->hasLayer(targetLayerID)) {
-			return &section->getLayer(targetLayerID);
-		}
+		return section->getLayer(targetLayerID);
 	}
 
 	return nullptr;
@@ -57,9 +53,9 @@ bool ILightPattern::startPatternBelow(pattern_id_t patternID, uint8_t mode) {
 bool ILightPattern::startPatternOnLayer(uint8_t layerID, PatternCode patternCode) {
 	if (layer && layer->getLightSection()) {
 		ILightSection *section = layer->getLightSection();
-		if (section->hasLayer(layerID)) {
-			return section->getLayer(layerID).startPattern(patternCode);
-		}
+		if (section->getLayer(layerID) == nullptr) return false;
+
+		return section->getLayer(layerID)->startPattern(patternCode);
 	}
 
 	return false;

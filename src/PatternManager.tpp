@@ -31,9 +31,9 @@ void PATTERN_MANAGER_CLASS::setLayerConfig(const LightLayerConfig &config) {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setLayerConfig(const LightLayerConfig &config, uint8_t layerID, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	ensureLayerIsSetup(section, layerID);
-	section.getLayer(layerID).setConfig(config);
+	auto section = getSection(sectionID);
+	ensureLayerIsSetup(*section, layerID);
+	section->getLayer(layerID).setConfig(config);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -51,9 +51,9 @@ void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHand
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler, void *userData, uint8_t layerID, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	ensureLayerIsSetup(section, layerID);
-	section.getLayer(layerID).setPatternEventHandler(patternEventHandler, userData);
+	auto section = getSection(sectionID);
+	ensureLayerIsSetup(*section, layerID);
+	section->getLayer(layerID).setPatternEventHandler(patternEventHandler, userData);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -71,9 +71,9 @@ void PATTERN_MANAGER_CLASS::setPatternDuration(uint32_t patternDuration) {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternDuration(uint32_t patternDuration, uint8_t layerID, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	ensureLayerIsSetup(section, layerID);
-	section.getLayer(layerID).setTransitionDuration(patternDuration);
+	auto section = getSection(sectionID);
+	ensureLayerIsSetup(*section, layerID);
+	section->getLayer(layerID).setTransitionDuration(patternDuration);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -92,8 +92,8 @@ void PATTERN_MANAGER_CLASS::setTransitionDuration(uint32_t transitionDuration) {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setTransitionDuration(uint32_t transitionDuration, uint8_t layerID, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	ensureLayerIsSetup(section, layerID);
+	auto section = getSection(sectionID);
+	ensureLayerIsSetup(*section, layerID);
 	section.getLayer(layerID).getConfig().transitionDuration = transitionDuration;
 }
 
@@ -106,8 +106,8 @@ void PATTERN_MANAGER_CLASS::setBrightness(FORMAT val) {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setBrightness(FORMAT val, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	section.setBrightness(val);
+	auto section = getSection(sectionID);
+	section->setBrightness(val);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -122,16 +122,16 @@ void PATTERN_MANAGER_CLASS::setPlayMode(EPlayMode playMode) {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPlayMode(EPlayMode playMode, uint8_t layerID, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	ensureLayerIsSetup(section, layerID);
-	section.getLayer(layerID).setPlayMode(playMode);
+	auto section = getSection(sectionID);
+	ensureLayerIsSetup(*section, layerID);
+	section->getLayer(layerID).setPlayMode(playMode);
 }
 
 PATTERN_MANAGER_TEMPLATE
 bool PATTERN_MANAGER_CLASS::startPattern(PatternCode patternCode, uint8_t layerID, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	ensureLayerIsSetup(section, layerID);
-	return section.getLayer(layerID).startPattern(patternCode);
+	auto section = getSection(sectionID);
+	ensureLayerIsSetup(*section, layerID);
+	return section->getLayer(layerID).startPattern(patternCode);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -164,9 +164,9 @@ void PATTERN_MANAGER_CLASS::startRandomPatternOnAllLayers() {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::startRandomPattern(uint8_t layerID, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	ensureLayerIsSetup(section, layerID);
-	section.getLayer(layerID).startRandomPattern();
+	auto section = getSection(sectionID);
+	ensureLayerIsSetup(*section, layerID);
+	section->getLayer(layerID).startRandomPattern();
 }
 
 
@@ -182,16 +182,16 @@ void PATTERN_MANAGER_CLASS::play() {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::play(uint8_t layerID, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	auto &layer = section.getLayer(layerID);
+	auto section = getSection(sectionID);
+	auto &layer = section->getLayer(layerID);
 
 	layer.play();
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::nextPattern(bool transition, uint8_t layerID, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	auto &layer = section.getLayer(layerID);
+	auto section = getSection(sectionID);
+	auto &layer = section->getLayer(layerID);
 
 	layer.nextPattern(transition);
 }
@@ -209,8 +209,8 @@ void PATTERN_MANAGER_CLASS::nextPattern(bool transition) {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::prevPattern(bool transition, uint8_t layerID, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	auto &layer = section.getLayer(layerID);
+	auto section = getSection(sectionID);
+	auto &layer = section->getLayer(layerID);
 
 	layer.prevPattern(transition);
 }
@@ -239,12 +239,12 @@ void PATTERN_MANAGER_CLASS::shufflePatterns() {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::ensureLayerIsSetup(LIGHT_SECTION_CLASS &section, uint8_t layerID) {
-	if (section.hasLayer(layerID)) return;
+	if (section.getLayer(layerID) != nullptr) return;
 
 	section.ensureLayerExists(layerID);
-	auto &layer = section.getLayer(layerID);
+	auto layer = section.getLayer(layerID);
 
-	layer.setConfig(layerConfig);
+	layer->setConfig(layerConfig);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -260,9 +260,9 @@ void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSeq
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, bool restartPattern, uint8_t layerID, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	ensureLayerIsSetup(section, layerID);
-	section.getLayer(layerID).setPatternSequence(patternSequence, newPlayIndex, restartPattern);
+	auto section = getSection(sectionID);
+	ensureLayerIsSetup(*section, layerID);
+	section->getLayer(layerID).setPatternSequence(patternSequence, newPlayIndex, restartPattern);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -277,16 +277,16 @@ void PATTERN_MANAGER_CLASS::clearPatternSequence() {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::clearPatternSequence(uint8_t layerID, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	ensureLayerIsSetup(section, layerID);
-	section.getLayer(layerID).clearPatternSequence();
+	auto section = getSection(sectionID);
+	ensureLayerIsSetup(*section, layerID);
+	section->getLayer(layerID)->clearPatternSequence();
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::addLightPattern(pattern_id_t patternID, uint8_t layerID) {
 	for (auto &section : sections) {
 		ensureLayerIsSetup(*section, layerID);
-		section->getLayer(layerID).addLightPattern(patternID);
+		section->getLayer(layerID)->addLightPattern(patternID);
 	}
 }
 
@@ -294,24 +294,18 @@ PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::addLightPattern(pattern_id_t patternID, uint64_t modeList, uint8_t layerID) {
 	for (auto &section : sections) {
 		ensureLayerIsSetup(*section, layerID);
-		section->getLayer(layerID).addLightPattern(patternID, modeList);
+		section->getLayer(layerID)->addLightPattern(patternID, modeList);
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::addLightPattern(pattern_id_t patternID, uint64_t modeList, uint8_t layerID, uint8_t sectionID) {
-	auto &section = getSection(sectionID);
-	ensureLayerIsSetup(section, layerID);
-	section.getLayer(layerID).addLightPattern(patternID, modeList);
+	auto section = getSection(sectionID);
+	ensureLayerIsSetup(*section, layerID);
+	section->getLayer(layerID)->addLightPattern(patternID, modeList);
 }
 
 // -------------------- Adding Sections -------------------
-
-PATTERN_MANAGER_TEMPLATE
-LIGHT_SECTION_CLASS &PATTERN_MANAGER_CLASS::getSection(uint8_t sectionID) {
-	if (sectionID >= sections.size()) throw Exception(SECTION_DOES_NOT_EXIST);
-	return *sections[sectionID];
-}
 
 PATTERN_MANAGER_TEMPLATE
 LIGHT_SECTION_CLASS *PATTERN_MANAGER_CLASS::getLightSection(uint8_t sectionID) {
@@ -332,8 +326,8 @@ uint8_t PATTERN_MANAGER_CLASS::addLightSection(TPixelBuffer<OUTPUT_PIXEL, FORMAT
 
 PATTERN_MANAGER_TEMPLATE
 bool PATTERN_MANAGER_CLASS::addBufferToLightSection(uint8_t sectionID, TPixelBuffer<PIXEL, FORMAT> &buffer) {
-	auto &section = getSection(sectionID);
-	return section.addBuffer(&buffer);
+	auto section = getSection(sectionID);
+	return section->addBuffer(&buffer);
 }
 
 // -------------------- Primary Manager Loop -------------------

@@ -172,8 +172,7 @@ public:
 	virtual IPixelBuffer *getOutputBuffer() = 0;
 
 	virtual uint8_t getTotalLayers() = 0;
-	virtual ILightLayer &getLayer(uint8_t layerID) = 0;
-	virtual bool hasLayer(uint8_t layerID) = 0;
+	virtual ILightLayer *getLayer(uint8_t layerID) = 0;
 	virtual void ensureLayerExists(uint8_t layerID) = 0;
 
 	virtual IPixelBuffer *lockBuffer() = 0;

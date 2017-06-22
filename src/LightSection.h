@@ -48,12 +48,9 @@ public:
 	IPixelBuffer *getOutputBuffer() { return outputBuffer; }
 
 	uint8_t getTotalLayers() { return layers.size(); }
-	bool hasLayer(uint8_t layerID)
-	{ return layerID < layers.size() && layers[layerID] != nullptr; }
 
-	LightLayer<FORMAT> &getLayer(uint8_t layerID) {
-		if (!hasLayer(layerID)) throw Exception(LAYER_DOES_NOT_EXIST);
-		return *layers[layerID];
+	LightLayer<FORMAT> *getLayer(uint8_t layerID) {
+		return layerID < layers.size() ? layers[layerID].get() : nullptr;
 	}
 
 	void ensureLayerExists(uint8_t layerID);

@@ -35,7 +35,7 @@ TEST(LightSection, ensureLayerExists) {
 
 	auto layer = lightSection.getLayer(4);
 
-	EXPECT_EQ(layer.getLayerID(), 4);
+	EXPECT_EQ(layer->getLayerID(), 4);
 }
 
 TEST(LightSection, adjustBrightness) {

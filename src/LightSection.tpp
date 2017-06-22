@@ -1,14 +1,17 @@
 LIGHT_SECTION_TEMPLATE
 void LIGHT_SECTION_CLASS::ensureLayerExists(uint8_t layerID) {
 	if (layerID < layers.size() && layers[layerID] != nullptr) return;
+
 	if (layerID >= layers.size()) {
 		layers.resize(layerID + 1);
 	}
 
-	layers[layerID] = std::make_shared<LightLayer<FORMAT>>(patternProvider);
+	for (auto id = layers.size() - 1; id <= layerID; id++) {
+		layers[id] = std::make_shared<LightLayer<FORMAT>>(patternProvider);
 
-	layers[layerID]->setLayerID(layerID);
-	layers[layerID]->setLightSection(this);
+		layers[id]->setLayerID(layerID);
+		layers[id]->setLightSection(this);
+	}
 }
 
 LIGHT_SECTION_TEMPLATE
