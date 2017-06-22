@@ -19,7 +19,7 @@ private:
 	// Fade is used for transitioning brightness
 	FORMAT fade, targetFade;
 	uint32_t fadeEnd = 0;
-	int32_t fadeDuration = 1000;
+	int32_t fadeDuration = kDefaultFadeOutDuration;
 
 	void updateFadeLevel();
 

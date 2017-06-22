@@ -6,6 +6,23 @@
 
 namespace LightString {
 
+/*! Used to describe the behavior after a pattern finishes and which pattern to load.
+	If any of the actions fail the `LAYER` is put in a STOPPED state.
+*/
+typedef enum {
+	LOAD_NEXT = 1, /*!< Next will load the next in the sequence.
+		If the pattern specifies a specific next pattern through getNextPatternCode
+		that will be loaded instead of the next in the sequence. */
+	LOAD_PREVIOUS, /*!< Load the previous pattern in the sequence */
+
+	LOAD_ENQUEUED_PATTERN, /*!< Load the patten code enqueued with enqueuePattern */
+	LOAD_ENQUEUED_INDEX, /*!< Load the patten cue enqueued with enqueuePatternAtIndex */
+
+	LOAD_SUSPENDED_PATTERN, /*!< Load the suspended pattern */
+
+	FADE_TO_STOP /*!< Cause the layer to fade out then `STOP` */
+} EPlayOutAction;
+
 template <typename FORMAT>
 class LightLayer : public ILightLayer {
 private:
@@ -30,27 +47,41 @@ private:
 
 	int patternIndex = 0; // Index in the pattern order or the sequence
 
+	bool patternIsFinished = false;
+
 	uint32_t lastTime = 0;
 	uint32_t patternStartedAt = 0;
 	uint32_t pauseStartedAt = 0;
+
+	uint32_t suspendedPatternStartedAt = 0;
+	uint32_t suspendStartedAt = 0;
 
 	uint32_t transitionStartedAt = 0;
 	bool runningBeginTransition = false;
 
 	PatternCode enqueuedPattern;
-	bool loadEnqueued = false;
-	bool loadPrevious = false;
+	int enqueuedPatternIndex = 0;
+
+	// How the pattern behaves after it finishes
+	EPlayOutAction playOutAction = LOAD_NEXT;
 
 	FORMAT opacity = getMaxOpacity();
 	FORMAT transitionOpacity = getMaxOpacity();
 
+	bool runningPatternFromSequence = false;
+	bool shouldSuspendActivePattern = true;
+
+	ILightPattern *suspendedPattern = nullptr;
 	ILightPattern *activePattern = nullptr;
 
 	EPlayState playState = PATTERN_STOPPED;
 	ETransitionState transitionState = TRANSITION_DONE;
 	EPatternTransition currentTransition = TRANSITION_DEFAULT;
 
-	void updatePatternIndex(PatternCode patternCode);
+	// Sets the patterns time to be past the end of it's playback
+	void setPatternIsFinished() { patternIsFinished = true; }
+
+	// void updatePatternIndex(PatternCode patternCode);
 	void finishPattern();
 
 	void setPlayState(EPlayState playState);
@@ -60,11 +91,16 @@ private:
 	void startPattern(ILightPattern *pattern, uint8_t mode, PatternConfig *config = nullptr);
 	bool startSelectedPattern();
 
+	bool suspendPattern();
+	void finalizeSuspendedPattern();
+
 public:
 
-	// LightLayer() : patternProvider(nullptr) {}
 	LightLayer(PatternProvider &patternProvider) : patternProvider(patternProvider) {}
-	virtual ~LightLayer() {}
+	virtual ~LightLayer() {
+		finalizeSuspendedPattern();
+		finishPattern();
+	}
 
 	inline FORMAT getMaxOpacity();
 	EPlayState getPlayState() { return playState; }
@@ -73,6 +109,7 @@ public:
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }
 
+	bool isRunningPatternFromSequence() { return runningPatternFromSequence; }
 	int getPatternIndex() { return patternIndex; }
 	uint32_t getElapsedTime() { return (patternStartedAt == 0) ? 0 : millis() - patternStartedAt; }
 	uint32_t getTransitionTimeElapsed() { return millis() - transitionStartedAt; }
@@ -88,9 +125,9 @@ public:
 	PatternCode getPatternCodeFromIndex(uint8_t index);
 	int getPlaybackCount() const;
 
-	inline void setOpacity(FORMAT val) { opacity = val; }
-	inline FORMAT getOpacity() { return opacity; }
-	inline FORMAT getTransitionOpacity() { return transitionOpacity; }
+	void setOpacity(FORMAT val) { opacity = val; }
+	FORMAT getOpacity() { return opacity; }
+	FORMAT getTransitionOpacity() { return transitionOpacity; }
 
 	void setPalette(IPalette *palette) { if (activePattern) activePattern->setPalette(palette); }
 
@@ -116,19 +153,27 @@ public:
 	void setPlayMode(EPlayMode playMode) { this->config.playMode = playMode; }
 	uint32_t getPlayMode() { return config.playMode; }
 
+	bool getShouldSuspendActivePattern() { return shouldSuspendActivePattern; }
+	void setShouldSuspendActivePattern(bool val) { shouldSuspendActivePattern = val; }
+
 	// Play control
 	void play(); // Starts from a stopped state, or unpauses.
-	void stop();
+	void stop(bool fadeOut = false);
 	virtual void pause();
 	virtual void unpause();
 
 	void enqueuePattern(PatternCode patternCode, bool waitToFinish = false);
-
-	bool startPatternAtIndex(int index);
 	bool startPattern(PatternCode patternCode);
-	bool startRandomPattern();
+
+	void enqueuePatternAtIndex(int index, bool waitToFinish = false);
+	bool startPatternAtIndex(int index);
+
+	bool startRandomPattern(bool transition = false);
 	bool nextPattern(bool transition = false);
 	bool prevPattern(bool transition = false);
+
+	bool hasSuspendedPattern() { return suspendedPattern != nullptr; }
+	bool resumeSuspendedPattern(bool transition = false);
 
 	void shufflePatterns();
 

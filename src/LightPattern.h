@@ -34,6 +34,8 @@ public:
 	virtual void setupMode(uint8_t mode) {}
 	virtual void patternFinished() {}
 	
+	PatternCode getPatternCode() { return PatternCode(patternID, mode); }
+
 	void setMode(uint8_t mode, PatternConfig *config = nullptr) { this->mode = mode; setupMode(mode, config); }
 	uint8_t getMode() { return mode; }
 	virtual uint8_t getModeCount() { return modeCount; }

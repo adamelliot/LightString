@@ -51,6 +51,7 @@ struct IPixelBuffer {
 };
 
 const uint32_t kDefaultTransitionDuration = 1000;
+const uint32_t kDefaultFadeOutDuration = 500;
 const uint8_t kTransitionFrames = 30;
 
 typedef enum {
@@ -67,7 +68,10 @@ typedef enum {
 	PATTERN_PLAYING_OUT_TRANSITION,
 	PATTERN_FINISHED, // Happens when a pattern ends
 	PATTERN_PAUSED,
-	PATTERN_STOPPED // Happens after a pattern finishes, but another isn't started
+	PATTERN_STOPPED, // Happens after a pattern finishes, but another isn't started
+
+	PATTERN_SUSPENDED = 100,
+	PATTERN_RESUMED
 } EPlayState;
 
 typedef enum {
@@ -132,19 +136,21 @@ struct PatternCode {
 	pattern_id_t patternID = 0; // Name of pattern
 	uint8_t mode = 0; // Which mode is specified
 
-	inline PatternCode(pattern_id_t patternID = 0, uint8_t mode = 0) :
+	PatternCode(pattern_id_t patternID = 0, uint8_t mode = 0) :
 		patternID(patternID), mode(mode) {}
 
-	inline PatternCode(const PatternCode& code) :
+	PatternCode(const PatternCode& code) :
 		patternID(code.patternID), mode(code.mode) {}
 
-	inline bool operator== (const PatternCode &rhs) __attribute__((always_inline)) {
+	bool operator== (const PatternCode &rhs) __attribute__((always_inline)) {
 		return this->patternID == rhs.patternID && this->mode == rhs.mode;
 	}
 
-	inline bool operator!= (const PatternCode &rhs) __attribute__((always_inline)) {
+	bool operator!= (const PatternCode &rhs) __attribute__((always_inline)) {
 		return this->patternID != rhs.patternID || this->mode != rhs.mode;
 	}
+
+	bool isAnyCode() { return patternID == 0xff && mode == 0xff; }
 };
 
 struct IPalette;
@@ -175,6 +181,9 @@ public:
 	virtual bool addBuffer(IPixelBuffer *buffer) = 0;
 
 	virtual PatternProvider &getPatternProvider() = 0;
+
+	virtual int32_t getFadeDuration() { return kDefaultFadeOutDuration; }
+	virtual void setFadeDuration(int32_t val) {}
 
 	void setSectionID(uint8_t val) { sectionID = val; }
 	uint8_t getSectionID() { return sectionID; }
@@ -264,10 +273,18 @@ public:
 	virtual void setLayerID(uint8_t layerID) = 0;
 	virtual uint8_t getLayerID() = 0;
 
+	virtual bool isRunningPatternFromSequence() = 0;
+	virtual int getPatternIndex() = 0;
+	virtual uint32_t getElapsedTime() = 0;
+	virtual uint32_t getTransitionTimeElapsed() = 0;
+
 	virtual void setConfig(const LightLayerConfig &config) = 0;
 	virtual LightLayerConfig &getConfig() = 0;
 
 	virtual void setPalette(IPalette *) {}
+
+	virtual void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = 0, bool restartPattern = true) = 0;
+	virtual void clearPatternSequence() = 0;
 
 	virtual void setLightSection(ILightSection *section) = 0;
 	virtual ILightSection *getLightSection() = 0;
@@ -276,12 +293,22 @@ public:
 
 	virtual int getPatternIndex() const = 0;
 
+	virtual void enqueuePattern(PatternCode patternCode, bool waitToFinish = false) = 0;
 	virtual bool startPattern(PatternCode patternCode) = 0;
-	virtual bool startRandomPattern() = 0;
+
+	virtual void enqueuePatternAtIndex(int index, bool waitToFinish = false) = 0;
+	virtual bool startPatternAtIndex(int index) = 0;
+
+	virtual bool startRandomPattern(bool transition = false) = 0;
 	virtual bool nextPattern(bool transition = false) = 0;
 	virtual bool prevPattern(bool transition = false) = 0;
-	
-	virtual void stop() = 0;
+
+	virtual bool hasSuspendedPattern() = 0;
+	virtual bool resumeSuspendedPattern(bool transition = true) = 0;
+
+	virtual void shufflePatterns() = 0;
+
+	virtual void stop(bool fadeOut = false) = 0;
 	virtual void pause() = 0;
 	virtual void unpause() = 0;
 };

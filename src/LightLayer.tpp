@@ -17,9 +17,9 @@ int LIGHT_LAYER_CLASS::getPlaybackCount() const {
 }
 
 /**
- * patternSequence: the new Pattern Sequence
- * playIndex: index we are going to start playing at, defaults to 0
- * restartPattern: If the pattern is already playing this flag will cause the pattern to restart, otherwise
+ * Set the new Pattern Sequence
+ * @param playIndex index we are going to start playing at, defaults to 0
+ * @param restartPattern If the pattern is already playing this flag will cause the pattern to restart, otherwise
  *   playback will just continue for the pattern.
  */
 LIGHT_LAYER_TEMPLATE
@@ -70,45 +70,6 @@ void LIGHT_LAYER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler,
 }
 
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::updatePatternIndex(PatternCode patternCode) {
-
-	if (hasPatternSequence) {
-		auto sequence = patternSequence.getSequence();
-		auto size = sequence.size();
-		uint32_t i = patternIndex;
-
-		while (size--) {
-			auto cue = patternSequence.getPatternCue(i);
-			if (cue.code == patternCode) {
-				patternIndex = i;
-				break;
-			}
-
-			i++;
-			i %= sequence.size();
-		}
-	} else {
-		if (patternList.size() == 0) {
-			patternIndex = 0;
-			return;
-		}
-		if (patternIndex >= patternList.size()) {
-			patternIndex = 0;
-		}
-
-		if (patternList[patternIndex] == patternCode) return;
-
-		auto size = patternList.size();
-		for (uint32_t i = 0; i < size; i++) {
-			if (patternList[(i + patternIndex) % size] == patternCode) {
-				patternIndex = i;
-				break;
-			}
-		}
-	}
-}
-
-LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::finishPattern() {
 	if (!activePattern) return;
 
@@ -126,6 +87,36 @@ void LIGHT_LAYER_CLASS::finishPattern() {
 }
 
 LIGHT_LAYER_TEMPLATE
+bool LIGHT_LAYER_CLASS::suspendPattern() {
+	if (!activePattern || !runningPatternFromSequence) return false;
+
+	suspendedPattern = activePattern;
+	runningPatternFromSequence = false;
+	activePattern = nullptr;
+
+	suspendedPatternStartedAt = patternStartedAt;
+	suspendStartedAt = millis();
+
+	if (config.patternEventHandler) {
+		config.patternEventHandler(suspendedPattern, PATTERN_SUSPENDED, config.patternEventUserData);
+	}
+
+	return true;
+}
+
+LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::finalizeSuspendedPattern() {
+	if (!suspendedPattern) return;
+
+	if (config.patternEventHandler) {
+		config.patternEventHandler(suspendedPattern, PATTERN_FINISHED, config.patternEventUserData);
+	}
+
+	patternProvider.finishedWithPattern(suspendedPattern);
+	suspendedPattern = nullptr;
+}
+
+LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::setPlayState(EPlayState playState) {
 	this->playState = playState;
 
@@ -137,8 +128,8 @@ void LIGHT_LAYER_CLASS::setPlayState(EPlayState playState) {
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::play() {
 	if (playState == PATTERN_PLAYING ||
-		playState == PATTERN_PLAYING_IN_TRANSITION ||
-		playState == PATTERN_PLAYING_OUT_TRANSITION) return;
+	        playState == PATTERN_PLAYING_IN_TRANSITION ||
+	        playState == PATTERN_PLAYING_OUT_TRANSITION) return;
 	if (playState == PATTERN_PAUSED) {
 		unpause();
 		return;
@@ -148,11 +139,15 @@ void LIGHT_LAYER_CLASS::play() {
 }
 
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::stop() {
-	if (playState == PATTERN_STOPPED) return;
-	finishPattern();
-
-	setPlayState(PATTERN_STOPPED);
+void LIGHT_LAYER_CLASS::stop(bool fadeOut) {
+	if (fadeOut) {
+		playOutAction = FADE_TO_STOP;
+		setPatternIsFinished();
+	} else {
+		if (playState == PATTERN_STOPPED) return;
+		finishPattern();
+		setPlayState(PATTERN_STOPPED);
+	}
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -179,6 +174,12 @@ void LIGHT_LAYER_CLASS::unpause() {
 	transitionStartedAt += timeDelta;
 }
 
+/**
+ * Starts the actual pattern in a layer and tells the pattern where to render.
+ * @param pattern The pattern that will be started up
+ * @param mode Which mode the pattern will be told to start
+ * @param config the cue that started this pattern. `nullptr` if not loaded from sequence
+ */
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, PatternConfig *config) {
 	this->transitionOpacity = getMaxOpacity();
@@ -210,6 +211,7 @@ void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, Patte
 
 	setPlayState(PATTERN_STARTED);
 
+	patternIsFinished = false;
 	this->patternStartedAt = millis();
 	this->transitionState = TRANSITION_STARTING;
 
@@ -217,7 +219,7 @@ void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, Patte
 }
 
 /**
- * Starts the pattern at patternIndex and chooses between sequence or patternList
+ * Starts the pattern at patternIndex and chooses between sequence or patternList.
  */
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::startSelectedPattern() {
@@ -227,7 +229,7 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 	PatternConfig *config = nullptr;
 
 	if (hasPatternSequence) {
-		if (patternSequence.getSequence().size() == 0) {
+		if (patternIndex >= patternSequence.getSequence().size()) {
 			setPlayState(PATTERN_STOPPED);
 			return false;
 		}
@@ -235,9 +237,10 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 		auto &cue = patternSequence.getPatternCue(patternIndex);
 		code = cue.code;
 		config = &cue;
-	} else if (patternList.size() > 0) {
+	} else if (patternIndex < patternList.size()) {
 		code = patternList[patternIndex];
 	} else {
+		setPlayState(PATTERN_STOPPED);
 		return false;
 	}
 
@@ -255,20 +258,31 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 		pattern->setPatternID(code.patternID);
 	}
 
+	finalizeSuspendedPattern();
+	runningPatternFromSequence = true;
+
 	startPattern(pattern, code.mode, config);
 	return true;
 }
 
+/**
+ * Starts the pattern with the specified code next and lets the current run its out transition
+ * @param patternCode The pattern code to load
+ * @param waitToFinish set this to true to have the current pattern finish it's full
+ *   play duration before loading the next one.
+ */
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::enqueuePattern(PatternCode patternCode, bool waitToFinish) {
 	enqueuedPattern = patternCode;
-	loadEnqueued = true;
-	loadPrevious = false;
-	if (!waitToFinish) {
-		patternStartedAt = millis() - getSelectedPatternDuration();
-	}
+	playOutAction = LOAD_ENQUEUED_PATTERN;
+
+	if (!waitToFinish) setPatternIsFinished();
 }
 
+/**
+ * Starts the pattern with the specified code.
+ * @param patternCode The pattern code to load
+ */
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 #ifdef LS_VERBOSE
@@ -310,41 +324,77 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 	} else {
 		pattern->setPatternID(patternCode.patternID);
 	}
-	finishPattern();
+
+	if (!shouldSuspendActivePattern || !suspendPattern()) {
+		finishPattern();
+	}
 
 	if (randomMode) {
 		patternCode.mode = random(pattern->getModeCount());
 	}
-
-	updatePatternIndex(patternCode);
 
 	startPattern(pattern, patternCode.mode);
 
 	return true;
 }
 
+/**
+ * Enqueues a pattern to start after the current finishes it's transition
+ * @param index the pattern index that will be loaded next
+ * @param waitToFinish set this to true to have the current pattern finish it's full
+ *   play duration before loading the next one.
+ */
 LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::startRandomPattern() {
+void LIGHT_LAYER_CLASS::enqueuePatternAtIndex(int index, bool waitToFinish) {
+	enqueuedPatternIndex = index;
+	playOutAction = LOAD_ENQUEUED_INDEX;
+
+	if (!waitToFinish) setPatternIsFinished();
+}
+
+/**
+ * Starts the pattern at the set index right away. Skips out transitions.
+ * @param transition setting this true will cause the next pattern to switch with transition
+ */
+LIGHT_LAYER_TEMPLATE
+bool LIGHT_LAYER_CLASS::startPatternAtIndex(int index) {
+	patternIndex = index;
+	return startSelectedPattern();
+}
+
+/**
+ * Starts a random pattern in the sequence.
+ * @param transition setting this true will cause the next pattern to switch with transition
+ */
+LIGHT_LAYER_TEMPLATE
+bool LIGHT_LAYER_CLASS::startRandomPattern(bool transition) {
 	uint32_t size = patternList.size();
 
 	if (hasPatternSequence) {
 		size = patternSequence.getSequence().size();
 	}
 
-	patternIndex = random(size);
-
-	return startSelectedPattern();
-}
-
-LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
-	loadEnqueued = false;
+	auto index = random(size);
 
 	if (transition) {
-		if (transitionState == TRANSITION_DONE) {
-			transitionState = TRANSITION_STARTING;
-		}
-		loadPrevious = false;
+		enqueuePatternAtIndex(index);
+		return true;
+	} else {
+		patternIndex = index;
+		return startSelectedPattern();
+	}
+}
+
+/**
+ * Starts the next pattern in the sequence.
+ * @param transition setting this true will cause the next pattern to switch with transition
+ */
+LIGHT_LAYER_TEMPLATE
+bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
+	playOutAction = LOAD_NEXT;
+
+	if (transition) {
+		setPatternIsFinished();
 		return true;
 	} else {
 		uint32_t size = patternList.size();
@@ -360,15 +410,15 @@ bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
 	}
 }
 
+/**
+ * Starts the previous pattern in the sequence.
+ * @param transition setting this true will cause the next pattern to switch with transition
+ */
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
-	loadEnqueued = false;
-
 	if (transition) {
-		if (transitionState == TRANSITION_DONE) {
-			transitionState = TRANSITION_STARTING;
-		}
-		loadPrevious = true;
+		setPatternIsFinished();
+		playOutAction = LOAD_PREVIOUS;
 		return true;
 	} else {
 		uint32_t size = patternList.size();
@@ -382,11 +432,51 @@ bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
 			patternIndex--;
 		}
 
+		playOutAction = LOAD_NEXT;
 		return startSelectedPattern();
 	}
 }
 
-// Shuffle from: http://benpfaff.org/writings/clc/shuffle.html
+/**
+ * If there is a suspended pattern it will resume playback.
+ * @param transition setting this true will cause the suspended pattern to switch with transition
+ */
+LIGHT_LAYER_TEMPLATE
+bool LIGHT_LAYER_CLASS::resumeSuspendedPattern(bool transition) {
+	if (!suspendedPattern) return false;
+
+	if (transition) {
+		setPatternIsFinished();
+		playOutAction = LOAD_SUSPENDED_PATTERN;
+		return true;
+	} else {
+		finishPattern();
+		activePattern = suspendedPattern;
+
+		uint32_t timeDelta = millis() - suspendStartedAt;
+		patternIsFinished = false;
+		patternStartedAt = suspendedPatternStartedAt;
+		patternStartedAt += timeDelta;
+
+		suspendedPattern = nullptr;
+		if (config.patternEventHandler) {
+			config.patternEventHandler(activePattern, PATTERN_RESUMED, config.patternEventUserData);
+		}
+
+		runningPatternFromSequence = true;
+		playOutAction = LOAD_NEXT;
+
+		this->transitionState = TRANSITION_DONE;
+		runningBeginTransition = false;
+		setPlayState(PATTERN_PLAYING);
+	}
+
+	return true;
+}
+
+/**
+ * Shuffles all the Patterns in the patternList. Does nothing to the sequence
+ */
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::shufflePatterns() {
 	auto size = patternList.size();
@@ -561,6 +651,8 @@ inline int32_t LIGHT_LAYER_CLASS::getSelectedOutTransitionDuration() {
 
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
+	int32_t transitionDuration = runningBeginTransition ? getSelectedInTransitionDuration() : getSelectedOutTransitionDuration();
+
 	if (transitionState == TRANSITION_STARTING) {
 		transitionState = TRANSITION_RUNNING;
 		transitionStartedAt = millis();
@@ -571,10 +663,14 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 		} else {
 			currentTransition = getSelectedOutTransition();
 			setPlayState(PATTERN_PLAYING_OUT_TRANSITION);
+
+			if (playOutAction == FADE_TO_STOP) {
+				currentTransition = TRANSITION_FADE_DOWN;
+				auto section = getLightSection();
+				transitionDuration = section ? section->getFadeDuration() : kDefaultFadeOutDuration;
+			}
 		}
 	}
-
-	int32_t transitionDuration = runningBeginTransition ? getSelectedInTransitionDuration() : getSelectedOutTransitionDuration();
 
 	uint32_t timeElapsed = millis() - transitionStartedAt;
 	FORMAT ratio = getElapsedTimeRatio(transitionDuration);
@@ -617,33 +713,56 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 
 	if (transitionState == TRANSITION_DONE) {
 		if (!runningBeginTransition) {
-			if (loadEnqueued) {
-				loadEnqueued = false;
-				startPattern(enqueuedPattern);
-			} else {
-				switch (config.playMode) {
-				case PLAY_MODE_CONTINUOUS:
-				{
-					PatternCode code = activePattern->getNextPatternCode();
-					if (code.mode == 0xff) {
-						loadPrevious ? prevPattern() : nextPattern();
-					} else {
-						startPattern(code);
-					}
-				}
-				break;
+			switch (config.playMode) {
+			case PLAY_MODE_CONTINUOUS:
+			{
+				PatternCode nextCode = activePattern->getNextPatternCode();
+				bool shouldStop = false;
 
-				case PLAY_MODE_ONCE: // Once we're done
+				switch (playOutAction) {
+				case LOAD_NEXT:
+					shouldStop = !(nextCode.isAnyCode() ? nextPattern() : startPattern(nextCode));
+					break;
+
+				case LOAD_PREVIOUS:
+					shouldStop = !prevPattern();
+					break;
+
+				case LOAD_ENQUEUED_PATTERN:
+					shouldStop = !startPattern(enqueuedPattern);
+					break;
+
+				case LOAD_ENQUEUED_INDEX:
+					shouldStop = !startPatternAtIndex(enqueuedPatternIndex);
+					break;
+
+				case LOAD_SUSPENDED_PATTERN:
+					shouldStop = !resumeSuspendedPattern();
+					break;
+
+				case FADE_TO_STOP:
+					shouldStop = true;
+					break;
+				}
+
+				if (shouldStop) {
 					finishPattern();
 					setPlayState(PATTERN_STOPPED);
-					break;
-
-				case PLAY_MODE_REPEAT:
-					startSelectedPattern();
-					break;
 				}
 			}
-			loadPrevious = false;
+			break;
+
+			case PLAY_MODE_ONCE: // Once we're done
+				finishPattern();
+				setPlayState(PATTERN_STOPPED);
+				break;
+
+			case PLAY_MODE_REPEAT:
+				startSelectedPattern();
+				break;
+			}
+
+			playOutAction = LOAD_NEXT;
 		} else {
 			setPlayState(PATTERN_PLAYING);
 			runningBeginTransition = false;
@@ -660,14 +779,16 @@ void LIGHT_LAYER_CLASS::update() {
 
 	int32_t patternTimeDelta = (int32_t)(time - patternStartedAt);
 	int32_t patternDuration = getSelectedPatternDuration();
+	// Pattern time until the out transition should start.
+	auto adjustedPatternDuration = patternDuration - getSelectedOutTransitionDuration();
 
-	if (activePattern->isPatternFinished() ||
-	        (patternDuration > 0 && patternTimeDelta >= patternDuration) ||
-	        (patternDuration == 0 && loadEnqueued))
-	{
-		if (transitionState == TRANSITION_DONE) {
-			transitionState = TRANSITION_STARTING;
-		}
+	if (activePattern->isPatternFinished() || 
+		(patternDuration > 0 && patternTimeDelta >= adjustedPatternDuration)) {
+		setPatternIsFinished();
+	}
+
+	if (patternIsFinished && transitionState == TRANSITION_DONE) {
+		transitionState = TRANSITION_STARTING;
 	}
 
 	if (transitionState != TRANSITION_DONE) {
