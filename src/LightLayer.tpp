@@ -455,6 +455,8 @@ LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::resumeSequence(bool transition) {
 	if (!suspendedPattern) return false;
 
+	runningPatternFromSequence = true;
+
 	if (transition) {
 		setPatternIsFinished();
 		playOutAction = LOAD_SUSPENDED_PATTERN;
@@ -473,7 +475,6 @@ bool LIGHT_LAYER_CLASS::resumeSequence(bool transition) {
 			config.patternEventHandler(activePattern, PATTERN_RESUMED, config.patternEventUserData);
 		}
 
-		runningPatternFromSequence = true;
 		playOutAction = LOAD_NEXT;
 
 		this->transitionState = TRANSITION_DONE;
