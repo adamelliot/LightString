@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "colortypes.h"
+#include "utils.h"
 
 #ifndef PROGMEM
 #define PROGMEM
@@ -21,7 +22,7 @@ namespace LightString {
 struct IPalette {
 private:
 public:
-	virtual uint16_t getColorTotalStops() = 0;
+	virtual int getSize() = 0;
 };
 
 typedef uint32_t ColorPaletteData[];
@@ -36,148 +37,168 @@ typedef uint32_t ColorPaletteData7[7];
 template <template <typename> class T, typename FORMAT = uint8_t>
 struct TPalette : IPalette {
 
-protected:
-	inline void alloc() { colorStops = new T<FORMAT>[size]; }
-
 public:
-	union {
-		uint8_t size;
-		uint8_t totalColorStops;
-	};
-	union {
-		T<FORMAT> *colors;
-		T<FORMAT> *colorStops;
-	};
-
+	std::vector<T<FORMAT>> colorStops;
 	uint8_t paletteID = 0;
 
-	TPalette(const TPalette<T, FORMAT> &rhs) : size(rhs.size) {
-		alloc();
-
-		paletteID = rhs.paletteID;
-		for (int i = 0; i < rhs.size; i++) {
-			this->colors[i] = rhs.colors[i];
-		}
-	}
-
-	inline T<FORMAT> valueAt8(uint8_t index) const {
+	T<FORMAT> valueAt8(uint8_t index) const {
+		auto size = colorStops.size();
 		uint16_t indexSections = index * (size - 1);
 		uint8_t section = indexSections / kPaletteSize8Bit;
 		uint32_t weight = indexSections % kPaletteSize8Bit;
 
-		T<FORMAT> col = colors[section];
+		T<FORMAT> col = colorStops[section];
 
-		return col.lerp8(colors[(section + 1) % size], weight);
+		return col.lerp8(colorStops[(section + 1) % size], weight);
 	}
 
-	inline T<FORMAT> valueAt(float index) const {
+	T<FORMAT> valueAt(float index) const {
+		auto size = colorStops.size();
 		float indexSections = index * (size - 1);
 		uint8_t section = indexSections;
 		float weight = indexSections - section;
 
-		T<FORMAT> col = colors[section];
+		T<FORMAT> col = colorStops[section];
 
-		return col.lerp(colors[(section + 1) % size], weight);
+		return col.lerp(colorStops[(section + 1) % size], weight);
 	}
 
-	inline T<FORMAT> operator[] (FORMAT index) const {
+	T<FORMAT> valueAtMod(float index) const {
+		return valueAt(fmod(index, 1.0));
+	}
+
+	T<FORMAT> operator[] (FORMAT index) const {
 		return valueAt(index);
 	}
 
 	TPalette<T, FORMAT>& operator= (const TPalette<TRGB, FORMAT> &rhs) {
-		if (size != rhs.size) {
-			delete[] colorStops;
-			size = rhs.size;
-			alloc();
-		}
-
+		colorStops = rhs.colorStops;
 		paletteID = rhs.paletteID;
-		for (int i = 0; i < size; i++) {
-			colorStops[i] = rhs.colorStops[i];
-		}
+
 		return *this;
 	}
 
 	TPalette<T, FORMAT>& operator= (const TPalette<TRGBA, FORMAT> &rhs) {
-		if (size != rhs.size) {
-			delete[] colorStops;
-			size = rhs.size;
-			alloc();
-		}
-
+		colorStops = rhs.colorStops;
 		paletteID = rhs.paletteID;
-		for (int i = 0; i < rhs.size; i++) {
-			colors[i] = rhs.colors[i];
-		}
 
 		return *this;
 	}
 
-	uint16_t getColorTotalStops() { return totalColorStops; }
+	int getSize() { return colorStops.size(); }
 
-	inline TPalette() : size(4) {
-		alloc();
+	TPalette() {
+		colorStops.resize(4);
 
-		colors[0] = T<FORMAT>(HTML::Red);
-		colors[1] = T<FORMAT>(HTML::Green);
-		colors[2] = T<FORMAT>(HTML::Blue);
-		colors[3] = T<FORMAT>(HTML::Red);
+		colorStops[0] = T<FORMAT>(HTML::Red);
+		colorStops[1] = T<FORMAT>(HTML::Green);
+		colorStops[2] = T<FORMAT>(HTML::Blue);
+		colorStops[3] = T<FORMAT>(HTML::Red);
 	}
 
-	inline TPalette(uint8_t len, const T<FORMAT> newColors[], bool mirrored = false)
-		: size(mirrored ? ((len << 1) - 1) : len)
+	TPalette(uint8_t len, const T<FORMAT> newColors[], bool mirrored = false)
 	{
-		alloc();
-		memcpy(colors, newColors, len * sizeof(T<FORMAT>));
+		colorStops.resize(mirrored ? ((len << 1) - 1) : len);
+		for (auto i = 0; i < len; i++) colorStops[i] = newColors[i];
 
 		if (mirrored) {
-			uint8_t end = size - 1;
-			for (uint8_t i = end; i >= len; i--) {
-				colors[i] = colors[end - i];
+			uint8_t end = colorStops.size() - 1;
+			for (auto i = end; i >= len; i--) {
+				colorStops[i] = colorStops[end - i];
 			}
 		}
 	}
-	
-	inline TPalette(T<FORMAT> col0) : size(1)
-	{ alloc(); colors[0] = col0; }
 
-	inline TPalette(T<FORMAT> col0, T<FORMAT> col1) : size(2)
-	{ alloc(); colors[0] = col0; colors[1] = col1; }
-
-	inline TPalette(T<FORMAT> col0, T<FORMAT> col1, T<FORMAT> col2) : size(3)
-	{ alloc(); colors[0] = col0; colors[1] = col1; colors[2] = col2; }
-
-	inline TPalette(T<FORMAT> col0, T<FORMAT> col1, T<FORMAT> col2, T<FORMAT> col3) : size(4)
-	{ alloc(); colors[0] = col0; colors[1] = col1; colors[2] = col2; colors[3] = col3; }
-
-	inline TPalette(T<FORMAT> col0, T<FORMAT> col1, T<FORMAT> col2, T<FORMAT> col3, T<FORMAT> col4) : size(5)
-	{ alloc(); colors[0] = col0; colors[1] = col1; colors[2] = col2; colors[3] = col3; colors[4] = col4; }
-	
-	inline TPalette(T<FORMAT> col0, T<FORMAT> col1, T<FORMAT> col2, T<FORMAT> col3, T<FORMAT> col4, T<FORMAT> col5) : size(6)
-	{ alloc(); colors[0] = col0; colors[1] = col1; colors[2] = col2; colors[3] = col3; colors[4] = col4; colors[5] = col5; }
-
-	inline TPalette(T<FORMAT> col0, T<FORMAT> col1, T<FORMAT> col2, T<FORMAT> col3, T<FORMAT> col4, T<FORMAT> col5, T<FORMAT> col6) : size(7)
-	{ alloc(); colors[0] = col0; colors[1] = col1; colors[2] = col2; colors[3] = col3; colors[4] = col4; colors[5] = col5; colors[6] = col6; }
-
-	template <int SIZE>
-	inline TPalette(const uint32_t (&data)[SIZE]) : size(SIZE) {
-		alloc();
-		for (uint8_t i = 0; i < size; i++) colors[i] = T<FORMAT>(data[i]);
+	TPalette(T<FORMAT> col0) {
+		colorStops.push_back(col0);
 	}
 
-	~TPalette() { if (size > 0) delete[] colorStops; }
-	
-	inline TPalette& scale8(uint8_t scale) {
-		for (uint8_t i = 0; i < size; i++) {
-			colors[i].scale8(scale);
+	TPalette(T<FORMAT> col0, T<FORMAT> col1) {
+		colorStops.reserve(2);
+		colorStops.push_back(col0);
+		colorStops.push_back(col1);
+	}
+
+	template <typename... ARGS>
+	TPalette(T<FORMAT> col0, T<FORMAT> col1, ARGS&&... args) {
+		colorStops.reserve(sizeof...(ARGS) + 2);
+		colorStops.push_back(col0);
+		addColors(col1, args...);
+	}
+
+	template <int SIZE>
+	TPalette(const uint32_t (&data)[SIZE]) {
+		colorStops.resize(SIZE);
+		for (uint8_t i = 0; i < colorStops.size(); i++) colorStops[i] = T<FORMAT>(data[i]);
+	}
+
+	TPalette(const uint16_t size) {
+		colorStops.resize(size);
+	}
+
+	~TPalette() {}
+
+	void addColors(T<FORMAT> col) {
+		colorStops.push_back(col);
+	}
+
+	template <typename... ARGS>
+	void addColors(T<FORMAT> col0, ARGS&&... args) {
+		colorStops.reserve(sizeof...(ARGS) + 1);
+		colorStops.push_back(col0);
+		addColors(args...);
+	}
+
+	TPalette& scale8(uint8_t scale) {
+		for (auto &color : colorStops) {
+			color.scale8(scale);
 		}
 
 		return *this;
 	}
 
-	inline TPalette& scale(FORMAT scale) {
-		for (uint8_t i = 0; i < size; i++) {
-			colors[i] *= scale;
+	TPalette& scale(FORMAT scale) {
+		for (auto &color : colorStops) {
+			color *= scale;
+		}
+
+		return *this;
+	}
+};
+
+/**
+ * TBlendedPalette generates a common palette that can be LERPed from
+ * the first to the second palette.
+ */
+template <template <typename> class T, typename FORMAT = uint8_t>
+class TBlendedPalette : public TPalette<T, FORMAT> {
+private:
+	TPalette<T, FORMAT> first;
+	TPalette<T, FORMAT> second;
+
+public:
+	TBlendedPalette(TPalette<T, FORMAT> &first, TPalette<T, FORMAT> &second, float ratio = 0.5)
+		: first(first), second(second)
+	{
+		this->colorStops.resize(lcm(first.getSize() - 1, second.getSize() - 1) + 1);
+		setRatio(0.5);
+	}
+
+	TPalette<T, FORMAT> &getFirst() { return first; }
+	TPalette<T, FORMAT> &getSecond() { return second; }
+
+	/**
+	 * Modifies the current palette to adjust the ratio between
+	 * fist and second palettes.
+	 * @param ratio A range from 0 to 1. Where 0 will be the first
+	 * palette and 1 will be the second.
+	 * @return Returns this palette object
+	 */
+	TBlendedPalette<T, FORMAT> &setRatio(float ratio) {
+		for (int i = 0; i < this->getSize(); i++) {
+			float step = (float)i / (float)(this->getSize() - 1);
+			this->colorStops[i] = first.valueAt(step);
+			this->colorStops[i].lerp(second.valueAt(step), ratio);
 		}
 
 		return *this;
