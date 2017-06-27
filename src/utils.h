@@ -51,3 +51,5 @@ inline void blink(CRGB col = CRGB::Yellow, int times = 4, int timing = 75) {
 }
 #endif
 
+int lcm(int a, int b);
+

@@ -72,11 +72,23 @@ struct TVecBase
 		return *this;
 	}
 
+	TVecBase operator+(const TVecBase<TYPE, SIZE> &rhs) const {
+		auto ret = *this;
+		ret += rhs;
+		return ret;
+	}
+
 	inline TVecBase &operator-=(const TVecBase<TYPE, SIZE> &rhs) {
 		for (auto i = 0; i < SIZE; i++) {
 			this->raw[i] -= rhs.raw[i];
 		}
 		return *this;
+	}
+
+	TVecBase operator-(const TVecBase<TYPE, SIZE> &rhs) const {
+		auto ret = *this;
+		ret -= rhs;
+		return ret;
 	}
 
 	inline TVecBase &operator+=(const TYPE &rhs) {
@@ -120,6 +132,15 @@ struct TVecBase
 			ret &= (rhs.raw[i] == this->raw[i]);
 		}
 		return ret;
+	}
+
+	float length() {
+		float ret = 0;
+		for (auto i = 0; i < SIZE; i++) {
+			ret += this->raw[i] * this->raw[i];
+		}
+		return sqrtf(ret);
+
 	}
 };
 

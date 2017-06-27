@@ -10,7 +10,7 @@ using namespace LightString;
 TEST(TPaletteF, creation) {
 	TPalette<TRGB, float> palette(HTML::Red, HTML::Lime, HTML::Blue);
 
-	EXPECT_EQ(palette.size, 3);
+	EXPECT_EQ(palette.getSize(), 3);
 	EXPECT_EQ(palette.colorStops[0].r, 1.0);
 	EXPECT_EQ(palette.colorStops[1].g, 1.0);
 	EXPECT_EQ(palette.colorStops[2].b, 1.0);
@@ -20,7 +20,7 @@ TEST(TPaletteF, creationWithLength) {
 	TRGB<float> colors[] = {HTML::Red, HTML::Lime, HTML::Blue};
 	TPalette<TRGB, float> palette(3, colors);
 
-	EXPECT_EQ(palette.size, 3);
+	EXPECT_EQ(palette.getSize(), 3);
 	EXPECT_EQ(palette.colorStops[0].r, 1.0);
 	EXPECT_EQ(palette.colorStops[1].g, 1.0);
 	EXPECT_EQ(palette.colorStops[2].b, 1.0);
@@ -30,7 +30,7 @@ TEST(TPaletteF, creationMirroredWithLength) {
 	TRGB<float> colors[] = {HTML::Red, HTML::Lime};
 	TPalette<TRGB, float> palette(2, colors, true);
 
-	EXPECT_EQ(palette.size, 3);
+	EXPECT_EQ(palette.getSize(), 3);
 	EXPECT_EQ(palette.colorStops[0].r, 1.0);
 	EXPECT_EQ(palette.colorStops[1].g, 1.0);
 	EXPECT_EQ(palette.colorStops[2].r, 1.0);
@@ -53,6 +53,44 @@ TEST(TPaletteF, scale) {
 	palette.scale(0.5);
 
 	EXPECT_RGBf_EQ(palette.colorStops[1], 0, 0.5, 0);
+}
+
+// ------------------- Blended Palette ---------------------
+
+TEST(TBlendedPaletteF, creation) {
+	TPalette<TRGB, float> paletteA(HTML::Red, HTML::Lime, HTML::Blue);
+	TPalette<TRGB, float> paletteB(HTML::Blue, HTML::Red, HTML::Lime, HTML::White);
+
+	TBlendedPalette<TRGB, float> palette(paletteA, paletteB);
+
+	EXPECT_EQ(palette.getSize(), 7);
+
+	palette.setRatio(0);
+	EXPECT_RGBf_EQ(palette.colorStops[0], 1.0, 0, 0);
+	EXPECT_RGBf_EQ(palette.colorStops[3], 0, 1.0, 0);
+	EXPECT_RGBf_EQ(palette.colorStops[6], 0, 0, 1.0);
+
+	EXPECT_RGBf_EQ(palette.valueAt(0.25), 0.5, 0.5, 0);
+	EXPECT_RGBf_EQ(palette.valueAt(0.50), 0, 1, 0);
+	EXPECT_RGBf_EQ(palette.valueAt(0.75), 0, 0.5, 0.5);
+	EXPECT_RGBf_EQ(palette.valueAt(1), 0, 0, 1);
+
+	palette.setRatio(1);
+	EXPECT_RGBf_EQ(palette.colorStops[0], 0, 0, 1.0);
+	EXPECT_RGBf_EQ(palette.colorStops[2], 1.0, 0, 0);
+	EXPECT_RGBf_EQ(palette.colorStops[4], 0, 1.0, 0);
+	EXPECT_RGBf_EQ(palette.colorStops[6], 1, 1, 1);
+
+	EXPECT_RGBf_EQ(palette.valueAt(0.25), 0.75, 0, 0.25);
+	EXPECT_RGBf_EQ(palette.valueAt(0.50), 0.5, 0.5, 0);
+	EXPECT_RGBf_EQ(palette.valueAt(0.75), 0.25, 1, 0.25);
+	EXPECT_RGBf_EQ(palette.valueAt(1), 1, 1, 1);
+
+	palette.setRatio(0.25);
+	EXPECT_RGBf_EQ(palette.valueAt(0.25), 0.5625, 0.375, 0.0625);
+	EXPECT_RGBf_EQ(palette.valueAt(0.50), 0.125, 0.875, 0);
+	EXPECT_RGBf_EQ(palette.valueAt(0.75), 0.0625, 0.625, 0.4375);
+	EXPECT_RGBf_EQ(palette.valueAt(1), 0.25, 0.25, 1);
 }
 
 // ------------------- Swatch Manager ---------------------

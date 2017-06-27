@@ -36,3 +36,13 @@ void __throw_length_error(char const *e)
 };
 
 #endif
+
+int lcm(int a, int b) {
+    int minVal = (a > b) ? a : b;
+    while (true) {
+        if (minVal % a == 0 && minVal % b == 0)
+            return minVal;
+        minVal++;
+    }
+}
+

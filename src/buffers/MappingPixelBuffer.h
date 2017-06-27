@@ -23,6 +23,7 @@ public:
 	virtual ~TMappingPixelBuffer() {}
 
 	const TPointMapping<float> &getMapping() const { return mapping; }
+	TPointMapping<float> &getMapping() { return mapping; }
 	const std::vector<TIndexedPoint<float, 3>> &getPoints() const { return mapping.points; }
 
 	void setMapping(const TPointMapping<float> &mapping) {
