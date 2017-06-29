@@ -147,7 +147,11 @@ struct PatternCode {
 		return this->patternID != rhs.patternID || this->mode != rhs.mode;
 	}
 
-	bool isAnyCode() { return patternID == 0xff && mode == 0xff; }
+	bool isAnyPattern() { return *this == anyPattern(); }
+	bool isNoPattern() { return *this == noPattern(); }
+
+	static PatternCode anyPattern() { return {0xff, 0xff}; }
+	static PatternCode noPattern() { return {0xff, 0xfe}; }
 };
 
 struct IPalette;
@@ -188,7 +192,7 @@ public:
 struct PatternConfig {
 	// Pattern Manager Timing
 	// -1 - Default to container
-	//  0 - Run for ever
+	//  0 - Run for forever
 	// If the pattern specifies a time and this is set, the pattern will take precedent
 	// patternDuration includes the amount of time spend in transitionDuration
 	int32_t patternDuration = 0;
@@ -225,11 +229,54 @@ public:
 	}
 };
 
-class PatternSequence {
+class IPatternSequence {
+public:
+	virtual void addPatternCode(const PatternCue &patternCue) = 0;
+	virtual PatternCue &getPatternCue(uint16_t index) = 0;
+	virtual size_t size() = 0;
+	virtual void clear() = 0;
+
+	virtual void shuffle = 0;
+};
+
+/**
+ * A sequence that just is a list of pattern codes, and uses the layer's
+ * PatternConfig to determine how duration and transitions work.
+ */
+class SimplePatternSequence : public IPatternSequence {
+private:
+	PatternConfig &config;
+	std::vector<PatternCode> sequence;
+
+public:
+
+	SimplePatternSequence(PatternConfig &config) : PatternConfig(config) {}
+
+	void shuffle() {
+		auto size = sequence.size();
+		if (size <= 1) return;
+
+		for (size_t i = 0; i < sequence.size(); i++) {
+			size_t j = (i + random() / (0x7ffffff / (sequence.size() - i) + 1)) % sequence.size();
+			auto t = sequence[j];
+			sequence[j] = sequence[i];
+			sequence[i] = t;
+		}
+	}
+};
+
+/**
+ * A sequence of pattern cues that each can control duration and transition details.
+ */
+class PatternSequence : public IPatternSequence {
 private:
 	std::vector<PatternCue> sequence;
 
 public:
+	void addPatternCode(const PatternCode &patternCode) {
+		addPatternCue(patternCode);
+	}
+
 	void addPatternCue(const PatternCue &patternCue) {
 		sequence.emplace_back(patternCue);
 	}
@@ -247,6 +294,18 @@ public:
 
 	PatternCue &getPatternCue(uint16_t index) { return sequence[index]; }
 	const PatternCue &getPatternCue(uint16_t index) const { return sequence[index]; }
+
+	void shuffle() {
+		auto size = sequence.size();
+		if (size <= 1) return;
+
+		for (size_t i = 0; i < sequence.size(); i++) {
+			size_t j = (i + random() / (0x7ffffff / (sequence.size() - i) + 1)) % sequence.size();
+			auto t = sequence[j];
+			sequence[j] = sequence[i];
+			sequence[i] = t;
+		}
+	}
 };
 
 struct LightLayerConfig : PatternConfig {
@@ -280,7 +339,7 @@ public:
 	virtual void setPalette(IPalette *) {}
 
 	virtual void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = 0, bool restartPattern = true, bool fadeOut = true) = 0;
-	virtual void clearPatternSequence(bool fadeOut = true) = 0;
+	virtual void clearPatternSequence(bool fadeOut = true, bool stopIfPlayingFromSequence = true) = 0;
 
 	virtual void setLightSection(ILightSection *section) = 0;
 	virtual ILightSection *getLightSection() = 0;

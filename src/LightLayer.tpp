@@ -1,9 +1,9 @@
 LIGHT_LAYER_TEMPLATE
 PatternCode LIGHT_LAYER_CLASS::getPatternCodeFromIndex(uint8_t index) {
 	if (hasPatternSequence) {
-		return patternSequence.getSequence()[index].code;
+		return patternSequence.getPatternCue(index).code;
 	} else {
-		return patternList[index];
+		return PatternCode::noPattern();
 	}
 }
 
@@ -12,7 +12,7 @@ int LIGHT_LAYER_CLASS::getPlaybackCount() const {
 	if (hasPatternSequence) {
 		return patternSequence.getSequence().size();
 	} else {
-		return patternList.size();
+		return 0;
 	}
 }
 
@@ -43,7 +43,7 @@ void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequenc
 		patternIndex = 0;
 	}
 
-	if (!playFromSequence && runningPatternFromSequence) {
+	if (!playFromSequence && isRunningPatternFromSequence()) {
 		stop(fadeOut);
 	} else {
 		if (this->patternSequence.getSequence().size() > 0) {
@@ -65,13 +65,13 @@ void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequenc
 }
 
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::clearPatternSequence(bool fadeOut) {
-	this->patternSequence.getSequence().clear();
-	hasPatternSequence = false;
-
-	if (runningPatternFromSequence) {
+void LIGHT_LAYER_CLASS::clearPatternSequence(bool fadeOut, bool stopIfPlayingFromSequence) {
+	if (isRunningPatternFromSequence() && stopIfPlayingFromSequence) {
 		stop(fadeOut);
 	}
+
+	this->patternSequence.getSequence().clear();
+	hasPatternSequence = false;
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -200,7 +200,7 @@ void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, Patte
 }
 
 /**
- * Starts the pattern at patternIndex and chooses between sequence or patternList.
+ * Starts the pattern at patternIndex
  */
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::startSelectedPattern() {
@@ -218,8 +218,6 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 		auto &cue = patternSequence.getPatternCue(patternIndex);
 		code = cue.code;
 		config = &cue;
-	} else if (patternIndex < patternList.size()) {
-		code = patternList[patternIndex];
 	} else {
 		setPlayState(PATTERN_STOPPED);
 		return false;
@@ -238,8 +236,6 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 	} else {
 		pattern->setPatternID(code.patternID);
 	}
-
-	runningPatternFromSequence = true;
 
 	startPattern(pattern, code.mode, config);
 	return true;
@@ -305,13 +301,13 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
 		pattern->setPatternID(patternCode.patternID);
 	}
 
+	clearPatternSequence(false, false);
 	finishPattern();
 
 	if (randomMode) {
 		patternCode.mode = random(pattern->getModeCount());
 	}
 
-	runningPatternFromSequence = false;
 	startPattern(pattern, patternCode.mode);
 
 	return true;
@@ -347,10 +343,12 @@ bool LIGHT_LAYER_CLASS::startPatternAtIndex(int index) {
  */
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::startRandomPattern(bool transition) {
-	uint32_t size = patternList.size();
+	uint32_t size = 0;
 
 	if (hasPatternSequence) {
 		size = patternSequence.getSequence().size();
+	} else {
+		return false;
 	}
 
 	auto index = random(size);
@@ -370,20 +368,21 @@ bool LIGHT_LAYER_CLASS::startRandomPattern(bool transition) {
  */
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
+	if (!isRunningPatternFromSequence()) {
+		// TODO: Handle enqueued
+		return false;
+	}
+
 	playOutAction = LOAD_NEXT;
 
 	if (transition) {
 		setPatternIsFinished();
 		return true;
 	} else {
-		uint32_t size = patternList.size();
-
-		if (hasPatternSequence) {
-			size = patternSequence.getSequence().size();
-		}
+		uint32_t size = patternSequence.getSequence().size();
 
 		patternIndex++;
-		if (size > 0) patternIndex %= size;
+		patternIndex %= size;
 
 		return startSelectedPattern();
 	}
@@ -395,16 +394,15 @@ bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
  */
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
+	if (!isRunningPatternFromSequence()) return false;
+
 	if (transition) {
 		setPatternIsFinished();
 		playOutAction = LOAD_PREVIOUS;
 		return true;
 	} else {
-		uint32_t size = patternList.size();
+		uint32_t size = patternSequence.getSequence().size();
 
-		if (hasPatternSequence) {
-			size = patternSequence.getSequence().size();
-		}
 		if (patternIndex == 0) {
 			patternIndex = size - 1;
 		} else {
@@ -417,19 +415,13 @@ bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
 }
 
 /**
- * Shuffles all the Patterns in the patternList. Does nothing to the sequence
+ * If we have a patternSequence loaded it shuffles it. Otherwise does nothing
  */
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::shufflePatterns() {
-	auto size = patternList.size();
-	if (size <= 1) return;
+	if (!isRunningPatternFromSequence()) return;
 
-	for (size_t i = 0; i < patternList.size(); i++) {
-		size_t j = (i + random() / (0x7ffffff / (patternList.size() - i) + 1)) % patternList.size();
-		PatternCode t = patternList[j];
-		patternList[j] = patternList[i];
-		patternList[i] = t;
-	}
+	patternSequence.shuffle();
 }
 
 // TODO: This will only support up to 64 pattern modes currently, should really support 256
@@ -453,10 +445,15 @@ void LIGHT_LAYER_CLASS::addLightPattern(pattern_id_t patternID, uint64_t modeLis
 #endif
 #endif
 
-		patternList.push_back(PatternCode(patternID, mode));
+		patternSequence.addPatternCue(PatternCode(patternID, mode));
+		hasPatternSequence = true;
 	}
 }
 
+/**
+ * Add the pattern and all it's modes to the current sequence.
+ * Calling this multiple times will add copies to the sequence.
+ */
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::addLightPattern(pattern_id_t patternID) {
 	uint64_t modeList = 0;
@@ -663,7 +660,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 
 				switch (playOutAction) {
 				case LOAD_NEXT:
-					shouldStop = !(nextCode.isAnyCode() ? nextPattern() : startPattern(nextCode));
+					shouldStop = !(nextCode.isAnyPattern() ? nextPattern() : startPattern(nextCode));
 					break;
 
 				case LOAD_PREVIOUS:

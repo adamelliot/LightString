@@ -63,7 +63,7 @@ private:
 	FORMAT opacity = getMaxOpacity();
 	FORMAT transitionOpacity = getMaxOpacity();
 
-	bool runningPatternFromSequence = false;
+	// bool runningPatternFromSequence = false;
 
 	ILightPattern *activePattern = nullptr;
 
@@ -98,7 +98,7 @@ public:
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }
 
-	bool isRunningPatternFromSequence() { return runningPatternFromSequence; }
+	bool isRunningPatternFromSequence() { return hasPatternSequence && patternSequence.getSequence().size(); }
 	int getPatternIndex() { return patternIndex; }
 	uint32_t getElapsedTime() { return (patternStartedAt == 0) ? 0 : millis() - patternStartedAt; }
 	uint32_t getTransitionTimeElapsed() { return millis() - transitionStartedAt; }
@@ -121,7 +121,7 @@ public:
 	void setPalette(IPalette *palette) { if (activePattern) activePattern->setPalette(palette); }
 
 	void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = -1, bool restartPattern = true, bool fadeOut = true);
-	void clearPatternSequence(bool fadeOut = true);
+	void clearPatternSequence(bool fadeOut = true, bool stopIfPlayingFromSequence = true);
 
 	EPatternTransition getSelectedInTransition();
 	EPatternTransition getSelectedOutTransition();
