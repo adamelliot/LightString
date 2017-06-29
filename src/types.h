@@ -214,8 +214,9 @@ struct PatternConfig {
 struct PatternCue : public PatternConfig {
 public:
 	// Which pattern and code to run
-	PatternCode code;
+	PatternCode code = 0xff;
 
+	PatternCue() {}
 	PatternCue(PatternCode code, int32_t patternDuration, int32_t inTransitionDuration, int32_t outTransitionDuration,
 		EPatternTransition inTransition, EPatternTransition outTransition, void *config = nullptr)
 	{
@@ -227,16 +228,30 @@ public:
 		this->outTransition = outTransition;
 		this->config = config;
 	}
+
+	PatternCue(PatternConfig &rhs) {
+		this->patternDuration = rhs.patternDuration;
+		this->inTransitionDuration = rhs.inTransitionDuration;
+		this->outTransitionDuration = rhs.outTransitionDuration;
+		this->inTransition = rhs.inTransition;
+		this->outTransition = rhs.outTransition;
+		this->config = rhs.config;
+	}
 };
 
 class IPatternSequence {
 public:
-	virtual void addPatternCode(const PatternCue &patternCue) = 0;
-	virtual PatternCue &getPatternCue(uint16_t index) = 0;
+	virtual ~IPatternSequence() {}
+
+	virtual void addPatternCode(const PatternCode &patternCode) = 0;
+
+	virtual PatternCode getPatternCode(size_t index) const = 0;
+	virtual PatternCue getPatternCue(size_t index) const = 0;
+
 	virtual size_t size() = 0;
 	virtual void clear() = 0;
 
-	virtual void shuffle = 0;
+	virtual void shuffle() = 0;
 };
 
 /**
@@ -249,8 +264,22 @@ private:
 	std::vector<PatternCode> sequence;
 
 public:
+	SimplePatternSequence(PatternConfig &config) : config(config) {}
+	virtual ~SimplePatternSequence() {}
 
-	SimplePatternSequence(PatternConfig &config) : PatternConfig(config) {}
+	void addPatternCode(const PatternCode &patternCode) {
+		sequence.emplace_back(patternCode);
+	}
+
+	PatternCode getPatternCode(size_t index) const { return sequence[index]; }
+	PatternCue getPatternCue(size_t index) const {
+		PatternCue ret = config;
+		ret.code = sequence[index];
+		return ret;
+	}
+
+	size_t size() { return sequence.size();	}
+	void clear() { sequence.clear(); }
 
 	void shuffle() {
 		auto size = sequence.size();
@@ -273,6 +302,8 @@ private:
 	std::vector<PatternCue> sequence;
 
 public:
+	virtual ~PatternSequence() {}
+
 	void addPatternCode(const PatternCode &patternCode) {
 		addPatternCue(patternCode);
 	}
@@ -292,8 +323,11 @@ public:
 	std::vector<PatternCue> &getSequence() { return sequence; }
 	const std::vector<PatternCue> &getSequence() const { return sequence; }
 
-	PatternCue &getPatternCue(uint16_t index) { return sequence[index]; }
-	const PatternCue &getPatternCue(uint16_t index) const { return sequence[index]; }
+	PatternCode getPatternCode(size_t index) const { return sequence[index].code; }
+	PatternCue getPatternCue(size_t index) const { return sequence[index]; }
+
+	size_t size() { return sequence.size();	}
+	void clear() { sequence.clear(); }
 
 	void shuffle() {
 		auto size = sequence.size();

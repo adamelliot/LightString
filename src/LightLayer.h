@@ -33,15 +33,11 @@ private:
 	PatternProvider &patternProvider;
 	std::vector<PatternCode> patternList;
 
-	// If pattern sequence is set play mode will use the sequence
-	// otherwise standard play back semantics will be observed.
-	//
+	// next / previous / random and loading by index require a patternSequence
 	// Note:
-	// - If the layer is sequenced randomizing has no effect
 	// - Settings from cue can still be over ridden by the pattern methods:
 	//		- isPatternFinished, getNextPatternCode, getInTransition, getOutTransition
-	PatternSequence patternSequence;
-	bool hasPatternSequence = false;
+	std::shared_ptr<IPatternSequence> patternSequence { nullptr };
 
 	int patternIndex = 0; // Index in the pattern order or the sequence
 
@@ -98,7 +94,7 @@ public:
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }
 
-	bool isRunningPatternFromSequence() { return hasPatternSequence && patternSequence.getSequence().size(); }
+	bool isRunningPatternFromSequence() { return patternSequence && patternSequence->size() > 0; }
 	int getPatternIndex() { return patternIndex; }
 	uint32_t getElapsedTime() { return (patternStartedAt == 0) ? 0 : millis() - patternStartedAt; }
 	uint32_t getTransitionTimeElapsed() { return millis() - transitionStartedAt; }
