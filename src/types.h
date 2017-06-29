@@ -69,9 +69,6 @@ typedef enum {
 	PATTERN_FINISHED, // Happens when a pattern ends
 	PATTERN_PAUSED,
 	PATTERN_STOPPED, // Happens after a pattern finishes, but another isn't started
-
-	PATTERN_SUSPENDED = 100,
-	PATTERN_RESUMED
 } EPlayState;
 
 typedef enum {
@@ -301,9 +298,6 @@ public:
 	virtual bool startRandomPattern(bool transition = false) = 0;
 	virtual bool nextPattern(bool transition = false) = 0;
 	virtual bool prevPattern(bool transition = false) = 0;
-
-	virtual bool hasSuspendedPattern() = 0;
-	virtual bool resumeSequence(bool transition = true) = 0;
 
 	virtual void shufflePatterns() = 0;
 

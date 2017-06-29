@@ -18,8 +18,6 @@ typedef enum {
 	LOAD_ENQUEUED_PATTERN, /*!< Load the patten code enqueued with enqueuePattern */
 	LOAD_ENQUEUED_INDEX, /*!< Load the patten cue enqueued with enqueuePatternAtIndex */
 
-	LOAD_SUSPENDED_PATTERN, /*!< Load the suspended pattern */
-
 	FADE_TO_STOP /*!< Cause the layer to fade out then `STOP` */
 } EPlayOutAction;
 
@@ -53,9 +51,6 @@ private:
 	uint32_t patternStartedAt = 0;
 	uint32_t pauseStartedAt = 0;
 
-	uint32_t suspendedPatternStartedAt = 0;
-	uint32_t suspendStartedAt = 0;
-
 	uint32_t transitionStartedAt = 0;
 	bool runningBeginTransition = false;
 
@@ -70,7 +65,6 @@ private:
 
 	bool runningPatternFromSequence = false;
 
-	ILightPattern *suspendedPattern = nullptr;
 	ILightPattern *activePattern = nullptr;
 
 	EPlayState playState = PATTERN_STOPPED;
@@ -90,14 +84,10 @@ private:
 	void startPattern(ILightPattern *pattern, uint8_t mode, PatternConfig *config = nullptr);
 	bool startSelectedPattern();
 
-	bool suspendPattern();
-	void finalizeSuspendedPattern();
-
 public:
 
 	LightLayer(PatternProvider &patternProvider) : patternProvider(patternProvider) {}
 	virtual ~LightLayer() {
-		finalizeSuspendedPattern();
 		finishPattern();
 	}
 
@@ -167,9 +157,6 @@ public:
 	bool startRandomPattern(bool transition = false);
 	bool nextPattern(bool transition = false);
 	bool prevPattern(bool transition = false);
-
-	bool hasSuspendedPattern() { return suspendedPattern != nullptr; }
-	bool resumeSequence(bool transition = false);
 
 	void shufflePatterns();
 
