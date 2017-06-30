@@ -17,18 +17,28 @@ int LIGHT_LAYER_CLASS::getPlaybackCount() const {
 }
 
 /**
- * Set the new Pattern Sequence
+ * Set the new Pattern Sequence. 
  * @param playIndex index we are going to start playing at, defaults to 0
- * @param restartPattern If the pattern is already playing this flag will cause the pattern to restart, otherwise
- *   playback will just continue for the pattern.
- * @param fadeOut will control if the current pattern should fade out if being stopped
+ * @param restartPattern If the pattern is already playing this flag will cause
+ *   the pattern to restart, otherwise playback will just continue for the pattern.
+ * @param flags A combination of `ESetPatternSequenceFlags`
  */
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, bool restartPattern, bool fadeOut) {
-	auto currentCode = PatternCode(0xff, 0xff);
-	bool patternChanged = false;
+void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, uint32_t flags) {
 
+	auto currentCode = PatternCode::anyPattern();
+	bool patternChanged = false;
 	bool playFromSequence = newPlayIndex >= 0;
+
+	bool retainPattern = (flags & RETAIN_PATTERN);
+	bool fadeOut = (flags & FADE_OUT);
+	bool shouldTransition = (flags & TRANSITION_PATTERN);
+	bool dontStop = (flags & DONT_STOP_CURRENT);
+
+	if (patternSequence.size() == 0) {
+		clearPatternSequence(fadeOut, !dontStop);
+		return;
+	}
 
 	if (this->patternSequence && (patternIndex < this->patternSequence->size())) {
 		currentCode = this->patternSequence->getPatternCode(patternIndex);
@@ -36,33 +46,33 @@ void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequenc
 
 	this->patternSequence = std::shared_ptr<IPatternSequence>(new PatternSequence(patternSequence));
 
-	patternIndex = newPlayIndex;
-
-	if (patternIndex >= this->patternSequence->size() || !playFromSequence) {
+	if (playFromSequence && patternIndex < this->patternSequence->size()) {
+		patternIndex = newPlayIndex;
+	} else {
 		patternIndex = 0;
 	}
 
-	if (!playFromSequence && isRunningPatternFromSequence()) {
-		stop(fadeOut);
+	if (!playFromSequence) {
+		if (!dontStop) stop(fadeOut);
 	} else {
-		if (this->patternSequence->size() > 0) {
-			auto newCode = this->patternSequence->getPatternCode(patternIndex);
-			if (newCode != currentCode) {
-				patternChanged = true;
-			}
-		} else {
-			stop(fadeOut);
-			return;
+		auto newCode = this->patternSequence->getPatternCode(patternIndex);
+		if (newCode != currentCode) {
+			patternChanged = true;
 		}
+		if (!retainPattern) patternChanged = true;
 
-		if (restartPattern) patternChanged = true;
-
-		if (patternChanged && isActive()) {
-			startSelectedPattern();
+		if (patternChanged) {
+			startPatternAtIndex(patternIndex, shouldTransition);
 		}
 	}
 }
 
+/**
+ * Clears the pattern sequence and stops the current playing pattern if it's from the sequence
+ * @param fadeOut set this to have the stop command issued with a fade out
+ * @param stopIfPlayingFromSequence If you want to leave the current pattern
+ *		playing even after the sequence is gone, set this to `false`
+ */
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::clearPatternSequence(bool fadeOut, bool stopIfPlayingFromSequence) {
 	if (isRunningPatternFromSequence() && stopIfPlayingFromSequence) {
@@ -259,7 +269,12 @@ void LIGHT_LAYER_CLASS::enqueuePattern(PatternCode patternCode, bool waitToFinis
  * @param patternCode The pattern code to load
  */
 LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode) {
+bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode, bool transition) {
+	if (transition) {
+		enqueuePattern(patternCode);
+		return true;
+	}
+
 #ifdef LS_VERBOSE
 #ifdef ARDUINO
 	Serial.print(F("Starting Pattern: 0x"));
@@ -331,9 +346,14 @@ void LIGHT_LAYER_CLASS::enqueuePatternAtIndex(int index, bool waitToFinish) {
  * @param transition setting this true will cause the next pattern to switch with transition
  */
 LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::startPatternAtIndex(int index) {
-	patternIndex = index;
-	return startSelectedPattern();
+bool LIGHT_LAYER_CLASS::startPatternAtIndex(int index, bool transition) {
+	if (transition && isActive()) {
+		enqueuePatternAtIndex(index, false);
+		return true;
+	} else {
+		patternIndex = index;
+		return startSelectedPattern();
+	}
 }
 
 /**
@@ -368,13 +388,21 @@ bool LIGHT_LAYER_CLASS::startRandomPattern(bool transition) {
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
 	if (!isRunningPatternFromSequence()) {
-		// TODO: Handle enqueued
-		return false;
+		if (playOutAction == LOAD_ENQUEUED_PATTERN) {
+			if (transition) {
+				setPatternIsFinished();
+				return true;
+			} else {
+				return startPattern(enqueuedPattern);
+			}
+		} else {
+			return false;
+		}
 	}
 
 	playOutAction = LOAD_NEXT;
 
-	if (transition) {
+	if (transition && isActive()) {
 		setPatternIsFinished();
 		return true;
 	} else {

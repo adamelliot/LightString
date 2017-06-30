@@ -87,6 +87,40 @@ typedef enum {
 	TRANSITION_DEFAULT = 0xff // Use the transition from the container
 } EPatternTransition;
 
+/*! Used to describe the behavior after a pattern finishes and which pattern to load.
+	If any of the actions fail the `LAYER` is put in a STOPPED state.
+*/
+enum EPlayOutAction {
+	LOAD_NEXT = 1, /*!< Next will load the next in the sequence.
+		If the pattern specifies a specific next pattern through getNextPatternCode
+		that will be loaded instead of the next in the sequence. */
+	LOAD_PREVIOUS, /*!< Load the previous pattern in the sequence */
+
+	LOAD_ENQUEUED_PATTERN, /*!< Load the patten code enqueued with enqueuePattern */
+	LOAD_ENQUEUED_INDEX, /*!< Load the patten cue enqueued with enqueuePatternAtIndex */
+
+	FADE_TO_STOP /*!< Cause the layer to fade out then `STOP` */
+};
+
+/*!	Collection of options to control how setting a new pattern sequence
+	loads the new sequence and processes the running pattern.
+*/
+enum ESetPatternSequenceFlags {
+	RETAIN_PATTERN			= 0x01, /*!< If the pattern at `newPlayIndex` is
+		the same as the current playing pattern sending this flag will cause
+		that pattern to keep playing. */
+	FADE_OUT				= 0x02, /*!< If the sequence is loading and stopping
+		a playing pattern this controls if it will fade out or stop immediately. */
+	TRANSITION_PATTERN		= 0x04, /*!< If passing a valid `newPlayIndex` this
+		will control if it should start immediately (default) or if it should
+		transition. If playing from a different sequence setting this will
+		cause the pattern to transition from the current the the one specified
+		by `newPlayIndex`. */
+	DONT_STOP_CURRENT		= 0x08, /*!< This will leave the current pattern
+		playing, but set everything up so the next pattern loaded will be
+		the first in the sequence or the one set by `newPlayIndex`. */
+};
+
 typedef enum {
 	MODE_0  = 1 << 0,
 	MODE_1  = 1 << 1,
@@ -248,7 +282,7 @@ public:
 	virtual PatternCode getPatternCode(size_t index) const = 0;
 	virtual PatternCue getPatternCue(size_t index) const = 0;
 
-	virtual size_t size() = 0;
+	virtual size_t size() const = 0;
 	virtual void clear() = 0;
 
 	virtual void shuffle() = 0;
@@ -278,7 +312,7 @@ public:
 		return ret;
 	}
 
-	size_t size() { return sequence.size();	}
+	size_t size() const { return sequence.size();	}
 	void clear() { sequence.clear(); }
 
 	void shuffle() {
@@ -326,7 +360,7 @@ public:
 	PatternCode getPatternCode(size_t index) const { return sequence[index].code; }
 	PatternCue getPatternCue(size_t index) const { return sequence[index]; }
 
-	size_t size() { return sequence.size();	}
+	size_t size() const { return sequence.size();	}
 	void clear() { sequence.clear(); }
 
 	void shuffle() {
@@ -372,7 +406,7 @@ public:
 
 	virtual void setPalette(IPalette *) {}
 
-	virtual void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = 0, bool restartPattern = true, bool fadeOut = true) = 0;
+	virtual void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = -1, uint32_t flags = 0) = 0;
 	virtual void clearPatternSequence(bool fadeOut = true, bool stopIfPlayingFromSequence = true) = 0;
 
 	virtual void setLightSection(ILightSection *section) = 0;
@@ -383,10 +417,10 @@ public:
 	virtual int getPatternIndex() const = 0;
 
 	virtual void enqueuePattern(PatternCode patternCode, bool waitToFinish = false) = 0;
-	virtual bool startPattern(PatternCode patternCode) = 0;
+	virtual bool startPattern(PatternCode patternCode, bool transition = false) = 0;
 
 	virtual void enqueuePatternAtIndex(int index, bool waitToFinish = false) = 0;
-	virtual bool startPatternAtIndex(int index) = 0;
+	virtual bool startPatternAtIndex(int index, bool transition = false) = 0;
 
 	virtual bool startRandomPattern(bool transition = false) = 0;
 	virtual bool nextPattern(bool transition = false) = 0;

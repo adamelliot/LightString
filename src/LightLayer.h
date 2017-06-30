@@ -1,25 +1,12 @@
 #pragma once
 
+#include <memory>
+
 #include "utils.h"
 #include "types.h"
 #include "LightPattern.h"
 
 namespace LightString {
-
-/*! Used to describe the behavior after a pattern finishes and which pattern to load.
-	If any of the actions fail the `LAYER` is put in a STOPPED state.
-*/
-typedef enum {
-	LOAD_NEXT = 1, /*!< Next will load the next in the sequence.
-		If the pattern specifies a specific next pattern through getNextPatternCode
-		that will be loaded instead of the next in the sequence. */
-	LOAD_PREVIOUS, /*!< Load the previous pattern in the sequence */
-
-	LOAD_ENQUEUED_PATTERN, /*!< Load the patten code enqueued with enqueuePattern */
-	LOAD_ENQUEUED_INDEX, /*!< Load the patten cue enqueued with enqueuePatternAtIndex */
-
-	FADE_TO_STOP /*!< Cause the layer to fade out then `STOP` */
-} EPlayOutAction;
 
 template <typename FORMAT>
 class LightLayer : public ILightLayer {
@@ -116,7 +103,7 @@ public:
 
 	void setPalette(IPalette *palette) { if (activePattern) activePattern->setPalette(palette); }
 
-	void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = -1, bool restartPattern = true, bool fadeOut = true);
+	void setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex = -1, uint32_t flags = RETAIN_PATTERN | FADE_OUT | TRANSITION_PATTERN);
 	void clearPatternSequence(bool fadeOut = true, bool stopIfPlayingFromSequence = true);
 
 	EPatternTransition getSelectedInTransition();
@@ -145,10 +132,10 @@ public:
 	virtual void unpause();
 
 	void enqueuePattern(PatternCode patternCode, bool waitToFinish = false);
-	bool startPattern(PatternCode patternCode);
+	bool startPattern(PatternCode patternCode, bool transition = false);
 
 	void enqueuePatternAtIndex(int index, bool waitToFinish = false);
-	bool startPatternAtIndex(int index);
+	bool startPatternAtIndex(int index, bool transition = false);
 
 	bool startRandomPattern(bool transition = false);
 	bool nextPattern(bool transition = false);
