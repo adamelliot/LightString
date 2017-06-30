@@ -46,7 +46,7 @@ void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequenc
 
 	this->patternSequence = std::shared_ptr<IPatternSequence>(new PatternSequence(patternSequence));
 
-	if (playFromSequence && patternIndex < this->patternSequence->size()) {
+	if (playFromSequence && newPlayIndex < this->patternSequence->size()) {
 		patternIndex = newPlayIndex;
 	} else {
 		patternIndex = 0;
@@ -334,11 +334,15 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode, bool transition) {
  *   play duration before loading the next one.
  */
 LIGHT_LAYER_TEMPLATE
-void LIGHT_LAYER_CLASS::enqueuePatternAtIndex(int index, bool waitToFinish) {
+bool LIGHT_LAYER_CLASS::enqueuePatternAtIndex(size_t index, bool waitToFinish) {
+	if (!patternSequence || index >= patternSequence->size()) return false;
+
 	enqueuedPatternIndex = index;
 	playOutAction = LOAD_ENQUEUED_INDEX;
 
 	if (!waitToFinish) setPatternIsFinished();
+
+	return true;
 }
 
 /**
@@ -346,7 +350,9 @@ void LIGHT_LAYER_CLASS::enqueuePatternAtIndex(int index, bool waitToFinish) {
  * @param transition setting this true will cause the next pattern to switch with transition
  */
 LIGHT_LAYER_TEMPLATE
-bool LIGHT_LAYER_CLASS::startPatternAtIndex(int index, bool transition) {
+bool LIGHT_LAYER_CLASS::startPatternAtIndex(size_t index, bool transition) {
+	if (!patternSequence || index >= patternSequence->size()) return false;
+
 	if (transition && isActive()) {
 		enqueuePatternAtIndex(index, false);
 		return true;

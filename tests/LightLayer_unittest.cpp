@@ -230,6 +230,39 @@ TEST_F(LightLayerTest, enqueuePatternAtIndex) {
 	EXPECT_EQ(lightLayer.getPatternIndex(), 2);
 }
 
+TEST_F(LightLayerTest, enqueuePatternAtIndexFailsWithBadIndex) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 500;
+
+	sequence.addPatternCue(PatternCode(2, 0), -1, TRANSITION_FADE_UP, TRANSITION_OVERWRITE, 200);
+	sequence.addPatternCue(PatternCode(1, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(4, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+
+	lightLayer.setPatternSequence(sequence);
+
+	lightLayer.play();
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	EXPECT_FALSE(lightLayer.enqueuePatternAtIndex(10));
+	runLayerFor(150);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+}
+
+TEST_F(LightLayerTest, enqueuePatternAtIndexFailsWithNoSequence) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 500;
+
+	lightLayer.play();
+	runLayerFor(50);
+	EXPECT_FALSE(lightLayer.isActive());
+
+	EXPECT_FALSE(lightLayer.enqueuePatternAtIndex(10));
+	EXPECT_FALSE(lightLayer.isActive());
+}
+
 TEST_F(LightLayerTest, enqueuePatternAtIndexAndWait) {
 	PatternSequence sequence;
 
@@ -274,6 +307,39 @@ TEST_F(LightLayerTest, startPatternAtIndex) {
 	lightLayer.startPatternAtIndex(2);
 	runLayerFor(100);
 	EXPECT_EQ(lightLayer.getPatternIndex(), 2);
+}
+
+TEST_F(LightLayerTest, startPatternAtIndexFailsWithBadIndex) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 500;
+
+	sequence.addPatternCue(PatternCode(2, 0), -1, TRANSITION_FADE_UP, TRANSITION_OVERWRITE, 200);
+	sequence.addPatternCue(PatternCode(1, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(4, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+
+	lightLayer.setPatternSequence(sequence);
+
+	lightLayer.play();
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	EXPECT_FALSE(lightLayer.startPatternAtIndex(10));
+	runLayerFor(150);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+}
+
+TEST_F(LightLayerTest, startPatternAtIndexFailsWithNoSequence) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 500;
+
+	lightLayer.play();
+	runLayerFor(50);
+	EXPECT_FALSE(lightLayer.isActive());
+
+	EXPECT_FALSE(lightLayer.startPatternAtIndex(10));
+	EXPECT_FALSE(lightLayer.isActive());
 }
 
 TEST_F(LightLayerTest, nextPatternWithNoSequenceAndEnqueuedPattern) {

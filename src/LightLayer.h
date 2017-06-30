@@ -134,8 +134,8 @@ public:
 	void enqueuePattern(PatternCode patternCode, bool waitToFinish = false);
 	bool startPattern(PatternCode patternCode, bool transition = false);
 
-	void enqueuePatternAtIndex(int index, bool waitToFinish = false);
-	bool startPatternAtIndex(int index, bool transition = false);
+	bool enqueuePatternAtIndex(size_t index, bool waitToFinish = false);
+	bool startPatternAtIndex(size_t index, bool transition = false);
 
 	bool startRandomPattern(bool transition = false);
 	bool nextPattern(bool transition = false);

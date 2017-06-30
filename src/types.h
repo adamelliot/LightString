@@ -419,8 +419,8 @@ public:
 	virtual void enqueuePattern(PatternCode patternCode, bool waitToFinish = false) = 0;
 	virtual bool startPattern(PatternCode patternCode, bool transition = false) = 0;
 
-	virtual void enqueuePatternAtIndex(int index, bool waitToFinish = false) = 0;
-	virtual bool startPatternAtIndex(int index, bool transition = false) = 0;
+	virtual bool enqueuePatternAtIndex(size_t index, bool waitToFinish = false) = 0;
+	virtual bool startPatternAtIndex(size_t index, bool transition = false) = 0;
 
 	virtual bool startRandomPattern(bool transition = false) = 0;
 	virtual bool nextPattern(bool transition = false) = 0;
