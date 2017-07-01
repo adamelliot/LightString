@@ -424,6 +424,131 @@ TEST_F(LightLayerTest, nextPatternWithTransition) {
 	EXPECT_EQ(lightLayer.getPatternIndex(), 2);
 }
 
+TEST_F(LightLayerTest, nextPatternWhilePaused) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 500;
+
+	sequence.addPatternCue(PatternCode(2, 0), -1, TRANSITION_FADE_UP, TRANSITION_OVERWRITE, 200);
+	sequence.addPatternCue(PatternCode(1, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(4, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(5, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+
+	lightLayer.setPatternSequence(sequence);
+
+	lightLayer.play();
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	lightLayer.nextPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
+
+	lightLayer.pause(false, false);
+	lightLayer.nextPattern();
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 1);
+
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
+	lightLayer.nextPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 2);
+
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 1);
+
+	lightLayer.nextPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 3);
+
+	lightLayer.unpause();
+	runLayerFor(100, 20);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 2);
+}
+
+TEST_F(LightLayerTest, nextPatternWhileStopped) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 500;
+
+	sequence.addPatternCue(PatternCode(2, 0), -1, TRANSITION_FADE_UP, TRANSITION_OVERWRITE, 200);
+	sequence.addPatternCue(PatternCode(1, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(4, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(5, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+
+	lightLayer.setPatternSequence(sequence);
+
+	lightLayer.play();
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	lightLayer.nextPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
+
+	lightLayer.stop(false);
+	lightLayer.nextPattern();
+	EXPECT_EQ(lightLayer.getActivePattern(), nullptr);
+
+	EXPECT_EQ(lightLayer.getPatternIndex(), 2);
+	lightLayer.nextPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 3);
+
+	EXPECT_EQ(lightLayer.getActivePattern(), nullptr);
+
+	lightLayer.nextPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	lightLayer.play();
+	runLayerFor(50, 20);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 2);
+}
+
+TEST_F(LightLayerTest, nextPatternWhileStoppedDuringFadeout) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 500;
+
+	sequence.addPatternCue(PatternCode(2, 0), -1, TRANSITION_FADE_UP, TRANSITION_OVERWRITE, 200);
+	sequence.addPatternCue(PatternCode(1, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(4, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(5, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+
+	lightLayer.setPatternSequence(sequence);
+
+	lightLayer.play();
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	lightLayer.nextPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
+
+	lightLayer.stop(true);
+	lightLayer.nextPattern();
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 1);
+
+	EXPECT_EQ(lightLayer.getPatternIndex(), 2);
+	lightLayer.nextPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 3);
+
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 1);
+	runLayerFor(200);
+	EXPECT_EQ(lightLayer.getActivePattern(), nullptr);
+
+	lightLayer.nextPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	lightLayer.play();
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 2);
+}
+
 TEST_F(LightLayerTest, prevPattern) {
 	PatternSequence sequence;
 
@@ -479,6 +604,131 @@ TEST_F(LightLayerTest, prevPatternWithTransition) {
 	EXPECT_EQ(lightLayer.getPatternIndex(), 2);
 	runLayerFor(500);
 	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
+}
+
+TEST_F(LightLayerTest, prevPatternWhilePaused) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 500;
+
+	sequence.addPatternCue(PatternCode(2, 0), -1, TRANSITION_FADE_UP, TRANSITION_OVERWRITE, 200);
+	sequence.addPatternCue(PatternCode(1, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(4, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(5, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+
+	lightLayer.setPatternSequence(sequence);
+
+	lightLayer.play();
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	lightLayer.prevPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 3);
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 3);
+
+	lightLayer.pause(false, false);
+	lightLayer.prevPattern();
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 5);
+
+	EXPECT_EQ(lightLayer.getPatternIndex(), 3);
+	lightLayer.prevPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 2);
+
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 5);
+
+	lightLayer.prevPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
+
+	lightLayer.unpause();
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 2);
+}
+
+TEST_F(LightLayerTest, prevPatternWhileStopped) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 500;
+
+	sequence.addPatternCue(PatternCode(2, 0), -1, TRANSITION_FADE_UP, TRANSITION_OVERWRITE, 200);
+	sequence.addPatternCue(PatternCode(1, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(4, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(5, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+
+	lightLayer.setPatternSequence(sequence);
+
+	lightLayer.play();
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	lightLayer.prevPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 3);
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 3);
+
+	lightLayer.stop(false);
+	lightLayer.prevPattern();
+	EXPECT_EQ(lightLayer.getActivePattern(), nullptr);
+
+	EXPECT_EQ(lightLayer.getPatternIndex(), 2);
+	lightLayer.prevPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
+
+	EXPECT_EQ(lightLayer.getActivePattern(), nullptr);
+
+	lightLayer.prevPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	lightLayer.play();
+	runLayerFor(50, 20);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 2);
+}
+
+TEST_F(LightLayerTest, prevPatternWhileStoppedDuringFadeout) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 500;
+
+	sequence.addPatternCue(PatternCode(2, 0), -1, TRANSITION_FADE_UP, TRANSITION_OVERWRITE, 200);
+	sequence.addPatternCue(PatternCode(1, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(4, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(5, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+
+	lightLayer.setPatternSequence(sequence);
+
+	lightLayer.play();
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	lightLayer.prevPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 3);
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 3);
+
+	lightLayer.stop(true);
+	lightLayer.prevPattern();
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 5);
+
+	EXPECT_EQ(lightLayer.getPatternIndex(), 2);
+	lightLayer.prevPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
+
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 5);
+	runLayerFor(200);
+	EXPECT_EQ(lightLayer.getActivePattern(), nullptr);
+
+	lightLayer.prevPattern();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	lightLayer.play();
+	runLayerFor(60, 20);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 2);
 }
 
 TEST_F(LightLayerTest, stop) {

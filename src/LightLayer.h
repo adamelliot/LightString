@@ -30,6 +30,9 @@ private:
 
 	bool patternIsFinished = false;
 
+	bool skipInTransition = false;
+	bool skipOutTransition = false;
+
 	uint32_t lastTime = 0;
 	uint32_t patternStartedAt = 0;
 	uint32_t pauseStartedAt = 0;
@@ -45,8 +48,6 @@ private:
 
 	FORMAT opacity = getMaxOpacity();
 	FORMAT transitionOpacity = getMaxOpacity();
-
-	// bool runningPatternFromSequence = false;
 
 	ILightPattern *activePattern = nullptr;
 
@@ -78,6 +79,10 @@ public:
 	EPlayState getPlayState() { return playState; }
 	bool isActive() { return playState != PATTERN_STOPPED; }
 
+	bool isStopped() { return playState == PATTERN_STOPPED; }
+	bool willStop() { return playOutAction == FADE_TO_STOP && patternIsFinished; }
+	bool isPaused() { return playState == PATTERN_PAUSED; }
+
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }
 
@@ -94,6 +99,7 @@ public:
 	ILightPattern *getActivePattern() { return activePattern; }
 
 	int getPatternIndex() const { return patternIndex; }
+
 	PatternCode getPatternCodeFromIndex(uint8_t index);
 	int getPlaybackCount() const;
 

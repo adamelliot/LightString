@@ -17,7 +17,7 @@ int LIGHT_LAYER_CLASS::getPlaybackCount() const {
 }
 
 /**
- * Set the new Pattern Sequence. 
+ * Set the new Pattern Sequence.
  * @param playIndex index we are going to start playing at, defaults to 0
  * @param restartPattern If the pattern is already playing this flag will cause
  *   the pattern to restart, otherwise playback will just continue for the pattern.
@@ -136,6 +136,9 @@ void LIGHT_LAYER_CLASS::stop(bool fadeOut) {
 		if (playState == PATTERN_STOPPED) return;
 		finishPattern();
 		setPlayState(PATTERN_STOPPED);
+
+		setPatternIsFinished();
+		runningBeginTransition = true;
 	}
 }
 
@@ -246,6 +249,7 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 		pattern->setPatternID(code.patternID);
 	}
 
+	playOutAction = LOAD_NEXT;
 	startPattern(pattern, code.mode, config);
 	return true;
 }
@@ -395,6 +399,12 @@ LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
 	if (!isRunningPatternFromSequence()) {
 		if (playOutAction == LOAD_ENQUEUED_PATTERN) {
+			if ((isPaused() || isStopped() || willStop()) && !transition) {
+				if (runningBeginTransition) skipInTransition = true;
+				skipOutTransition = true;
+				transition = true;
+			}
+
 			if (transition) {
 				setPatternIsFinished();
 				return true;
@@ -406,13 +416,27 @@ bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
 		}
 	}
 
-	playOutAction = LOAD_NEXT;
+	if ((isPaused() || isStopped() || willStop()) && !transition) {
+		if (runningBeginTransition) skipInTransition = true;
+		skipOutTransition = true;
+		transition = true;
+	}
 
-	if (transition && isActive()) {
-		setPatternIsFinished();
+	if (!willStop()) playOutAction = LOAD_NEXT;
+
+	if (transition) {
+		if (patternIsFinished) {
+			auto size = patternSequence->size();
+
+			patternIndex++;
+			patternIndex %= size;
+		} else {
+			setPatternIsFinished();
+		}
+
 		return true;
 	} else {
-		uint32_t size = patternSequence->size();
+		auto size = patternSequence->size();
 
 		patternIndex++;
 		patternIndex %= size;
@@ -429,9 +453,25 @@ LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
 	if (!isRunningPatternFromSequence()) return false;
 
+	if ((isPaused() || isStopped() || willStop()) && !transition) {
+		if (runningBeginTransition) skipInTransition = true;
+		skipOutTransition = true;
+		transition = true;
+	}
+
 	if (transition) {
-		setPatternIsFinished();
-		playOutAction = LOAD_PREVIOUS;
+		if (patternIsFinished) {
+			auto size = patternSequence->size();
+			if (patternIndex == 0) {
+				patternIndex = size - 1;
+			} else {
+				patternIndex--;
+			}
+		} else {
+			setPatternIsFinished();
+		}
+
+		if (!willStop()) playOutAction = LOAD_PREVIOUS;
 		return true;
 	} else {
 		uint32_t size = patternSequence->size();
@@ -651,6 +691,21 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 	FORMAT ratio = getElapsedTimeRatio(transitionDuration);
 	bool clear = false;
 
+
+	if (runningBeginTransition) {
+		if (skipInTransition) {
+			ratio = 1;
+			timeElapsed = transitionDuration;
+			skipInTransition = false;
+		}
+	} else {
+		if (skipOutTransition) {
+			ratio = 1;
+			timeElapsed = transitionDuration;
+			skipOutTransition = false;
+		}
+	}
+
 	switch (currentTransition) {
 	case TRANSITION_WIPE:
 		activePattern->update(timeDelta);
@@ -753,8 +808,8 @@ void LIGHT_LAYER_CLASS::update() {
 	// Pattern time until the out transition should start.
 	auto adjustedPatternDuration = patternDuration - getSelectedOutTransitionDuration();
 
-	if (activePattern->isPatternFinished() || 
-		(patternDuration > 0 && patternTimeDelta >= adjustedPatternDuration)) {
+	if (activePattern->isPatternFinished() ||
+	        (patternDuration > 0 && patternTimeDelta >= adjustedPatternDuration)) {
 		setPatternIsFinished();
 	}
 
