@@ -399,7 +399,9 @@ LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
 	if (!isRunningPatternFromSequence()) {
 		if (playOutAction == LOAD_ENQUEUED_PATTERN) {
-			if ((isPaused() || isStopped() || willStop()) && !transition) {
+			if (isPaused()) stop(false);
+
+			if ((isStopped() || willStop()) && !transition) {
 				if (runningBeginTransition) skipInTransition = true;
 				skipOutTransition = true;
 				transition = true;
@@ -416,7 +418,9 @@ bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
 		}
 	}
 
-	if ((isPaused() || isStopped() || willStop()) && !transition) {
+	if (isPaused()) stop(true);
+
+	if ((isStopped() || willStop()) && !transition) {
 		if (runningBeginTransition) skipInTransition = true;
 		skipOutTransition = true;
 		transition = true;
@@ -453,7 +457,9 @@ LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
 	if (!isRunningPatternFromSequence()) return false;
 
-	if ((isPaused() || isStopped() || willStop()) && !transition) {
+	if (isPaused()) stop(true);
+
+	if ((isStopped() || willStop()) && !transition) {
 		if (runningBeginTransition) skipInTransition = true;
 		skipOutTransition = true;
 		transition = true;
