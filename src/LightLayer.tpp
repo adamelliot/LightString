@@ -274,7 +274,8 @@ void LIGHT_LAYER_CLASS::enqueuePattern(PatternCode patternCode, bool waitToFinis
  */
 LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode, bool transition) {
-	if (transition) {
+	if (transition && isActive()) {
+		if (isPaused())	unpause();
 		enqueuePattern(patternCode);
 		return true;
 	}
