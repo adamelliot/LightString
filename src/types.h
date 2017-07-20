@@ -69,6 +69,9 @@ typedef enum {
 	PATTERN_FINISHED, // Happens when a pattern ends
 	PATTERN_PAUSED,
 	PATTERN_STOPPED, // Happens after a pattern finishes, but another isn't started
+
+	PATTERN_HOLD = 10,
+	PATTERN_UNHOLD
 } EPlayState;
 
 typedef enum {
@@ -431,6 +434,10 @@ public:
 	virtual void stop(bool fadeOut = true) = 0;
 	virtual void pause() = 0;
 	virtual void unpause() = 0;
+
+	virtual void hold() = 0;
+	virtual void unhold() = 0;
+
 };
 
 };

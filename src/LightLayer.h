@@ -28,6 +28,8 @@ private:
 
 	int patternIndex = 0; // Index in the pattern order or the sequence
 
+	bool holdPattern = false;
+
 	bool patternIsFinished = false;
 
 	bool skipInTransition = false;
@@ -136,6 +138,9 @@ public:
 	void stop(bool fadeOut = true);
 	virtual void pause();
 	virtual void unpause();
+
+	void hold();
+	void unhold();
 
 	void enqueuePattern(PatternCode patternCode, bool waitToFinish = false);
 	bool startPattern(PatternCode patternCode, bool transition = false);

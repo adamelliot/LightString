@@ -167,6 +167,36 @@ void LIGHT_LAYER_CLASS::unpause() {
 }
 
 /**
+ * Causes the current pattern to be held. This prevents the duration to allow the pattern
+ * to end and advance to the next pattern. This only HOLDs with reference to duration.
+ * Other actions (Next, previous, enqueue, etc) will still cause the pattern to advance.
+ * When advancing the hold will stay on the next pattern.
+ * `isPatternFinished` will also be respected.
+ */
+LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::hold() {
+	if (holdPattern) return;
+	holdPattern = true;
+
+	if (config.patternEventHandler) {
+		config.patternEventHandler(activePattern, PATTERN_HOLD, config.patternEventUserData);
+	}
+}
+
+/**
+ * Removes the hold state on the current pattern.
+ */
+LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::unhold() {
+	if (!holdPattern) return;
+	holdPattern = false;
+
+	if (config.patternEventHandler) {
+		config.patternEventHandler(activePattern, PATTERN_UNHOLD, config.patternEventUserData);
+	}
+}
+
+/**
  * Starts the actual pattern in a layer and tells the pattern where to render.
  * @param pattern The pattern that will be started up
  * @param mode Which mode the pattern will be told to start
@@ -816,7 +846,8 @@ void LIGHT_LAYER_CLASS::update() {
 	auto adjustedPatternDuration = patternDuration - getSelectedOutTransitionDuration();
 
 	if (activePattern->isPatternFinished() ||
-	        (patternDuration > 0 && patternTimeDelta >= adjustedPatternDuration)) {
+	        ((patternDuration > 0 && patternTimeDelta >= adjustedPatternDuration)
+	        	&& !holdPattern)) {
 		setPatternIsFinished();
 	}
 
