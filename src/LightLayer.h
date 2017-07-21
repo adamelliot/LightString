@@ -85,6 +85,8 @@ public:
 	bool willStop() { return playOutAction == FADE_TO_STOP && patternIsFinished; }
 	bool isPaused() { return playState == PATTERN_PAUSED; }
 
+	bool isPatternHeld() const { return holdPattern; }
+
 	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
 	uint8_t getLayerID() { return layerID; }
 

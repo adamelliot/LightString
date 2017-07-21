@@ -417,6 +417,8 @@ public:
 	
 	virtual ILightPattern *getActivePattern() = 0;
 
+	virtual bool isPatternHeld() const = 0;
+
 	virtual int getPatternIndex() const = 0;
 
 	virtual void enqueuePattern(PatternCode patternCode, bool waitToFinish = false) = 0;
