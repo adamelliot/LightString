@@ -24,7 +24,7 @@ void TCuboid<TYPE>::includePoint(const TPoint<TYPE, 3> pt) {
 
 template <typename TYPE>
 bool TCuboid<TYPE>::containsPoint(TPoint<TYPE, 3> pt) {
-	if (pt.x < x || pt.y < y || pt.z < z ||
+	if (pt.x <= x || pt.y <= y || pt.z <= z ||
 	        pt.x > (x + width) || pt.y > (y + height) || pt.z > (z + depth))
 		return false;
 
@@ -35,7 +35,7 @@ template <typename TYPE>
 TPoint<TYPE, 3> TCuboid<TYPE>::boundPoint(const TPoint<TYPE, 3> &pt, TVec<TYPE, 3> *vec) {
 	TPoint<TYPE, 3> ret = pt;
 
-	if (ret.x < x) {
+	if (ret.x <= x) {
 		ret.x = 2 * x - ret.x;
 		if (vec) vec->x *= -1;
 	} else if (ret.x > (x + width)) {
@@ -44,7 +44,7 @@ TPoint<TYPE, 3> TCuboid<TYPE>::boundPoint(const TPoint<TYPE, 3> &pt, TVec<TYPE, 
 		if (vec) vec->x *= -1;
 	}
 
-	if (ret.y < y) {
+	if (ret.y <= y) {
 		ret.y = 2 * y - ret.y;
 		if (vec) vec->y *= -1;
 	} else if (ret.y > (y + height)) {
@@ -53,7 +53,7 @@ TPoint<TYPE, 3> TCuboid<TYPE>::boundPoint(const TPoint<TYPE, 3> &pt, TVec<TYPE, 
 		if (vec) vec->y *= -1;
 	}
 
-	if (ret.z < z) {
+	if (ret.z <= z) {
 		ret.z = 2 * z - ret.z;
 		if (vec) vec->z *= -1;
 	} else if (ret.z > (z + depth)) {
