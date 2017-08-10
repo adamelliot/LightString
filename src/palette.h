@@ -301,15 +301,15 @@ protected:
 	std::vector<TPalette<T, FORMAT>> palettes;
 	uint8_t paletteIndex = 0;
 
-	// Find the first palette with a specific ID
-	int16_t getPaletteIndexFromID(uint8_t id);
-
 public:
 
 	TPaletteManager() {}
 
 	void shuffle();
 	uint8_t getPaletteCount() { return palettes.size(); }
+
+	// Find the first palette with a specific ID
+	int16_t getPaletteIndexFromID(uint8_t id);
 
 	T<FORMAT> getColor(FORMAT index) { return (palettes[paletteIndex])[index]; }
 	inline TPalette<T, FORMAT> &getPalette() { return palettes[paletteIndex]; }
