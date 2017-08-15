@@ -9,7 +9,7 @@
 
 #include <vector>
 #include <functional>
-#include <math.h>
+#include <cmath>
 
 namespace LightString {
 
@@ -134,13 +134,31 @@ struct TVecBase
 		return ret;
 	}
 
-	float length() {
+	float length() const {
 		float ret = 0;
 		for (auto i = 0; i < SIZE; i++) {
 			ret += this->raw[i] * this->raw[i];
 		}
 		return sqrtf(ret);
 
+	}
+
+	float distance(const TVecBase<TYPE, SIZE> &rhs) const {
+		float ret = 0;
+		float val;
+		for (auto i = 0; i < SIZE; i++) {
+			val = rhs.raw[i] - this->raw[i];
+			ret += val * val;
+		}
+		return sqrtf(ret);
+	}
+
+	TYPE manhattanDistance(const TVecBase<TYPE, SIZE> &rhs) const {
+		TYPE ret = 0;
+		for (auto i = 0; i < SIZE; i++) {
+			ret += std::abs(rhs.raw[i] - this->raw[i]);
+		}
+		return ret;
 	}
 };
 

@@ -64,32 +64,22 @@ TEST(TVec, normalize) {
 	EXPECT_NEAR(ret.y, -0.5774, 0.0001);
 	EXPECT_NEAR(ret.z,  0.5774, 0.0001);
 }
-/*
-TEST(HSVf, initialization) {
-	HSVu col(0, 255, 255);
-	EXPECT_HSVu_EQ(col, 0, 255, 255);
+
+TEST(TVecBase, distance) {
+	TPoint<float, 3> a(10, 10, 10);
+	TPoint<float, 3> b(2, 2, 2);
+
+	auto ret = a.distance(b);
+
+	EXPECT_NEAR(ret, 13.85, 0.01);
 }
 
-TEST(HSVf, equals) {
-	HSVf col;
-	HSVf col2(60, 1, 1);
-	
-	col = col2;
+TEST(TVecBase, manhattanDistance) {
+	TPoint<float, 3> a(10, 10, 10);
+	TPoint<float, 3> b(2, 2, 2);
 
-	EXPECT_HSVf_EQ(col, 60, 1, 1);
+	auto ret = a.manhattanDistance(b);
+
+	EXPECT_NEAR(ret, 24, 0.001);
 }
 
-TEST(HSVf, toRGB) {
-	HSVf col(120, 1, 1);
-	RGBf rgb = col.toRGB();
-
-	EXPECT_RGBf_EQ(rgb, 0, 1, 0);
-}
-
-TEST(HSVf, toRGBA) {
-	HSVf col(120, 1, 1);
-	RGBAf rgb = col;
-
-	EXPECT_RGBAf_EQ(rgb, 0, 1, 0, 1);
-}
-*/
