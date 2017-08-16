@@ -28,7 +28,7 @@ TEST(RGBAf, boolEval) {
 TEST(RGBAf, equalsRGBA) {
 	RGBAf col;
 	RGBAf col2(0.100, 0.150, 0.200, 1);
-	
+
 	col = col2;
 
 	EXPECT_RGBAf_EQ(col, 0.100, 0.150, 0.200, 1);
@@ -49,7 +49,7 @@ TEST(RGBAf, addEqualsRBGA) {
 	RGBAf col2(10, 11, 12, 13);
 
 	col1 += col2;
-	
+
 	EXPECT_RGBAf_EQ(col1, 30, 41, 52, 50);
 }
 
@@ -64,9 +64,9 @@ TEST(RGBAf, addEqualsRBG) {
 
 TEST(RGBAf, addEqualsVal) {
 	RGBAf col1(20, 30, 40, 50);
-	
+
 	col1 += 20;
-	
+
 	EXPECT_RGBAf_EQ(col1, 40, 50, 60, 50);
 }
 
@@ -91,15 +91,15 @@ TEST(RGBAf, subEqualsRBG) {
 	RGBAf col2(10, 11, 12, 20);
 
 	col1 -= col2;
-	
+
 	EXPECT_RGBAf_EQ(col1, 10, 19, -2, 40);
 }
 
 TEST(RGBAf, subEqualsVal) {
 	RGBAf col1(20, 30, 15, 60);
-	
+
 	col1 -= 20;
-	
+
 	EXPECT_RGBAf_EQ(col1, 0, 10, -5, 60);
 }
 
@@ -239,12 +239,23 @@ TEST(RGBAf, maximizeBrightness) {
 }
 
 TEST(Blending_F, blendCOPYRGBA) {
-	TRGBA<float> col1(10, 20, 30, 1);
-	TRGBA<float> col2(40, 50, 60, 0.5);
+	{
+		TRGBA<float> col1(10, 20, 30, 1);
+		TRGBA<float> col2(40, 50, 60, 0.5);
 
-	blendCOPY(col1, col2);
+		blendCOPY(col1, col2);
 
-	EXPECT_RGBAf_EQ(col1, 25, 35, 45, 0.5);
+		EXPECT_RGBAf_EQ(col1, 25, 35, 45, 1);
+	}
+
+	{
+		TRGBA<float> col1(10, 20, 30, 0.5);
+		TRGBA<float> col2(40, 50, 60, 1);
+
+		blendCOPY(col1, col2);
+
+		EXPECT_RGBAf_EQ(col1, 40, 50, 60, 1);
+	}
 }
 
 TEST(Blending_F, blendCOPYRGB) {

@@ -359,6 +359,7 @@ TRGB<TYPE> blendCOPY(TRGB<TYPE> &lhs, const TRGB<TYPE> &rhs);
 
 template <>
 inline TRGBA<uint8_t> blendCOPY(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) {
+	// TODO: Reimplement using proper alpha compositing (http://en.wikipedia.org/wiki/Alpha_compositing)
 	uint8_t a = rhs.a;
 	lhs.scale8(lhs.a);
 	lhs.lerp8(rhs, rhs.a);
@@ -368,10 +369,11 @@ inline TRGBA<uint8_t> blendCOPY(TRGBA<uint8_t> &lhs, const TRGBA<uint8_t> &rhs) 
 
 template <>
 inline TRGBA<float> blendCOPY(TRGBA<float> &lhs, const TRGBA<float> &rhs) {
-	float a = rhs.a;
-	lhs *= lhs.a;
-	lhs.lerp(rhs, rhs.a);
-	lhs.a = a;
+	for (auto i = 0; i < 3; i++)
+		lhs.raw[i] = (rhs.raw[i] * rhs.a) + (lhs.raw[i] * lhs.a * (1 - rhs.a));
+
+	lhs.a = lhs.a + (1 - lhs.a) * rhs.a;
+
 	return lhs;
 }
 
