@@ -389,6 +389,7 @@ bool LIGHT_LAYER_CLASS::startPatternAtIndex(size_t index, bool transition) {
 	if (!patternSequence || index >= patternSequence->size()) return false;
 
 	if (transition && isActive()) {
+		if (isPaused()) unpause();
 		enqueuePatternAtIndex(index, false);
 		return true;
 	} else {
