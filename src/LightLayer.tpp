@@ -130,7 +130,12 @@ void LIGHT_LAYER_CLASS::play() {
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::stop(bool fadeOut) {
 	if (fadeOut) {
-		playOutAction = FADE_TO_STOP;
+		if (isPaused()) {
+			playOutAction = FREEZE_FADE_TO_STOP;
+			unpause();
+		} else {
+			playOutAction = FADE_TO_STOP;
+		}
 		setPatternIsFinished();
 	} else {
 		if (playState == PATTERN_STOPPED) return;
@@ -721,6 +726,10 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 				currentTransition = TRANSITION_FADE_DOWN;
 				auto section = getLightSection();
 				transitionDuration = section ? section->getFadeDuration() : kDefaultFadeOutDuration;
+			} else if (playOutAction == FREEZE_FADE_TO_STOP)  {
+				currentTransition = TRANSITION_FREEZE_FADE;
+				auto section = getLightSection();
+				transitionDuration = section ? section->getFadeDuration() : kDefaultFadeOutDuration;
 			}
 		}
 	}
@@ -805,6 +814,7 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 					break;
 
 				case FADE_TO_STOP:
+				case FREEZE_FADE_TO_STOP:
 					shouldStop = true;
 					break;
 				}

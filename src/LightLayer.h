@@ -82,7 +82,7 @@ public:
 	bool isActive() { return playState != PATTERN_STOPPED; }
 
 	bool isStopped() { return playState == PATTERN_STOPPED; }
-	bool willStop() { return playOutAction == FADE_TO_STOP && patternIsFinished; }
+	bool willStop() { return (playOutAction == FADE_TO_STOP || playOutAction == FREEZE_FADE_TO_STOP) && patternIsFinished; }
 	bool isPaused() { return playState == PATTERN_PAUSED; }
 
 	bool isPatternHeld() const { return holdPattern; }

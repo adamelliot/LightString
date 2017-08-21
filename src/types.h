@@ -102,7 +102,8 @@ enum EPlayOutAction {
 	LOAD_ENQUEUED_PATTERN, /*!< Load the patten code enqueued with enqueuePattern */
 	LOAD_ENQUEUED_INDEX, /*!< Load the patten cue enqueued with enqueuePatternAtIndex */
 
-	FADE_TO_STOP /*!< Cause the layer to fade out then `STOP` */
+	FADE_TO_STOP, /*!< Cause the layer to fade out then `STOP` */
+	FREEZE_FADE_TO_STOP /*!< Cause the layer to fade out in a frozen state then `STOP` */
 };
 
 /*!	Collection of options to control how setting a new pattern sequence

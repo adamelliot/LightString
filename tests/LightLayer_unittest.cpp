@@ -884,6 +884,52 @@ TEST_F(LightLayerTest, stopWithFadeOut) {
 	EXPECT_FALSE(lightLayer.isActive());
 }
 
+TEST_F(LightLayerTest, stopWhilePaused) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 500;
+
+	sequence.addPatternCue(PatternCode(2, 0), -1, TRANSITION_FADE_UP, TRANSITION_OVERWRITE, 200);
+	sequence.addPatternCue(PatternCode(1, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(4, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+
+	lightLayer.setPatternSequence(sequence);
+
+	lightLayer.play();
+	lightLayer.nextPattern();
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
+	lightLayer.pause(false, false);
+
+	lightLayer.stop(false);
+	runLayerFor(50);
+	EXPECT_FALSE(lightLayer.isPaused());
+	EXPECT_FALSE(lightLayer.isActive());
+}
+
+TEST_F(LightLayerTest, stopWithFadeoutWhilePaused) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 500;
+
+	sequence.addPatternCue(PatternCode(2, 0), -1, TRANSITION_FADE_UP, TRANSITION_OVERWRITE, 200);
+	sequence.addPatternCue(PatternCode(1, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(4, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+
+	lightLayer.setPatternSequence(sequence);
+
+	lightLayer.play();
+	lightLayer.nextPattern();
+	runLayerFor(100);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
+	lightLayer.pause(false, false);
+
+	lightLayer.stop(true);
+	runLayerFor(500);
+	EXPECT_FALSE(lightLayer.isPaused());
+	EXPECT_FALSE(lightLayer.isActive());
+}
+
 TEST_F(LightLayerTest, patternDoesntAdvanceWhenHeld) {
 	PatternSequence sequence;
 
