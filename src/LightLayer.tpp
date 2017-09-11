@@ -455,7 +455,7 @@ bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
 		}
 	}
 
-	if (isPaused()) stop(true);
+	if (isPaused()) unpause();
 
 	if ((isStopped() || willStop()) && !transition) {
 		if (runningBeginTransition) skipInTransition = true;
@@ -494,7 +494,7 @@ LIGHT_LAYER_TEMPLATE
 bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
 	if (!isRunningPatternFromSequence()) return false;
 
-	if (isPaused()) stop(true);
+	if (isPaused()) unpause();
 
 	if ((isStopped() || willStop()) && !transition) {
 		if (runningBeginTransition) skipInTransition = true;

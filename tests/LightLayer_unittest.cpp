@@ -499,14 +499,14 @@ TEST_F(LightLayerTest, startPatternAtIndexWhilePaused) {
 
 	lightLayer.pause(false, false);
 	lightLayer.nextPattern();
-	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 1);
-	EXPECT_TRUE(lightLayer.willStop());
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 4);
+	EXPECT_FALSE(lightLayer.willStop());
 
 	EXPECT_EQ(lightLayer.getPatternIndex(), 2);
 	lightLayer.nextPattern();
 	EXPECT_EQ(lightLayer.getPatternIndex(), 3);
 
-	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 1);
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 5);
 
 	lightLayer.startPatternAtIndex(1);
 	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
@@ -542,24 +542,19 @@ TEST_F(LightLayerTest, nextPatternWhilePaused) {
 
 	lightLayer.pause(false, false);
 	lightLayer.nextPattern();
-	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 1);
-	EXPECT_TRUE(lightLayer.willStop());
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 4);
+	EXPECT_FALSE(lightLayer.willStop());
 
 	EXPECT_EQ(lightLayer.getPatternIndex(), 2);
 	lightLayer.nextPattern();
 	EXPECT_EQ(lightLayer.getPatternIndex(), 3);
 
-	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 1);
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 5);
 
 	lightLayer.nextPattern();
 	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
-	lightLayer.unpause();
-	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
 
-	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 1);
-	runLayerFor(100, 20);
-	EXPECT_EQ(lightLayer.getActivePattern(), nullptr);
-	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 2);
 
 	lightLayer.play();
 	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
@@ -731,26 +726,18 @@ TEST_F(LightLayerTest, prevPatternWhilePaused) {
 
 	lightLayer.pause(false, false);
 	lightLayer.prevPattern();
-	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 5);
-	EXPECT_TRUE(lightLayer.willStop());
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 4);
+	EXPECT_FALSE(lightLayer.willStop());
 
 	EXPECT_EQ(lightLayer.getPatternIndex(), 2);
 	lightLayer.prevPattern();
 	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
 
-	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 5);
+	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 1);
 
 	lightLayer.prevPattern();
 	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
-	lightLayer.unpause();
-	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
-
 	runLayerFor(100);
-	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
-
-	EXPECT_EQ(lightLayer.getActivePattern(), nullptr);
-
-	lightLayer.play();
 	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
 }
 
