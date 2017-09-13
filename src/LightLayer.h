@@ -92,8 +92,15 @@ public:
 
 	bool isRunningPatternFromSequence() { return patternSequence && patternSequence->size() > 0; }
 	int getPatternIndex() { return patternIndex; }
-	uint32_t getElapsedTime() { return (patternStartedAt == 0) ? 0 : millis() - patternStartedAt; }
-	uint32_t getTransitionTimeElapsed() { return millis() - transitionStartedAt; }
+	uint32_t getElapsedTime() {
+		uint32_t offset = ((pauseStartedAt != 0) ? millis() - pauseStartedAt : 0);
+		return (patternStartedAt == 0) ? 0 :
+			(millis() - patternStartedAt - offset);
+	}
+	uint32_t getTransitionTimeElapsed() { 
+		uint32_t offset = ((pauseStartedAt != 0) ? millis() - pauseStartedAt : 0);
+		return millis() - transitionStartedAt - offset;
+	}
 
 	void setConfig(const LightLayerConfig &config) { this->config = config; }
 	LightLayerConfig &getConfig() { return config; }

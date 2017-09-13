@@ -169,6 +169,8 @@ void LIGHT_LAYER_CLASS::unpause() {
 	uint32_t timeDelta = millis() - pauseStartedAt;
 	patternStartedAt += timeDelta;
 	transitionStartedAt += timeDelta;
+
+	pauseStartedAt = 0;
 }
 
 /**

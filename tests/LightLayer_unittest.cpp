@@ -825,6 +825,40 @@ TEST_F(LightLayerTest, prevPatternWhileStoppedDuringFadeout) {
 	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 2);
 }
 
+TEST_F(LightLayerTest, getElapsedTime) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 500;
+
+	lightLayer.setFadeDuration(100);
+
+	sequence.addPatternCue(PatternCode(2, 0), -1, TRANSITION_FADE_UP, TRANSITION_OVERWRITE, 200);
+	sequence.addPatternCue(PatternCode(1, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(4, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+	sequence.addPatternCue(PatternCode(5, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 200);
+
+	lightLayer.setPatternSequence(sequence);
+
+	lightLayer.play();
+	runLayerFor(100);
+	EXPECT_NEAR(lightLayer.getElapsedTime(), 100, 50);
+	lightLayer.pause(false, false);
+	runLayerFor(100, 20);
+
+	lightLayer.play();
+	EXPECT_NEAR(lightLayer.getElapsedTime(), 100, 50);
+	runLayerFor(100, 20);
+
+	lightLayer.pause(false, false);
+	runLayerFor(100, 20);
+	EXPECT_NEAR(lightLayer.getElapsedTime(), 200, 50);
+
+	lightLayer.play();
+	runLayerFor(100, 20);
+
+	EXPECT_NEAR(lightLayer.getElapsedTime(), 300, 50);
+}
+
 TEST_F(LightLayerTest, stop) {
 	PatternSequence sequence;
 
