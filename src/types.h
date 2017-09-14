@@ -71,7 +71,14 @@ typedef enum {
 	PATTERN_STOPPED, // Happens after a pattern finishes, but another isn't started
 
 	PATTERN_HOLD = 10,
-	PATTERN_UNHOLD
+	PATTERN_UNHOLD,
+
+	// TODO: Show states should likely be be their own events in the future
+	SHOW_STARTED = 20,
+	SHOW_INDEX_CHANGED,
+	SHOW_STOPPED,
+	SHOW_PAUSED,
+	SHOW_UNPAUSED
 } EPlayState;
 
 typedef enum {

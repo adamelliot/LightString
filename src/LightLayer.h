@@ -64,6 +64,7 @@ private:
 	void finishPattern();
 
 	void setPlayState(EPlayState playState);
+	void triggerShowEvent(EPlayState showState);
 
 	FORMAT getElapsedTimeRatio(int32_t transitionDuration);
 

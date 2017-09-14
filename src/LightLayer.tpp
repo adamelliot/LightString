@@ -51,6 +51,7 @@ void LIGHT_LAYER_CLASS::setPatternSequence(const PatternSequence &patternSequenc
 	} else {
 		patternIndex = 0;
 	}
+	triggerShowEvent(SHOW_INDEX_CHANGED);
 
 	if (!playFromSequence) {
 		if (!dontStop) stop(fadeOut);
@@ -115,6 +116,13 @@ void LIGHT_LAYER_CLASS::setPlayState(EPlayState playState) {
 }
 
 LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::triggerShowEvent(EPlayState showEvent) {
+	if (config.patternEventHandler) {
+		config.patternEventHandler(nullptr, showEvent, config.patternEventUserData);
+	}
+}
+
+LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::play() {
 	if (playState == PATTERN_PLAYING ||
 	        playState == PATTERN_PLAYING_IN_TRANSITION ||
@@ -124,11 +132,15 @@ void LIGHT_LAYER_CLASS::play() {
 		return;
 	}
 
+	triggerShowEvent(SHOW_STARTED);
+
 	startSelectedPattern();
 }
 
 LIGHT_LAYER_TEMPLATE
 void LIGHT_LAYER_CLASS::stop(bool fadeOut) {
+	triggerShowEvent(SHOW_STOPPED);
+
 	if (fadeOut) {
 		if (isPaused()) {
 			playOutAction = FREEZE_FADE_TO_STOP;
@@ -152,8 +164,9 @@ void LIGHT_LAYER_CLASS::pause() {
 	if (playState == PATTERN_PAUSED || playState == PATTERN_STOPPED) return;
 
 	setPlayState(PATTERN_PAUSED);
-
 	pauseStartedAt = millis();
+
+	triggerShowEvent(SHOW_PAUSED);
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -171,6 +184,8 @@ void LIGHT_LAYER_CLASS::unpause() {
 	transitionStartedAt += timeDelta;
 
 	pauseStartedAt = 0;
+
+	triggerShowEvent(SHOW_UNPAUSED);
 }
 
 /**
@@ -401,6 +416,7 @@ bool LIGHT_LAYER_CLASS::startPatternAtIndex(size_t index, bool transition) {
 		return true;
 	} else {
 		patternIndex = index;
+		triggerShowEvent(SHOW_INDEX_CHANGED);
 		return startSelectedPattern();
 	}
 }
@@ -426,6 +442,7 @@ bool LIGHT_LAYER_CLASS::startRandomPattern(bool transition) {
 		return true;
 	} else {
 		patternIndex = index;
+		triggerShowEvent(SHOW_INDEX_CHANGED);
 		return startSelectedPattern();
 	}
 }
@@ -473,6 +490,7 @@ bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
 
 			patternIndex++;
 			patternIndex %= size;
+			triggerShowEvent(SHOW_INDEX_CHANGED);
 		} else {
 			setPatternIsFinished();
 		}
@@ -483,6 +501,7 @@ bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
 
 		patternIndex++;
 		patternIndex %= size;
+		triggerShowEvent(SHOW_INDEX_CHANGED);
 
 		return startSelectedPattern();
 	}
@@ -512,6 +531,7 @@ bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
 			} else {
 				patternIndex--;
 			}
+			triggerShowEvent(SHOW_INDEX_CHANGED);
 		} else {
 			setPatternIsFinished();
 		}
@@ -526,6 +546,7 @@ bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
 		} else {
 			patternIndex--;
 		}
+		triggerShowEvent(SHOW_INDEX_CHANGED);
 
 		playOutAction = LOAD_NEXT;
 		return startSelectedPattern();
