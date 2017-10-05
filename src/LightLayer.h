@@ -94,11 +94,15 @@ public:
 	bool isRunningPatternFromSequence() { return patternSequence && patternSequence->size() > 0; }
 	int getPatternIndex() { return patternIndex; }
 	uint32_t getElapsedTime() {
+		if (playState == PATTERN_STOPPED) return 0;
+
 		uint32_t offset = ((pauseStartedAt != 0) ? millis() - pauseStartedAt : 0);
 		return (patternStartedAt == 0) ? 0 :
 			(millis() - patternStartedAt - offset);
 	}
 	uint32_t getTransitionTimeElapsed() { 
+		if (playState == PATTERN_STOPPED) return 0;
+
 		uint32_t offset = ((pauseStartedAt != 0) ? millis() - pauseStartedAt : 0);
 		return millis() - transitionStartedAt - offset;
 	}
