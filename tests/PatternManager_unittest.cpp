@@ -37,6 +37,28 @@ TEST(PatternManager, sectionsExist) {
 	EXPECT_EQ(patternManager.getSection(1), nullptr);
 }
 
+TEST(PatternManager, clearingAllSections) {
+	TestPatternProvider provider;
+	PatternManager<TRGB, uint8_t> patternManager(provider);
+	TPixelBuffer<TRGB, uint8_t> buffer(5);
+
+	uint8_t sectionID = patternManager.addLightSection(buffer);
+	EXPECT_EQ(sectionID, 0);
+
+	auto section = patternManager.getSection(sectionID);
+	EXPECT_EQ(section->getSectionID(), sectionID);
+	EXPECT_EQ(patternManager.getSection(1), nullptr);
+
+	patternManager.clearLightSections();
+
+	EXPECT_EQ(patternManager.getSection(0), nullptr);
+
+	sectionID = patternManager.addLightSection(buffer);
+	EXPECT_EQ(sectionID, 0);
+	section = patternManager.getSection(sectionID);
+	EXPECT_EQ(section->getSectionID(), sectionID);
+}
+
 TEST(PatternManager, startRunningUsingPlay) {
 	TestPatternProvider provider;
 	PatternManager<TRGB, uint8_t> patternManager(provider);

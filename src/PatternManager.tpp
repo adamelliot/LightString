@@ -313,6 +313,11 @@ LIGHT_SECTION_CLASS *PATTERN_MANAGER_CLASS::getLightSection(uint8_t sectionID) {
 }
 
 PATTERN_MANAGER_TEMPLATE
+void PATTERN_MANAGER_CLASS::clearLightSections() {
+	sections.clear();
+}
+
+PATTERN_MANAGER_TEMPLATE
 uint8_t PATTERN_MANAGER_CLASS::addLightSection(TPixelBuffer<OUTPUT_PIXEL, FORMAT> &pixelBuffer) {
 	auto id = sections.size();
 

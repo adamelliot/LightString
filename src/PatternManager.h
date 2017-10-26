@@ -96,6 +96,7 @@ public:
 	void addLightPattern(pattern_id_t patternID, uint64_t modeList, uint8_t layerID);
 	void addLightPattern(pattern_id_t patternID, uint64_t modeList, uint8_t layerID, uint8_t sectionID);
 
+	void clearLightSections();
 	uint8_t addLightSection(TPixelBuffer<OUTPUT_PIXEL, FORMAT> &pixelBuffer);
 	uint8_t getTotalSections() { return sections.size(); }
 
