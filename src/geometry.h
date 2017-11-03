@@ -348,6 +348,11 @@ public:
 		bounds.includePoint(point);
 		points.push_back(TIndexedPoint<TYPE, 3>(index, point));
 	}
+	void clear() {
+		minIndex = 0;
+		maxIndex = 0;
+		points.clear();
+	}
 
 	TPointMapping() {}
 };
