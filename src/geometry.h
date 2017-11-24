@@ -352,6 +352,7 @@ public:
 		minIndex = 0;
 		maxIndex = 0;
 		points.clear();
+		bounds = TCuboid<TYPE>();
 	}
 
 	TPointMapping() {}
