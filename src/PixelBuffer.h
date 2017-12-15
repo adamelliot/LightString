@@ -26,7 +26,7 @@ private:
 public:
 	T<FORMAT> *pixels = nullptr;
 
-	uint16_t length = 0;
+	uint32_t length = 0;
 	bool shouldDelete = false;
 
 	TPixelBuffer() {}
@@ -36,7 +36,7 @@ public:
 	 * then length is assumed to include the `dummy pixel` thus the functional length
 	 * will be `length - 1`
 	 */
-	TPixelBuffer(T<FORMAT> *pixels, uint16_t length, bool hasDummyPixel = false)
+	TPixelBuffer(T<FORMAT> *pixels, uint32_t length, bool hasDummyPixel = false)
 		: hasDummyPixel(hasDummyPixel), pixels(pixels), length(length), shouldDelete(false)
 	{
 		rawPixels = pixels;
@@ -47,7 +47,7 @@ public:
 		}
 	}
 
-	TPixelBuffer(const uint16_t length, bool hasDummyPixel = false)
+	TPixelBuffer(const uint32_t length, bool hasDummyPixel = false)
 		: hasDummyPixel(hasDummyPixel), length(length), shouldDelete(true)
 	{
 		auto len = length + (hasDummyPixel ? 1 : 0);
@@ -64,7 +64,7 @@ public:
 		if (shouldDelete && rawPixels) delete[] rawPixels;
 	}
 
-	virtual bool resize(uint16_t length) {
+	virtual bool resize(uint32_t length) {
 		if (!shouldDelete && this->length > 0) {
 #ifdef ARDUINO
 			Serial.println("ERROR: Cannot resize buffer that is not owned by pixel buffer.");
@@ -91,7 +91,7 @@ public:
 		return true;
 	}
 
-	void setPixelData(T<FORMAT> *pixels, uint16_t length, bool hasDummyPixel = false) {
+	void setPixelData(T<FORMAT> *pixels, uint32_t length, bool hasDummyPixel = false) {
 		if (shouldDelete && rawPixels) delete[] rawPixels;
 
 		shouldDelete = false;
@@ -106,8 +106,8 @@ public:
 		}
 	}
 
-	uint16_t getLength() const { return length; }
-	uint16_t getSize() const { return length; }
+	uint32_t getLength() const { return length; }
+	uint32_t getSize() const { return length; }
 
 	inline T<FORMAT>& operator[] (int16_t index) __attribute__((always_inline)) {
 		return pixels[index];
@@ -119,7 +119,7 @@ public:
 
 	// FIXME: Alpha channel semantics should be reviewed
 	inline void setPixelAA(float index, T<FORMAT> col) __attribute__((always_inline)) {
-		uint16_t base = (uint16_t)index;
+		auto base = (uint32_t)index;
 		uint8_t ratio = (uint8_t)(fmod(index, 1) * 255);
 		if (ratio == 0) {
 			setPixel(base, col);
@@ -133,7 +133,7 @@ public:
 	}
 
 	inline void setPixels(int16_t index, uint8_t length, T<FORMAT> col) __attribute__((always_inline)) {
-		for (uint16_t i = index; i < index + length; i++) {
+		for (auto i = index; i < index + length; i++) {
 			pixels[i] = col;
 		}
 	}
@@ -148,19 +148,19 @@ public:
 	}
 
 	inline void fillColor(T<FORMAT> col) __attribute__((always_inline)) {
-		for ( int i = 0; i < length; i++) {
+		for (auto i = 0; i < length; i++) {
 			pixels[i] = col;
 		}
 	}
 
 	inline void fade(const FORMAT scale) {
-		for (uint16_t i = 0; i < this->length; i++) {
+		for (auto i = 0; i < this->length; i++) {
 			pixels[i].fade(scale);
 		}
 	}
 
 	inline void alphaFade(const FORMAT scale) {
-		for (uint16_t i = 0; i < this->length; i++) {
+		for (auto i = 0; i < this->length; i++) {
 			pixels[i].alphaFade(scale);
 		}
 	}
@@ -190,8 +190,8 @@ public:
 
 	template <template <typename> class SRC_PIXEL>
 	inline TPixelBuffer<T, FORMAT> &blendCOPY(TPixelBuffer<SRC_PIXEL, FORMAT> &src) {
-		uint16_t len = min(this->length, src.length);
-		for (uint16_t i = 0; i < len; i++) {
+		auto len = min(this->length, src.length);
+		for (auto i = 0; i < len; i++) {
 			LightString::blendCOPY(this->pixels[i], src.pixels[i]);
 		}
 
@@ -200,8 +200,8 @@ public:
 
 	template <template <typename> class SRC_PIXEL>
 	inline TPixelBuffer<T, FORMAT> &blendCOPY(TPixelBuffer<SRC_PIXEL, FORMAT> &src, FORMAT alpha) {
-		uint16_t len = min(this->length, src.length);
-		for (uint16_t i = 0; i < len; i++) {
+		auto len = min(this->length, src.length);
+		for (auto i = 0; i < len; i++) {
 			SRC_PIXEL<FORMAT> srcPixel = src.pixels[i].fadeCopy(alpha);
 			LightString::blendCOPY(this->pixels[i], srcPixel);
 		}
@@ -211,8 +211,8 @@ public:
 
 	template <template <typename> class SRC_PIXEL>
 	inline TPixelBuffer<T, FORMAT> &blendADD(TPixelBuffer<SRC_PIXEL, FORMAT> &src) {
-		uint16_t len = min(this->length, src.length);
-		for (uint16_t i = 0; i < len; i++) {
+		auto len = min(this->length, src.length);
+		for (auto i = 0; i < len; i++) {
 			LightString::blendADD(this->pixels[i], src.pixels[i]);
 		}
 
@@ -221,8 +221,8 @@ public:
 
 	template <template <typename> class SRC_PIXEL>
 	inline TPixelBuffer<T, FORMAT> &blendADD(TPixelBuffer<SRC_PIXEL, FORMAT> &src, FORMAT alpha) {
-		uint16_t len = min(this->length, src.length);
-		for (uint16_t i = 0; i < len; i++) {
+		auto len = min(this->length, src.length);
+		for (auto i = 0; i < len; i++) {
 			SRC_PIXEL<FORMAT> srcPixel = src.pixels[i].fadeCopy(alpha);
 			LightString::blendADD(this->pixels[i], srcPixel);
 		}
