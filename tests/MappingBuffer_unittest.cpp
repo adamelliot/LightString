@@ -170,7 +170,7 @@ TEST(TMappingPixelBuffer, creation) {
 	mapping.addPoint(Point3f(10, 9, 8), 2);
 	mapping.addPoint(Point3f(9, 4, 2), 1);
 
-	TMappingPixelBuffer<TRGB, float> buffer(mapping);
+	TMappingPixelBuffer<TRGB, float> buffer(mapping, 3);
 
 	EXPECT_EQ(buffer.getLength(), 3);
 	EXPECT_EQ(buffer.width, 10);
@@ -199,7 +199,7 @@ TEST(TMappingPixelBuffer, setMapping) {
 	mapping.addPoint(Point3f(10, 9, 8), 2);
 	mapping.addPoint(Point3f(9, 4, 2), 1);
 
-	TMappingPixelBuffer<TRGB, float> buffer(mapping);
+	TMappingPixelBuffer<TRGB, float> buffer(mapping, 3);
 
 	EXPECT_EQ(buffer.getLength(), 3);
 	EXPECT_EQ(buffer.width, 10);
@@ -212,7 +212,7 @@ TEST(TMappingPixelBuffer, setMapping) {
 	mapping2.addPoint(Point2f(9, 4), 1);
 	mapping2.addPoint(Point2f(5, 6), 3);
 
-	buffer.setMapping(mapping2);
+	buffer.setMapping(mapping2, 4);
 
 	EXPECT_EQ(buffer.getSize(), 4);
 }

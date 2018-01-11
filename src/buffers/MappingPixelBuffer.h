@@ -15,9 +15,9 @@ public:
 
 	TMappingPixelBuffer() : LightString::TPixelBuffer<T, FORMAT>(1) {}
 
-	TMappingPixelBuffer(const TPointMapping<float> &mapping)
+	TMappingPixelBuffer(const TPointMapping<float> &mapping, uint32_t size)
 		: TPixelBuffer<T, FORMAT>(mapping.maxIndex) {
-		setMapping(mapping);
+		setMapping(mapping, size);
 	}
 
 	virtual ~TMappingPixelBuffer() {}
@@ -26,8 +26,8 @@ public:
 	TPointMapping<float> &getMapping() { return mapping; }
 	const std::vector<TIndexedPoint<float, 3>> &getPoints() const { return mapping.points; }
 
-	void setMapping(const TPointMapping<float> &mapping) {
-		this->resize(mapping.maxIndex + 1);
+	void setMapping(const TPointMapping<float> &mapping, uint32_t size) {
+		this->resize(size);
 		this->mapping = mapping;
 
 		this->width  = mapping.bounds.width;
