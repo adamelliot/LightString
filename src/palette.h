@@ -1,6 +1,7 @@
 #ifndef _PALETTE_H_
 #define _PALETTE_H_
 
+#include <limits.h>
 #include <vector>
 #include <stdint.h>
 #include <stdio.h>
@@ -23,6 +24,7 @@ struct IPalette {
 private:
 public:
 	virtual int getSize() = 0;
+	virtual ~IPalette() {}
 };
 
 typedef uint32_t ColorPaletteData[];
@@ -39,7 +41,7 @@ struct TPalette : IPalette {
 
 public:
 	std::vector<T<FORMAT>> colorStops;
-	uint8_t paletteID = 0;
+	int paletteID = INT_MIN;
 
 	T<FORMAT> valueAt8(uint8_t index) const {
 		auto size = colorStops.size();
@@ -135,8 +137,6 @@ public:
 	TPalette(const uint16_t size) {
 		colorStops.resize(size);
 	}
-
-	~TPalette() {}
 
 	void addColors(T<FORMAT> col) {
 		colorStops.push_back(col);
@@ -299,7 +299,7 @@ template<template <typename> class T, typename FORMAT = uint8_t>
 class TPaletteManager {
 protected:
 	std::vector<TPalette<T, FORMAT>> palettes;
-	uint8_t paletteIndex = 0;
+	size_t paletteIndex = 0;
 
 public:
 
@@ -309,18 +309,18 @@ public:
 	uint8_t getPaletteCount() { return palettes.size(); }
 
 	// Find the first palette with a specific ID
-	int16_t getPaletteIndexFromID(uint8_t id);
+	int getPaletteIndexFromID(int id);
 
 	T<FORMAT> getColor(FORMAT index) { return (palettes[paletteIndex])[index]; }
 	inline TPalette<T, FORMAT> &getPalette() { return palettes[paletteIndex]; }
-	inline TPalette<T, FORMAT> &getPalette(uint8_t index) { return palettes[index]; }
-	inline TPalette<T, FORMAT> *getPaletteByID(uint8_t id);
+	inline TPalette<T, FORMAT> &getPalette(size_t index) { return palettes[index]; }
+	inline TPalette<T, FORMAT> *getPaletteByID(int id);
 
-	void loadPalette(uint8_t index) { paletteIndex = index; }
+	void loadPalette(size_t index) { paletteIndex = index; }
 	void loadPaletteByID(uint8_t id);
 
 	void add(const TPalette<T, FORMAT> &palette) { palettes.push_back(palette); }
-	void add(uint8_t id, const TPalette<T, FORMAT> &palette);
+	void add(int id, const TPalette<T, FORMAT> &palette);
 
 	void next();
 	void previous();

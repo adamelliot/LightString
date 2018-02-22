@@ -187,6 +187,23 @@ TEST(TPaletteManagerF, getPaletteByID) {
 	EXPECT_EQ(ret.colorStops[1], pal2.colorStops[1]);
 }
 
+TEST(TPaletteManagerF, getPaletteIndexFromID) {
+	TPaletteManager<TRGB, float> palettes;
+	TPalette<TRGB, float> pal(HTML::Red, HTML::Lime);
+	TPalette<TRGB, float> pal2(HTML::Blue, HTML::Lime);
+
+	palettes.add(0, pal);
+	palettes.add(0, pal2);
+
+	palettes.add(2, pal);
+
+	auto index = palettes.getPaletteIndexFromID(0);
+	auto &ret = palettes.getPalette(index);
+
+	EXPECT_EQ(ret.colorStops[0], pal2.colorStops[0]);
+	EXPECT_EQ(ret.colorStops[1], pal2.colorStops[1]);
+}
+
 TEST(TPaletteManagerF, getColor) {
 	TPaletteManager<TRGB, float> palettes;
 	TPalette<TRGB, float> pal(HTML::Red, HTML::Lime);

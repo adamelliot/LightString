@@ -68,7 +68,7 @@ T<FORMAT> TSwatchManager<T, FORMAT>::previous() {
 // ------------------- Palette Manager ---------------------
 
 template<template <typename> class T, typename FORMAT>
-int16_t TPaletteManager<T, FORMAT>::getPaletteIndexFromID(uint8_t id) {
+int TPaletteManager<T, FORMAT>::getPaletteIndexFromID(int id) {
 	for (auto i = 0; i < palettes.size(); i++) {
 		if (palettes[i].paletteID == id) {
 			return i;
@@ -85,14 +85,14 @@ void TPaletteManager<T, FORMAT>::loadPaletteByID(uint8_t id) {
 }
 
 template<template <typename> class T, typename FORMAT>
-TPalette<T, FORMAT> *TPaletteManager<T, FORMAT>::getPaletteByID(uint8_t id) {
+TPalette<T, FORMAT> *TPaletteManager<T, FORMAT>::getPaletteByID(int id) {
 	auto index = getPaletteIndexFromID(id);
 	if (index < 0) return nullptr;
 	return &(palettes[index]);
 }
 
 template<template <typename> class T, typename FORMAT>
-void TPaletteManager<T, FORMAT>::add(uint8_t id, const TPalette<T, FORMAT> &palette) {
+void TPaletteManager<T, FORMAT>::add(int id, const TPalette<T, FORMAT> &palette) {
 	auto index = getPaletteIndexFromID(id);
 	if (index < 0) {
 		index = palettes.size();
