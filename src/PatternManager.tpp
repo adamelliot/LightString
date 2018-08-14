@@ -314,6 +314,9 @@ LIGHT_SECTION_CLASS *PATTERN_MANAGER_CLASS::getLightSection(uint8_t sectionID) {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::clearLightSections() {
+	for (auto &section : sections) {
+		section->clearLayers();	
+	}
 	sections.clear();
 }
 

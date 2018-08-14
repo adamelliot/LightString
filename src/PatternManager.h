@@ -37,6 +37,7 @@ protected:
 public:
 	PatternManager(PatternProvider &patternProvider) : patternProvider(patternProvider)
 		{ lastTime = millis(); }
+	~PatternManager() { clearLightSections(); }
 
 	LIGHT_SECTION_CLASS *getSection(uint8_t sectionID) { return getLightSection(sectionID); }
 	LIGHT_SECTION_CLASS *getLightSection(uint8_t sectionID);

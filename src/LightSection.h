@@ -53,6 +53,7 @@ public:
 		return layerID < layers.size() ? layers[layerID].get() : nullptr;
 	}
 
+	void clearLayers() { layers.clear(); }
 	void ensureLayerExists(uint8_t layerID);
 
 	IPixelBuffer *lockBuffer();
