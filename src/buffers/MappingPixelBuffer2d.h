@@ -32,7 +32,7 @@ public:
 		return this->resize(width * height);
 	}
 
-	virtual int16_t xy(int16_t x, int16_t y) {
+	virtual int xy(int x, int y) {
 		if (x < 0 || y < 0) return -1;
 		return (y * width) + x;
 	}

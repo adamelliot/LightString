@@ -254,7 +254,7 @@ struct TCuboid {
 
 	TPoint<TYPE, 3> randomPoint();
 
-	TCuboid<TYPE> inset(int16_t amount) {
+	TCuboid<TYPE> inset(int amount) {
 		auto a2 = amount * 2;
 		return TCuboid<TYPE>(x + amount, y + amount, z + amount, width - a2, height - a2, depth - a2);
 	}

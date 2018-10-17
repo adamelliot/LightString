@@ -42,7 +42,7 @@ public:
 		return this->resize(width * height * depth);
 	}
 
-	virtual int16_t xyz(int x, int y, int z) {
+	virtual int xyz(int x, int y, int z) {
 		if (x < 0 || y < 0 || z < 0) return -1;
 
 		return (x + (y * width) + (z * width * height));
@@ -421,7 +421,7 @@ public:
 		}
 	}
 
-	virtual int16_t xyz(int x, int y, int z) {
+	virtual int xyz(int x, int y, int z) {
 		if (x < 0 || y < 0 || z < 0) return -1;
 		auto &w = this->width;
 		auto &h = this->height;
