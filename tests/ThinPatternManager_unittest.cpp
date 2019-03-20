@@ -20,17 +20,14 @@ public:
 
 TEST(ThinPatternManager, initialization) {
 	TestPatternProvider provider;
-	ThinPatternManager<TRGB, uint8_t> patternManager(provider);
+	ThinPatternManager<TRGB, uint8_t> patternManager(provider, 5);
 
-	EXPECT_TRUE(patternManager.getOutputBuffer() == NULL);
+	EXPECT_EQ(patternManager.getOutputBuffer().size(), 5);
 }
 
 TEST(ThinPatternManager, startRunningUsingRandom) {
 	TestPatternProvider provider;
-	ThinPatternManager<TRGB, uint8_t> patternManager(provider);
-	TPixelBuffer<TRGB, uint8_t> leds(5);
-
-	patternManager.setBuffer(&leds);
+	ThinPatternManager<TRGB, uint8_t> patternManager(provider, 5);
 
 	patternManager.addLightPattern(1);
 	patternManager.startRandomPattern();

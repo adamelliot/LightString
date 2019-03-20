@@ -1,93 +1,108 @@
 LIGHT_SECTION_TEMPLATE
-void LIGHT_SECTION_CLASS::ensureLayerExists(uint8_t layerID) {
-	if (layerID < layers.size() && layers[layerID] != nullptr) return;
+void LIGHT_SECTION_CLASS::resize(int size) {
+	outputBuffer.resize(size);
+	m_bufferProvider.setBufferSize(size);
 
-	if (layerID >= layers.size()) {
-		layers.resize(layerID + 1);
-	}
-
-	for (auto id = layers.size() - 1; id <= layerID; id++) {
-		layers[id] = std::make_shared<LightLayer<FORMAT>>(patternProvider);
-
-		layers[id]->setLayerID(layerID);
-		layers[id]->setLightSection(this);
+	for (auto &layer : m_layers) {
+		auto buffer = layer->getPixelBuffer();
+		if (buffer)
+			buffer->resize(size);
 	}
 }
 
 LIGHT_SECTION_TEMPLATE
-IPixelBuffer *LIGHT_SECTION_CLASS::lockBuffer() {
-	// In the case of no buffer pool the output buffer is used.
-	// This only works if PIXEL is CRGB, and should otherwise throw an error
-	// outputBuffer
-	if (bufferPool.size() == 0) return (TPixelBuffer<PIXEL, FORMAT> *)outputBuffer;
+void LIGHT_SECTION_CLASS::ensureLayerExists(int layerIndex) {
+	if (layerIndex < m_layers.size() && m_layers[layerIndex] != nullptr) return;
 
-	for (uint32_t i = 0; i < bufferPool.size(); i++) {
-		uint8_t bit = 1 << i;
-		if ((activeBuffers & bit) == 0) {
-			activeBuffers |= bit;
-			return bufferPool[i];
-		}
+	if (layerIndex >= m_layers.size()) {
+		m_layers.resize(layerIndex + 1);
 	}
 
-	return NULL;
-}
-
-LIGHT_SECTION_TEMPLATE
-void LIGHT_SECTION_CLASS::unlockBuffer(IPixelBuffer *buffer) {
-	if (buffer == outputBuffer) return;
-
-	for (uint32_t i = 0; i < bufferPool.size(); i++) {
-		if (bufferPool[i] == buffer) {
-			uint8_t bit = 1 << i;
-			activeBuffers &= ~bit;
-		}
+	for (auto id = m_layers.size() - 1; id <= layerIndex; id++) {
+		m_layers[id] = std::make_shared<LightLayer<PIXEL, FORMAT>>(patternProvider, m_bufferProvider);
+		m_layers[id]->setLightSection(this);
 	}
 }
 
 LIGHT_SECTION_TEMPLATE
-bool LIGHT_SECTION_CLASS::addBuffer(IPixelBuffer *buffer) {
-	if (buffer->getLength() != this->outputBuffer->getLength()) {
-#ifdef LS_VERBOSE
-#ifdef ARDUINO
-		Serial.println(F("ERROR: Buffer added to pool needs to be the same size as the output buffer."));
-#else
-		fprintf(stderr, "ERROR: Buffer added to pool needs to be the same size as the output buffer.");
-#endif
-#endif
-
-		return false;
+int LIGHT_SECTION_CLASS::indexOfLayer(ILightLayer *layer) {
+	for (int i = 0; i < m_layers.size(); i++)
+	{
+		if (m_layers[i].get() == layer) return i;
 	}
 
-	bufferPool.push_back(buffer);
+	return -1;
+}
 
-	return true;
+LIGHT_SECTION_TEMPLATE
+bool LIGHT_SECTION_CLASS::startPatternOnNewLayer(PatternCode patternCode, LightLayerConfig config) {
+	m_layers.push_back(std::make_shared<LightLayer<PIXEL, FORMAT>>(patternProvider, m_bufferProvider));
+	auto & layer = m_layers.back();
+
+	layer->setConfig(config);
+	layer->setLightSection(this);
+
+	return layer->startPattern(patternCode);
+}
+
+LIGHT_SECTION_TEMPLATE
+void LIGHT_SECTION_CLASS::stopAllLayers(bool fadeOut) {
+	for (auto & layer : m_layers)
+		layer->stop(fadeOut);
+
+	pruneStoppedLayers();
+}
+
+LIGHT_SECTION_TEMPLATE
+void LIGHT_SECTION_CLASS::startOutTransitionOnAllLayers() {
+	for (auto & layer : m_layers)
+		layer->startOutTransition();
+}
+
+LIGHT_SECTION_TEMPLATE
+void LIGHT_SECTION_CLASS::pruneStoppedLayers() {
+	for (auto it = m_layers.begin(); it != m_layers.end();)
+	{
+		if (*it == nullptr || (*it)->getActivePattern() == nullptr)
+			m_layers.erase(it);
+		else
+			++it;
+	}
+}
+
+LIGHT_SECTION_TEMPLATE
+void LIGHT_SECTION_CLASS::playAllLayers() {
+	for (auto & layer : m_layers)
+		layer->play();
 }
 
 LIGHT_SECTION_TEMPLATE
 void LIGHT_SECTION_CLASS::update() {
-	if (bufferPool.size() > 0) {
-		outputBuffer->clear();
-	}
+	pruneStoppedLayers();
 
-	for (auto &layer : layers) {
-		if (layer == nullptr) continue;
+	outputBuffer.clear();
+
+	int i = 0;
+	for (auto &layer : m_layers) {
 		layer->update();
 
 		auto pattern = layer->getActivePattern();
 
 		if (pattern && !pattern->isFilterPattern()) {
-			TPixelBuffer<PIXEL, FORMAT> *buffer = (TPixelBuffer<PIXEL, FORMAT> *)pattern->getPixelBuffer();
+			auto buffer = layer->getPixelBuffer();
 
 			FORMAT opacity = TColorFormatHelper<FORMAT>::scale(layer->getOpacity(), layer->getTransitionOpacity());
 
 			if (opacity < layer->getMaxOpacity()) {
 				if (opacity > 0) {
-					outputBuffer->blendWith(*buffer, pattern->getBlendMode(), opacity);
+					outputBuffer.blendWith(*buffer, pattern->getBlendMode(), opacity);
 				}
 			} else {
-				outputBuffer->blendWith(*buffer, pattern->getBlendMode());
+				outputBuffer.blendWith(*buffer, pattern->getBlendMode());
 			}
 		}
+
+		i++;
 	}
 
 	updateFadeLevel();
@@ -95,7 +110,7 @@ void LIGHT_SECTION_CLASS::update() {
 	FORMAT scaledLevel = TColorFormatHelper<FORMAT>::scale(brightness, fade);
 
 	if (scaledLevel < TColorFormatHelper<FORMAT>::getMaxValue()) {
-		outputBuffer->fade(scaledLevel);
+		outputBuffer.fade(scaledLevel);
 	}
 }
 
@@ -109,14 +124,14 @@ void LIGHT_SECTION_CLASS::pause(bool blackout, bool fade) {
 			pauseAfterFade = true;
 		} else {
 			setBrightness(0);
-			for (auto &layer : layers) {
+			for (auto &layer : m_layers) {
 				if (!layer) continue;
 				layer->pause();
 			}
 		}
 	} else {
 		if (!fade) {
-			for (auto &layer : layers) {
+			for (auto &layer : m_layers) {
 				if (!layer) continue;
 				layer->pause();
 			}
@@ -125,10 +140,10 @@ void LIGHT_SECTION_CLASS::pause(bool blackout, bool fade) {
 }
 
 LIGHT_SECTION_TEMPLATE
-void LIGHT_SECTION_CLASS::unpause() {
-	fadeUp();
+void LIGHT_SECTION_CLASS::unpause(bool fade) {
+	if (fade) fadeUp();
 
-	for (auto &layer : layers) {
+	for (auto &layer : m_layers) {
 		if (!layer) continue;
 		layer->unpause();
 	}

@@ -86,8 +86,7 @@ protected:
 
 	// Thin pattern manager is a layer with all the "extra" parts need to run
 	TestPatternProvider provider;
-	ThinPatternManager<TRGB, float> lightLayer = ThinPatternManager<TRGB, float>(provider);
-	TPixelBuffer<TRGB, float> leds = TPixelBuffer<TRGB, float>(5);
+	ThinPatternManager<TRGB, float> lightLayer = ThinPatternManager<TRGB, float>(provider, 5);
 
 	void runLayerFor(int ms, int msPerFrame = 25) {
 		auto lastTime = millis();
@@ -108,7 +107,6 @@ protected:
 
 	virtual void SetUp()
 	{
-		lightLayer.setBuffer(&leds);
 	}
 
 	virtual void TearDown() {
@@ -117,21 +115,12 @@ protected:
 
 TEST(LightLayer, initialization) {
 	TestPatternProvider provider;
-	LightLayer<float> lightLayer(provider);
+	PixelBufferProvider<TRGB, float> bufferProvider(5);
+	LightLayer<TRGB, float> lightLayer(provider, bufferProvider);
 
 	EXPECT_EQ(lightLayer.isActive(), false);
 	EXPECT_EQ(lightLayer.getOpacity(), 1.0f);
 	EXPECT_EQ(lightLayer.getActivePattern(), nullptr);
-}
-
-TEST(LightLayer, startPatternWithNoBuffersFailsGracefully) {
-	TestPatternProvider provider;
-	LightLayer<float> lightLayer(provider);
-
-	lightLayer.startPattern(1);
-
-	EXPECT_EQ(lightLayer.getActivePattern(), nullptr);
-	EXPECT_EQ(lightLayer.getPlayState(), PATTERN_STOPPED);
 }
 
 /* ---------- PLAYBACK TESTS ----------- */
@@ -273,7 +262,7 @@ TEST_F(LightLayerTest, enqueuePatternAtIndex) {
 	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
 
 	lightLayer.enqueuePatternAtIndex(2);
-	runLayerFor(150);
+	runLayerFor(50);
 	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
 
 	runLayerFor(200);
@@ -642,6 +631,27 @@ TEST_F(LightLayerTest, nextPatternWhileStoppedDuringFadeout) {
 	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
 
 	EXPECT_EQ(lightLayer.getActivePattern()->getPatternID(), 2);
+}
+
+TEST_F(LightLayerTest, startOutTransitionDuringFadeIn) {
+	PatternSequence sequence;
+
+	lightLayer.getConfig().patternDuration = 1000;
+
+	sequence.addPatternCue(PatternCode(2, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 400);
+	sequence.addPatternCue(PatternCode(1, 0), -1, TRANSITION_FADE_UP, TRANSITION_FADE_DOWN, 400);
+
+	lightLayer.setPatternSequence(sequence);
+
+	lightLayer.play();
+	runLayerFor(300);
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+
+	lightLayer.startOutTransition();
+	EXPECT_EQ(lightLayer.getPatternIndex(), 0);
+	runLayerFor(400);
+
+	EXPECT_EQ(lightLayer.getPatternIndex(), 1);
 }
 
 TEST_F(LightLayerTest, prevPattern) {

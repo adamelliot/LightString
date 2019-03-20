@@ -27,7 +27,7 @@ public:
 	T<FORMAT> *pixels = nullptr;
 
 	uint32_t length = 0;
-	bool shouldDelete = false;
+	bool shouldDelete = true;
 
 	TPixelBuffer() {}
 
@@ -74,7 +74,7 @@ public:
 			return false;
 		}
 
-		if (shouldDelete) {
+		if (shouldDelete && rawPixels) {
 			delete[] rawPixels;
 		}
 
@@ -209,6 +209,16 @@ public:
 		return *this;
 	}
 
+	inline TPixelBuffer<T, FORMAT> &blendCOPY(TPixelBuffer<TRGBA, FORMAT> &src, FORMAT alpha) {
+		auto len = min(this->length, src.length);
+		for (auto i = 0; i < len; i++) {
+			TRGBA<FORMAT> srcPixel = src.pixels[i].alphaFadeCopy(alpha);
+			LightString::blendCOPY(this->pixels[i], srcPixel);
+		}
+
+		return *this;
+	}
+
 	template <template <typename> class SRC_PIXEL>
 	inline TPixelBuffer<T, FORMAT> &blendADD(TPixelBuffer<SRC_PIXEL, FORMAT> &src) {
 		auto len = min(this->length, src.length);
@@ -224,6 +234,16 @@ public:
 		auto len = min(this->length, src.length);
 		for (auto i = 0; i < len; i++) {
 			SRC_PIXEL<FORMAT> srcPixel = src.pixels[i].fadeCopy(alpha);
+			LightString::blendADD(this->pixels[i], srcPixel);
+		}
+
+		return *this;
+	}
+
+	inline TPixelBuffer<T, FORMAT> &blendADD(TPixelBuffer<TRGBA, FORMAT> &src, FORMAT alpha) {
+		auto len = min(this->length, src.length);
+		for (auto i = 0; i < len; i++) {
+			TRGBA<FORMAT> srcPixel = src.pixels[i].alphaFadeCopy(alpha);
 			LightString::blendADD(this->pixels[i], srcPixel);
 		}
 

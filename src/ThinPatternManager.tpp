@@ -12,7 +12,7 @@ bool ThinPatternManager<PIXEL, FORMAT>::update() {
 	}
 	lastTime = time;
 
-	LightLayer<FORMAT>::update();
+	LightLayer<PIXEL, FORMAT>::update();
 #ifdef USE_FASTLED
 	FastLED.setBrightness(this->getOpacity());
 #endif

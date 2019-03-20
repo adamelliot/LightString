@@ -2,14 +2,14 @@
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::pause(bool blackout, bool fade) {
-	for (auto &section : sections) {
+	for (auto &section : m_sections) {
 		section->pause(blackout, fade);
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::unpause() {
-	for (auto &section : sections) {
+	for (auto &section : m_sections) {
 		section->unpause();
 	}
 }
@@ -20,8 +20,8 @@ PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setLayerConfig(const LightLayerConfig &config) {
 	this->layerConfig = config;
 
-	for (auto &section : sections) {
-		for (auto &layer : section->layers) {
+	for (auto &section : m_sections) {
+		for (auto &layer : section->layers()) {
 			if (!layer) continue;
 
 			layer->setConfig(config);
@@ -30,10 +30,10 @@ void PATTERN_MANAGER_CLASS::setLayerConfig(const LightLayerConfig &config) {
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::setLayerConfig(const LightLayerConfig &config, uint8_t layerID, uint8_t sectionID) {
+void PATTERN_MANAGER_CLASS::setLayerConfig(const LightLayerConfig &config, int layerIndex, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID)->setConfig(config);
+	ensureLayerIsSetup(*section, layerIndex);
+	section->getLayer(layerIndex)->setConfig(config);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -41,8 +41,8 @@ void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHand
 	this->layerConfig.patternEventHandler = patternEventHandler;
 	this->layerConfig.patternEventUserData = userData;
 
-	for (auto &section : sections) {
-		for (auto &layer : section->layers) {
+	for (auto &section : m_sections) {
+		for (auto &layer : section->layers()) {
 			if (!layer) continue;
 			layer->setPatternEventHandler(patternEventHandler, userData);
 		}
@@ -50,18 +50,18 @@ void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHand
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler, void *userData, uint8_t layerID, uint8_t sectionID) {
+void PATTERN_MANAGER_CLASS::setPatternEventHandler(PatternEvent patternEventHandler, void *userData, int layerIndex, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID)->setPatternEventHandler(patternEventHandler, userData);
+	ensureLayerIsSetup(*section, layerIndex);
+	section->getLayer(layerIndex)->setPatternEventHandler(patternEventHandler, userData);
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternDuration(uint32_t patternDuration) {
 	this->layerConfig.patternDuration = patternDuration;
 
-	for (auto &section : sections) {
-		for (auto &layer : section->layers) {
+	for (auto &section : m_sections) {
+		for (auto &layer : section->layers()) {
 			if (!layer) continue;
 
 			layer->setPatternDuration(patternDuration);
@@ -70,10 +70,10 @@ void PATTERN_MANAGER_CLASS::setPatternDuration(uint32_t patternDuration) {
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::setPatternDuration(uint32_t patternDuration, uint8_t layerID, uint8_t sectionID) {
+void PATTERN_MANAGER_CLASS::setPatternDuration(uint32_t patternDuration, int layerIndex, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID)->setTransitionDuration(patternDuration);
+	ensureLayerIsSetup(*section, layerIndex);
+	section->getLayer(layerIndex)->setTransitionDuration(patternDuration);
 }
 
 PATTERN_MANAGER_TEMPLATE
@@ -81,8 +81,8 @@ void PATTERN_MANAGER_CLASS::setTransitionDuration(uint32_t transitionDuration) {
 	this->layerConfig.inTransitionDuration = transitionDuration;
 	this->layerConfig.outTransitionDuration = transitionDuration;
 
-	for (auto &section : sections) {
-		for (auto &layer : section->layers) {
+	for (auto &section : m_sections) {
+		for (auto &layer : section->layers()) {
 			if (!layer) continue;
 			layer->getConfig().inTransitionDuration = transitionDuration;
 			layer->getConfig().outTransitionDuration = transitionDuration;
@@ -91,29 +91,28 @@ void PATTERN_MANAGER_CLASS::setTransitionDuration(uint32_t transitionDuration) {
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::setTransitionDuration(uint32_t transitionDuration, uint8_t layerID, uint8_t sectionID) {
+void PATTERN_MANAGER_CLASS::setTransitionDuration(uint32_t transitionDuration, int layerIndex, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	ensureLayerIsSetup(*section, layerID);
-	section.getLayer(layerID)->getConfig().transitionDuration = transitionDuration;
+	ensureLayerIsSetup(*section, layerIndex);
+	section.getLayer(layerIndex)->getConfig().transitionDuration = transitionDuration;
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setBrightness(FORMAT val) {
-	for (auto &section : sections) {
+	for (auto &section : m_sections) {
 		section->setBrightness(val);
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setBrightness(FORMAT val, uint8_t sectionID) {
-	auto section = getSection(sectionID);
-	section->setBrightness(val);
+	m_sections[sectionID]->setBrightness(val);
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPlayMode(EPlayMode playMode) {
-	for (auto &section : sections) {
-		for (auto &layer : sections->layers) {
+	for (auto &section : m_sections) {
+		for (auto &layer : section->layers()) {
 			if (!layer) continue;
 			layer->setPlayMode(playMode);
 		}
@@ -121,30 +120,30 @@ void PATTERN_MANAGER_CLASS::setPlayMode(EPlayMode playMode) {
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::setPlayMode(EPlayMode playMode, uint8_t layerID, uint8_t sectionID) {
+void PATTERN_MANAGER_CLASS::setPlayMode(EPlayMode playMode, int layerIndex, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID)->setPlayMode(playMode);
+	ensureLayerIsSetup(*section, layerIndex);
+	section->getLayer(layerIndex)->setPlayMode(playMode);
 }
 
 PATTERN_MANAGER_TEMPLATE
-bool PATTERN_MANAGER_CLASS::startPattern(PatternCode patternCode, uint8_t layerID, uint8_t sectionID) {
+bool PATTERN_MANAGER_CLASS::startPattern(PatternCode patternCode, int layerIndex, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	ensureLayerIsSetup(*section, layerID);
-	return section->getLayer(layerID)->startPattern(patternCode);
+	ensureLayerIsSetup(*section, layerIndex);
+	return section->getLayer(layerIndex)->startPattern(patternCode);
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::startPattern(uint8_t patternID, uint8_t layerID) {
-	for (auto i = 0; i < sections.size(); i++) {
-		startPattern(PatternCode(patternID), layerID, i);
+void PATTERN_MANAGER_CLASS::startPattern(uint8_t patternID, int layerIndex) {
+	for (auto i = 0; i < m_sections.size(); i++) {
+		startPattern(PatternCode(patternID), layerIndex, i);
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::startRandomPattern() {
-	for (auto &section : sections) {
-		for (auto &layer : section->layers) {
+	for (auto &section : m_sections) {
+		for (auto &layer : section->layers()) {
 			if (!layer || !layer->isActive()) continue;
 
 			layer->startRandomPattern();
@@ -154,8 +153,8 @@ void PATTERN_MANAGER_CLASS::startRandomPattern() {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::startRandomPatternOnAllLayers() {
-	for (auto &section : sections) {
-		for (auto &layer : section->layers) {
+	for (auto &section : m_sections) {
+		for (auto &layer : section->layers()) {
 			if (!layer) continue;
 			layer->startRandomPattern();
 		}
@@ -163,17 +162,17 @@ void PATTERN_MANAGER_CLASS::startRandomPatternOnAllLayers() {
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::startRandomPattern(uint8_t layerID, uint8_t sectionID) {
+void PATTERN_MANAGER_CLASS::startRandomPattern(int layerIndex, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID)->startRandomPattern();
+	ensureLayerIsSetup(*section, layerIndex);
+	section->getLayer(layerIndex)->startRandomPattern();
 }
 
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::play() {
-	for (auto &section : sections) {
-		for (auto &layer : section->layers) {
+	for (auto &section : m_sections) {
+		for (auto &layer : section->layers()) {
 			if (!layer) continue;
 			layer->play();
 		}
@@ -181,25 +180,25 @@ void PATTERN_MANAGER_CLASS::play() {
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::play(uint8_t layerID, uint8_t sectionID) {
+void PATTERN_MANAGER_CLASS::play(int layerIndex, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	auto layer = section->getLayer(layerID);
+	auto layer = section->getLayer(layerIndex);
 
 	layer->play();
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::nextPattern(bool transition, uint8_t layerID, uint8_t sectionID) {
+void PATTERN_MANAGER_CLASS::nextPattern(bool transition, int layerIndex, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	auto layer = section->getLayer(layerID);
+	auto layer = section->getLayer(layerIndex);
 
 	layer->nextPattern(transition);
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::nextPattern(bool transition) {
-	for (auto &section : sections) {
-		for (auto &layer : section->layers) {
+	for (auto &section : m_sections) {
+		for (auto &layer : section->layers()) {
 			if (!layer) continue;
 
 			layer->nextPattern(transition);
@@ -208,17 +207,17 @@ void PATTERN_MANAGER_CLASS::nextPattern(bool transition) {
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::prevPattern(bool transition, uint8_t layerID, uint8_t sectionID) {
+void PATTERN_MANAGER_CLASS::prevPattern(bool transition, int layerIndex, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	auto layer = section->getLayer(layerID);
+	auto layer = section->getLayer(layerIndex);
 
 	layer->prevPattern(transition);
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::prevPattern(bool transition) {
-	for (auto &section : sections) {
-		for (auto &layer : section->layers) {
+	for (auto &section : m_sections) {
+		for (auto &layer : section->layers()) {
 			if (!layer) continue;
 
 			layer->prevPattern(transition);
@@ -228,8 +227,8 @@ void PATTERN_MANAGER_CLASS::prevPattern(bool transition) {
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::shufflePatterns() {
-	for (auto &section : sections) {
-		for (auto &layer : section->layers) {
+	for (auto &section : m_sections) {
+		for (auto &layer : section->layers()) {
 			if (!layer) continue;
 
 			layer->shufflePatterns();
@@ -238,19 +237,19 @@ void PATTERN_MANAGER_CLASS::shufflePatterns() {
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::ensureLayerIsSetup(LIGHT_SECTION_CLASS &section, uint8_t layerID) {
-	if (section.getLayer(layerID) != nullptr) return;
+void PATTERN_MANAGER_CLASS::ensureLayerIsSetup(LIGHT_SECTION_CLASS &section, int layerIndex) {
+	if (section.getLayer(layerIndex) != nullptr) return;
 
-	section.ensureLayerExists(layerID);
-	auto layer = section.getLayer(layerID);
+	section.ensureLayerExists(layerIndex);
+	auto layer = section.getLayer(layerIndex);
 
 	layer->setConfig(layerConfig);
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, uint32_t flags) {
-	for (auto &section : sections) {
-		for (auto &layer : section->layers) {
+	for (auto &section : m_sections) {
+		for (auto &layer : section->layers()) {
 			if (!layer) continue;
 
 			layer->setPatternSequence(patternSequence, newPlayIndex, flags);
@@ -259,16 +258,16 @@ void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSeq
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, uint8_t layerID, uint8_t sectionID, uint32_t flags) {
+void PATTERN_MANAGER_CLASS::setPatternSequence(const PatternSequence &patternSequence, int newPlayIndex, int layerIndex, uint8_t sectionID, uint32_t flags) {
 	auto section = getSection(sectionID);
-	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID)->setPatternSequence(patternSequence, newPlayIndex, flags);
+	ensureLayerIsSetup(*section, layerIndex);
+	section->getLayer(layerIndex)->setPatternSequence(patternSequence, newPlayIndex, flags);
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::clearPatternSequence(bool fadeOut) {
-	for (auto &section : sections) {
-		for (auto &layer : section->layers) {
+	for (auto &section : m_sections) {
+		for (auto &layer : section->layers()) {
 			if (!layer) continue;
 			layer->clearPatternSequence();
 		}
@@ -276,66 +275,58 @@ void PATTERN_MANAGER_CLASS::clearPatternSequence(bool fadeOut) {
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::clearPatternSequence(uint8_t layerID, uint8_t sectionID, bool fadeOut) {
+void PATTERN_MANAGER_CLASS::clearPatternSequence(int layerIndex, uint8_t sectionID, bool fadeOut) {
 	auto section = getSection(sectionID);
-	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID)->clearPatternSequence();
+	ensureLayerIsSetup(*section, layerIndex);
+	section->getLayer(layerIndex)->clearPatternSequence();
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::addLightPattern(pattern_id_t patternID, uint8_t layerID) {
-	for (auto &section : sections) {
-		ensureLayerIsSetup(*section, layerID);
-		section->getLayer(layerID)->addLightPattern(patternID);
+void PATTERN_MANAGER_CLASS::addLightPattern(pattern_id_t patternID, int layerIndex) {
+	for (auto &section : m_sections) {
+		ensureLayerIsSetup(*section, layerIndex);
+		section->getLayer(layerIndex)->addLightPattern(patternID);
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::addLightPattern(pattern_id_t patternID, uint64_t modeList, uint8_t layerID) {
-	for (auto &section : sections) {
-		ensureLayerIsSetup(*section, layerID);
-		section->getLayer(layerID)->addLightPattern(patternID, modeList);
+void PATTERN_MANAGER_CLASS::addLightPattern(pattern_id_t patternID, uint64_t modeList, int layerIndex) {
+	for (auto &section : m_sections) {
+		ensureLayerIsSetup(*section, layerIndex);
+		section->getLayer(layerIndex)->addLightPattern(patternID, modeList);
 	}
 }
 
 PATTERN_MANAGER_TEMPLATE
-void PATTERN_MANAGER_CLASS::addLightPattern(pattern_id_t patternID, uint64_t modeList, uint8_t layerID, uint8_t sectionID) {
+void PATTERN_MANAGER_CLASS::addLightPattern(pattern_id_t patternID, uint64_t modeList, int layerIndex, uint8_t sectionID) {
 	auto section = getSection(sectionID);
-	ensureLayerIsSetup(*section, layerID);
-	section->getLayer(layerID)->addLightPattern(patternID, modeList);
+	ensureLayerIsSetup(*section, layerIndex);
+	section->getLayer(layerIndex)->addLightPattern(patternID, modeList);
 }
 
 // -------------------- Adding Sections -------------------
 
 PATTERN_MANAGER_TEMPLATE
 LIGHT_SECTION_CLASS *PATTERN_MANAGER_CLASS::getLightSection(uint8_t sectionID) {
-	return (sectionID >= sections.size()) ? nullptr : sections[sectionID].get();
+	return (sectionID >= m_sections.size()) ? nullptr : m_sections[sectionID].get();
 }
 
 PATTERN_MANAGER_TEMPLATE
 void PATTERN_MANAGER_CLASS::clearLightSections() {
-	for (auto &section : sections) {
+	for (auto &section : m_sections) {
 		section->clearLayers();	
 	}
-	sections.clear();
+	m_sections.clear();
 }
 
 PATTERN_MANAGER_TEMPLATE
-uint8_t PATTERN_MANAGER_CLASS::addLightSection(TPixelBuffer<OUTPUT_PIXEL, FORMAT> &pixelBuffer) {
-	auto id = sections.size();
+uint8_t PATTERN_MANAGER_CLASS::addLightSection(int size) {
+	auto id = m_sections.size();
 
-	sections.push_back(std::make_shared<LIGHT_SECTION_CLASS>(patternProvider));
-
-	sections[id]->setSectionID(id);
-	sections[id]->outputBuffer = &pixelBuffer;
+	m_sections.push_back(std::make_shared<LIGHT_SECTION_CLASS>(patternProvider, size));
+	m_sections.back()->setSectionID(id);
 
 	return id;
-}
-
-PATTERN_MANAGER_TEMPLATE
-bool PATTERN_MANAGER_CLASS::addBufferToLightSection(uint8_t sectionID, TPixelBuffer<PIXEL, FORMAT> &buffer) {
-	auto section = getSection(sectionID);
-	return section->addBuffer(&buffer);
 }
 
 // -------------------- Primary Manager Loop -------------------
@@ -352,7 +343,7 @@ bool PATTERN_MANAGER_CLASS::update() {
 	}
 	lastTime = time;
 
-	for (auto &section : sections) {
+	for (auto &section : m_sections) {
 		section->update();
 	}
 

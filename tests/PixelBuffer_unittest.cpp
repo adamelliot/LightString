@@ -290,13 +290,13 @@ TEST(TPixelBuffer, blendWith_RGB_RGBA_alpha_f_copy) {
 	TPixelBuffer<TRGB, float> dst(5);
 	TPixelBuffer<TRGBA, float> src(5);
 
-	dst.fillColor(HTML::Black);
+	dst.fillColor(HTML::Blue);
 	src.fillColor(0x80ff0000);
 
 	dst.blendWith(src, BLEND_COPY, 0.25);
 
 	for (int i = 0; i < 5; i++) {
-		EXPECT_RGBf_EQ(dst[i], 0.125, 0, 0);
+		EXPECT_RGBf_EQ(dst[i], 0.125, 0, 0.875);
 	}
 }
 

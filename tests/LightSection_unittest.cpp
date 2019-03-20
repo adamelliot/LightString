@@ -13,49 +13,45 @@ public:
 	virtual ILightPattern *patternForID(pattern_id_t patternID, ILightLayer *layer = nullptr) {
 		switch (patternID) {
 		case 1:
-			return new TSolidColorPattern<TRGB, float>(HTML::Red);
+			return new TSolidColorPattern<TRGBA, float>(HTML::Red);
 		}
 
 		return nullptr;
 	}
+	virtual ~SectionPatternProvider() {}
 };
 
 TEST(LightSection, initialization) {
 	SectionPatternProvider provider;
-	LightSection<TRGB, uint8_t> lightSection(provider);
+	LightSection<TRGB, uint8_t, TRGBA> lightSection(provider, 5);
 
-	EXPECT_TRUE(lightSection.outputBuffer == NULL);
+	EXPECT_EQ(lightSection.getOutputBuffer().size(), 5);
 }
 
 TEST(LightSection, ensureLayerExists) {
 	SectionPatternProvider provider;
-	LightSection<TRGB, uint8_t> lightSection(provider);
+	LightSection<TRGB, uint8_t, TRGBA> lightSection(provider, 5);
 
 	lightSection.ensureLayerExists(4);
 
 	auto layer = lightSection.getLayer(4);
 
-	EXPECT_EQ(layer->getLayerID(), 4);
+	EXPECT_EQ(layer->layerIndex(), 4);
 }
 
 TEST(LightSection, adjustBrightness) {
 	SectionPatternProvider provider;
-	LightSection<TRGB, float> lightSection(provider);
+	LightSection<TRGB, float, TRGBA> lightSection(provider, 5);
 
-	TPixelBuffer<TRGB, float> buffer = TPixelBuffer<TRGB, float>(5);
-	TPixelBuffer<TRGB, float> leds = TPixelBuffer<TRGB, float>(5);
+	auto & leds = lightSection.getOutputBuffer();
 
-	lightSection.outputBuffer = &leds;
-	lightSection.addBuffer(&buffer);
-
-	lightSection.ensureLayerExists(0);
-	lightSection.layers[0]->addLightPattern(1);
-	lightSection.layers[0]->play();
-
-	lightSection.layers[0]->getConfig().inTransition = TRANSITION_OVERWRITE;
+	LightLayerConfig config;
+	config.inTransition = TRANSITION_WIPE;
+	lightSection.startPatternOnNewLayer(PatternCode(1), config);
 
 	lightSection.update();
 	EXPECT_RGBf_EQ(leds[0], 1, 0, 0);
+	usleep(5000);
 
 	lightSection.setBrightness(0.5f);
 
@@ -68,19 +64,4 @@ TEST(LightSection, adjustBrightness) {
 	lightSection.update();
 
 	EXPECT_NEAR(leds[0].r, 0.25, 0.2);
-}
-
-TEST(LightSection, backBuffersAreProvided) {
-	SectionPatternProvider provider;
-	LightSection<TRGBA, float, TRGB> lightSection(provider);
-
-	TPixelBuffer<TRGBA, float> buffer = TPixelBuffer<TRGBA, float>(5);
-	TPixelBuffer<TRGB, float> leds = TPixelBuffer<TRGB, float>(5);
-
-	lightSection.outputBuffer = &leds;
-	lightSection.addBuffer(&buffer);
-
-	auto ret = lightSection.lockBuffer();
-
-	EXPECT_EQ(ret, &buffer);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <iostream>
 
 #include "utils.h"
 #include "types.h"
@@ -8,22 +9,44 @@
 
 namespace LightString {
 
-template <typename FORMAT>
+using std::vector;
+
+template <template <typename> class PIXEL, typename FORMAT>
+class PixelBufferProvider {
+private:
+	int m_bufferSize = 0;
+    vector<LightString::TPixelBuffer<PIXEL, FORMAT> *> m_bufferPool;
+
+public:
+	PixelBufferProvider(int size) : m_bufferSize(size) {}
+	~PixelBufferProvider();
+
+	void emptyBufferPool();
+
+	void setBufferSize(int size);
+	int bufferSize();
+
+	TPixelBuffer<PIXEL, FORMAT> *requestBuffer();
+	void releaseBuffer(TPixelBuffer<PIXEL, FORMAT> *);
+};
+
+template <template <typename> class PIXEL, typename FORMAT>
 class LightLayer : public ILightLayer {
 private:
 	LightLayerConfig config;
 
-	uint8_t layerID = 0;
-
 	ILightSection *section = nullptr;
 
 	PatternProvider &patternProvider;
-	std::vector<PatternCode> patternList;
+	PixelBufferProvider<PIXEL, FORMAT> &bufferProvider;
+
+	TPixelBuffer<PIXEL, FORMAT> *pixelBuffer = nullptr;
 
 	// next / previous / random and loading by index require a patternSequence
 	// Note:
 	// - Settings from cue can still be over ridden by the pattern methods:
 	//		- isPatternFinished, getNextPatternCode, getInTransition, getOutTransition
+
 	std::shared_ptr<IPatternSequence> patternSequence { nullptr };
 
 	int patternIndex = 0; // Index in the pattern order or the sequence
@@ -73,10 +96,13 @@ private:
 
 public:
 
-	LightLayer(PatternProvider &patternProvider) : patternProvider(patternProvider) {}
+	LightLayer(PatternProvider &patternProvider, PixelBufferProvider<PIXEL, FORMAT> &bufferProvider)
+		: patternProvider(patternProvider), bufferProvider(bufferProvider) {}
 	virtual ~LightLayer() {
 		finishPattern();
 	}
+
+	int layerIndex() { return !section ? -1 : section->indexOfLayer(this); }
 
 	inline FORMAT getMaxOpacity();
 	EPlayState getPlayState() { return playState; }
@@ -86,13 +112,12 @@ public:
 	bool willStop() { return (playOutAction == FADE_TO_STOP || playOutAction == FREEZE_FADE_TO_STOP) && patternIsFinished; }
 	bool isPaused() { return playState == PATTERN_PAUSED; }
 
+	// ???
 	bool isPatternHeld() const { return holdPattern; }
-
-	void setLayerID(uint8_t layerID) { this->layerID = layerID; }
-	uint8_t getLayerID() { return layerID; }
 
 	bool isRunningPatternFromSequence() { return patternSequence && patternSequence->size() > 0; }
 	int getPatternIndex() { return patternIndex; }
+
 	uint32_t getElapsedTime() {
 		if (playState == PATTERN_STOPPED) return 0;
 
@@ -112,6 +137,8 @@ public:
 
 	void setLightSection(ILightSection *section) { this->section = section; }
 	ILightSection *getLightSection() { return section; }
+
+	TPixelBuffer<PIXEL, FORMAT> *getPixelBuffer() { return pixelBuffer; }
 	ILightPattern *getActivePattern() { return activePattern; }
 
 	int getPatternIndex() const { return patternIndex; }
@@ -152,6 +179,8 @@ public:
 	void stop(bool fadeOut = true);
 	virtual void pause();
 	virtual void unpause();
+
+	void startOutTransition();
 
 	void hold();
 	void unhold();

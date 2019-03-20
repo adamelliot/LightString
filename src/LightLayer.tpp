@@ -1,4 +1,50 @@
 LIGHT_LAYER_TEMPLATE
+PixelBufferProvider<PIXEL, FORMAT>::~PixelBufferProvider() {
+	emptyBufferPool();
+}
+
+LIGHT_LAYER_TEMPLATE
+void PixelBufferProvider<PIXEL, FORMAT>::emptyBufferPool() {
+    for (auto buffer : m_bufferPool)
+        delete buffer;
+
+    m_bufferPool.clear();
+}
+
+LIGHT_LAYER_TEMPLATE
+void PixelBufferProvider<PIXEL, FORMAT>::setBufferSize(int size) {
+	emptyBufferPool();
+	m_bufferSize = size;
+}
+
+LIGHT_LAYER_TEMPLATE
+int PixelBufferProvider<PIXEL, FORMAT>::bufferSize() {
+	return m_bufferSize;
+}
+
+LIGHT_LAYER_TEMPLATE
+TPixelBuffer<PIXEL, FORMAT> *PixelBufferProvider<PIXEL, FORMAT>::requestBuffer()
+{
+    if (m_bufferPool.size() > 0)
+    {
+        auto ret = m_bufferPool.back();
+        m_bufferPool.pop_back();
+        return ret;
+    }
+    else
+    {
+        return new TPixelBuffer<PIXEL, FORMAT>(m_bufferSize);
+    }
+}
+
+LIGHT_LAYER_TEMPLATE
+void PixelBufferProvider<PIXEL, FORMAT>::releaseBuffer(TPixelBuffer<PIXEL, FORMAT> *buffer)
+{
+    if (buffer)
+        m_bufferPool.push_back(buffer);
+}
+
+LIGHT_LAYER_TEMPLATE
 PatternCode LIGHT_LAYER_CLASS::getPatternCodeFromIndex(uint8_t index) {
 	if (patternSequence) {
 		return patternSequence->getPatternCode(index);
@@ -96,9 +142,8 @@ void LIGHT_LAYER_CLASS::finishPattern() {
 	setPlayState(PATTERN_FINISHED);
 	activePattern->patternFinished();
 
-	if (!activePattern->isFilterPattern() && section != nullptr) {
-		section->unlockBuffer(activePattern->getPixelBuffer());
-	}
+	bufferProvider.releaseBuffer(pixelBuffer);
+	pixelBuffer = nullptr;
 
 	if (this->activePattern != nullptr) {
 		patternProvider.finishedWithPattern(this->activePattern);
@@ -148,6 +193,7 @@ void LIGHT_LAYER_CLASS::stop(bool fadeOut) {
 		} else {
 			playOutAction = FADE_TO_STOP;
 		}
+
 		setPatternIsFinished();
 	} else {
 		if (playState == PATTERN_STOPPED) return;
@@ -157,6 +203,39 @@ void LIGHT_LAYER_CLASS::stop(bool fadeOut) {
 		setPatternIsFinished();
 		runningBeginTransition = true;
 	}
+}
+
+LIGHT_LAYER_TEMPLATE
+void LIGHT_LAYER_CLASS::startOutTransition() {
+	if (isPaused()) unpause();
+
+	// switch "In" to "Out" transition and account for the time already run
+	// EG: If "in" for 0.75 of the transition, then run 0.75 of the out transition
+	if (runningBeginTransition && transitionState == TRANSITION_RUNNING) {
+		runningBeginTransition = false;
+
+		uint32_t transitionDuration = getSelectedInTransitionDuration();
+		FORMAT ratio = getElapsedTimeRatio(transitionDuration);
+
+		setPlayState(PATTERN_PLAYING_OUT_TRANSITION);
+		currentTransition = getSelectedOutTransition();
+		auto section = getLightSection();
+
+		if (playOutAction == FADE_TO_STOP) {
+			currentTransition = TRANSITION_FADE_DOWN;
+			transitionDuration = section ? section->getFadeDuration() : kDefaultFadeOutDuration;
+		} else if (playOutAction == FREEZE_FADE_TO_STOP)  {
+			currentTransition = TRANSITION_FREEZE_FADE;
+			transitionDuration = section ? section->getFadeDuration() : kDefaultFadeOutDuration;
+		} else {
+			transitionDuration = getSelectedOutTransitionDuration();
+		}
+
+		ratio = 1.0 - ratio;
+		transitionStartedAt = millis() - static_cast<int>(transitionDuration * ratio);
+	}
+
+	setPatternIsFinished();
 }
 
 LIGHT_LAYER_TEMPLATE
@@ -231,23 +310,15 @@ void LIGHT_LAYER_CLASS::startPattern(ILightPattern *pattern, uint8_t mode, Patte
 	this->activePattern = pattern;
 	this->activePattern->setLayer(this);
 
-	IPixelBuffer *buffer = nullptr;
+	pixelBuffer = bufferProvider.requestBuffer();
 
-	if (this->section) {
-		if (this->activePattern->isFilterPattern()) {
-			buffer = this->section->getOutputBuffer();
-		} else {
-			buffer = this->section->lockBuffer();
-		}
-	}
-
-	if (!buffer) {
+	if (!pixelBuffer) {
 		finishPattern();
 		setPlayState(PATTERN_STOPPED);
 		return;
 	}
 
-	this->activePattern->setPixelBuffer(buffer);
+	this->activePattern->setPixelBuffer(pixelBuffer);
 
 	setPlayState(PATTERN_SETUP);
 
@@ -294,7 +365,7 @@ bool LIGHT_LAYER_CLASS::startSelectedPattern() {
 		Serial.print("Pattern not found: 0x");
 		Serial.print(cue.code.patternID, HEX);
 		Serial.print(" on Layer: ");
-		Serial.println(layerID);
+		Serial.println(section->indexOfLayer(this));
 #endif
 		return false;
 	} else {
@@ -317,7 +388,7 @@ void LIGHT_LAYER_CLASS::enqueuePattern(PatternCode patternCode, bool waitToFinis
 	enqueuedPattern = patternCode;
 	playOutAction = LOAD_ENQUEUED_PATTERN;
 
-	if (!waitToFinish) setPatternIsFinished();
+	if (!waitToFinish) startOutTransition();
 }
 
 /**
@@ -344,7 +415,7 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode, bool transition) {
 	}
 
 	Serial.print(F("\tLayer: "));
-	Serial.println(layerID);
+	Serial.println(layerIndex());
 #else
 	printf("Starting Pattern: 0x%x\tMode: ", patternCode.patternID);
 	if (patternCode.mode == ALL_MODES) {
@@ -352,7 +423,7 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode, bool transition) {
 	} else {
 		printf("%d", patternCode.mode);
 	}
-	printf("\tLayer: %d\n", layerID);
+	printf("\tLayer: %d\n", layerIndex());
 #endif
 #endif
 
@@ -365,7 +436,7 @@ bool LIGHT_LAYER_CLASS::startPattern(PatternCode patternCode, bool transition) {
 		Serial.print("Pattern not found: 0x");
 		Serial.print(patternCode.patternID, HEX);
 		Serial.print(" on Layer: ");
-		Serial.println(layerID);
+		Serial.println(layerIndex());
 #endif
 		return false;
 	} else {
@@ -397,7 +468,7 @@ bool LIGHT_LAYER_CLASS::enqueuePatternAtIndex(size_t index, bool waitToFinish) {
 	enqueuedPatternIndex = index;
 	playOutAction = LOAD_ENQUEUED_INDEX;
 
-	if (!waitToFinish) setPatternIsFinished();
+	if (!waitToFinish) startOutTransition();
 
 	return true;
 }
@@ -464,7 +535,7 @@ bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
 			}
 
 			if (transition) {
-				setPatternIsFinished();
+				startOutTransition();
 				return true;
 			} else {
 				return startPattern(enqueuedPattern);
@@ -492,7 +563,7 @@ bool LIGHT_LAYER_CLASS::nextPattern(bool transition) {
 			patternIndex %= size;
 			triggerShowEvent(SHOW_INDEX_CHANGED);
 		} else {
-			setPatternIsFinished();
+			startOutTransition();
 		}
 
 		return true;
@@ -533,7 +604,7 @@ bool LIGHT_LAYER_CLASS::prevPattern(bool transition) {
 			}
 			triggerShowEvent(SHOW_INDEX_CHANGED);
 		} else {
-			setPatternIsFinished();
+			startOutTransition();
 		}
 
 		if (!willStop()) playOutAction = LOAD_PREVIOUS;
@@ -611,8 +682,8 @@ void LIGHT_LAYER_CLASS::addLightPattern(pattern_id_t patternID) {
 	addLightPattern(patternID, modeList);
 }
 
-template <>
-inline float LightLayer<float>::getElapsedTimeRatio(int32_t transitionDuration) {
+LIGHT_LAYER_TEMPLATE
+inline FORMAT LightLayer<PIXEL, FORMAT>::getElapsedTimeRatio(int32_t transitionDuration) {
 	if (transitionDuration <= 0) return 1.0f;
 
 	uint32_t timeElapsed = millis() - transitionStartedAt;
@@ -623,7 +694,7 @@ inline float LightLayer<float>::getElapsedTimeRatio(int32_t transitionDuration) 
 }
 
 template <>
-inline uint8_t LightLayer<uint8_t>::getElapsedTimeRatio(int32_t transitionDuration) {
+inline uint8_t LightLayer<TRGB, uint8_t>::getElapsedTimeRatio(int32_t transitionDuration) {
 	if (transitionDuration <= 0) return 255;
 
 	uint32_t timeElapsed = millis() - transitionStartedAt;
@@ -633,10 +704,23 @@ inline uint8_t LightLayer<uint8_t>::getElapsedTimeRatio(int32_t transitionDurati
 }
 
 template <>
-inline uint8_t LightLayer<uint8_t>::getMaxOpacity() { return 0xff; }
+inline uint8_t LightLayer<TRGBA, uint8_t>::getElapsedTimeRatio(int32_t transitionDuration) {
+	if (transitionDuration <= 0) return 255;
+
+	uint32_t timeElapsed = millis() - transitionStartedAt;
+	uint32_t ratio = timeElapsed * 256 / transitionDuration;
+	if (ratio > 255) ratio = 255;
+	return (uint8_t)ratio;
+}
+
+LIGHT_LAYER_TEMPLATE
+inline FORMAT LightLayer<PIXEL, FORMAT>::getMaxOpacity() { return 1.0f; }
 
 template <>
-inline float LightLayer<float>::getMaxOpacity() { return 1.0f; }
+inline uint8_t LightLayer<TRGB, uint8_t>::getMaxOpacity() { return 0xff; }
+
+template <>
+inline uint8_t LightLayer<TRGBA, uint8_t>::getMaxOpacity() { return 0xff; }
 
 LIGHT_LAYER_TEMPLATE
 inline EPatternTransition LIGHT_LAYER_CLASS::getSelectedInTransition() {
@@ -744,14 +828,13 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 		} else {
 			currentTransition = getSelectedOutTransition();
 			setPlayState(PATTERN_PLAYING_OUT_TRANSITION);
+			auto section = getLightSection();
 
 			if (playOutAction == FADE_TO_STOP) {
 				currentTransition = TRANSITION_FADE_DOWN;
-				auto section = getLightSection();
 				transitionDuration = section ? section->getFadeDuration() : kDefaultFadeOutDuration;
 			} else if (playOutAction == FREEZE_FADE_TO_STOP)  {
 				currentTransition = TRANSITION_FREEZE_FADE;
-				auto section = getLightSection();
 				transitionDuration = section ? section->getFadeDuration() : kDefaultFadeOutDuration;
 			}
 		}
@@ -760,7 +843,6 @@ void LIGHT_LAYER_CLASS::updateTransition(uint32_t timeDelta) {
 	uint32_t timeElapsed = millis() - transitionStartedAt;
 	FORMAT ratio = getElapsedTimeRatio(transitionDuration);
 	bool clear = false;
-
 
 	if (runningBeginTransition) {
 		if (skipInTransition) {

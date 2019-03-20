@@ -52,8 +52,8 @@ public:
 	bool startPatternBelow(PatternCode patternCode);
 	bool startPatternBelow(pattern_id_t patternID, uint8_t mode = 0);
 
-	bool startPatternOnLayer(uint8_t layerID, PatternCode patternCode);
-	bool startPatternOnLayer(uint8_t layerID, pattern_id_t patternID, uint8_t mode = 0);
+	bool startPatternOnLayer(int layerIndex, PatternCode patternCode);
+	bool startPatternOnLayer(int layerIndex, pattern_id_t patternID, uint8_t mode = 0);
 
 	virtual void setPalette(IPalette *palette) {}
 

@@ -6,8 +6,8 @@
 
 #include <exception>
 
-#define LIGHT_LAYER_TEMPLATE template <typename FORMAT>//, size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES>
-#define LIGHT_LAYER_CLASS LightLayer<FORMAT>//, MAX_LIGHT_PROGRAMS, MAX_MODES>
+#define LIGHT_LAYER_TEMPLATE template <template <typename> class PIXEL, typename FORMAT>
+#define LIGHT_LAYER_CLASS LightLayer<PIXEL, FORMAT>
 
 #define LIGHT_SECTION_TEMPLATE template <template <typename> class PIXEL, typename FORMAT, template <typename> class OUTPUT_PIXEL>//size_t MAX_LIGHT_PROGRAMS, size_t MAX_MODES, size_t MAX_LAYERS>
 #define LIGHT_SECTION_CLASS LightSection<PIXEL, FORMAT, OUTPUT_PIXEL>//MAX_LIGHT_PROGRAMS, MAX_MODES, MAX_LAYERS>
@@ -47,6 +47,7 @@ typedef enum {
 // Place holder type for all generated TPixelBuffers
 struct IPixelBuffer {
 	virtual uint32_t getLength() const = 0;
+	uint32_t size() { return getLength(); }
 	virtual void clear() = 0;
 };
 
@@ -215,15 +216,11 @@ protected:
 public:
 	virtual ~ILightSection() {}
 
-	virtual IPixelBuffer *getOutputBuffer() = 0;
+	virtual int getTotalLayers() = 0;
+	virtual ILightLayer *getLayer(int layerIndex) = 0;
+	virtual void ensureLayerExists(int layerIndex) = 0;
 
-	virtual uint8_t getTotalLayers() = 0;
-	virtual ILightLayer *getLayer(uint8_t layerID) = 0;
-	virtual void ensureLayerExists(uint8_t layerID) = 0;
-
-	virtual IPixelBuffer *lockBuffer() = 0;
-	virtual void unlockBuffer(IPixelBuffer *buffer) = 0;
-	virtual bool addBuffer(IPixelBuffer *buffer) = 0;
+	virtual int indexOfLayer(ILightLayer *layer) = 0;
 
 	virtual PatternProvider &getPatternProvider() = 0;
 
@@ -403,9 +400,6 @@ public:
 	virtual ~ILightLayer() {}
 
 	virtual EPlayState getPlayState() = 0;
-
-	virtual void setLayerID(uint8_t layerID) = 0;
-	virtual uint8_t getLayerID() = 0;
 
 	virtual bool isRunningPatternFromSequence() = 0;
 	virtual int getPatternIndex() = 0;
